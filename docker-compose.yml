@@ -1,0 +1,17 @@
+version: '3'
+services: # 컨테이너
+    db:
+        image: mysql
+        container_name: mysql-hkidb
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: 1234
+            MYSQL_DATABASE: hkidb
+            TZ: Asia/Seoul
+        ports:
+            - "3306:3306"
+        command:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_unicode_ci
+        volumes:
+            - ./initSQL/:/docker-entrypoint-initdb.d

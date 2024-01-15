@@ -32,7 +32,7 @@ public class UserRepository {
                 .addValue("name", name, Types.VARCHAR)
                 .addValue("password", password, Types.VARCHAR);
         this.template.update(
-                "INSERT INTO hkidb.user (name, password) VALUES (:name, :password)",
+                "INSERT INTO hkidb.customers (name, password) VALUES (:name, :password)",
                 src,
                 keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).intValue();
@@ -42,7 +42,7 @@ public class UserRepository {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("name", name, Types.VARCHAR);
         return this.template.queryForObject(
-                "SELECT u.uid, u.name, u.password FROM hkidb.user u WHERE u.name = :name",
+                "SELECT u.uid, u.name, u.password FROM hkidb.customers u WHERE u.name = :name",
                 src,
                 (rs, rowNum) ->
                         Optional.of(
