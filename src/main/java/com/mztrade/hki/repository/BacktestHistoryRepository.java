@@ -52,4 +52,17 @@ public class BacktestHistoryRepository {
             return null;
         }
     }
+
+    public Integer getNumberOfHistoryByUid(int uid) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER);
+        try {
+            return this.template.queryForObject(
+                    "SELECT COUNT(*) FROM hkidb.backtest_history b WHERE b.uid = :uid",
+                    src,
+                    Integer.class);
+        } catch (DataAccessException e) {
+            return 0;
+        }
+    }
 }

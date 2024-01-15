@@ -95,6 +95,14 @@ public class BacktestController {
         return new ResponseEntity<>(backtestHistory.getParam(), HttpStatus.OK);
     }
 
+    @GetMapping("/backtest/count/{uid}")
+    public ResponseEntity<Integer> getUserBacktestHistoryCount(
+            @PathVariable Integer uid
+    ) {
+        Integer recordCount = backtestService.getNumberOfHistoryByUid(uid);
+        return new ResponseEntity<>(recordCount, HttpStatus.OK);
+    }
+
     @GetMapping("/backtest/all")
     public ResponseEntity<List<BacktestHistory>> getAllBacktestHistory(
             @RequestParam Integer uid

@@ -136,4 +136,8 @@ public class BacktestService {
     public BacktestHistory get(int aid) {
         return backtestHistoryRepository.get(aid);
     }
+
+    public Integer getNumberOfHistoryByUid(int uid) {
+        return backtestHistoryRepository.getNumberOfHistoryByUid(uid);
+    }
 }
