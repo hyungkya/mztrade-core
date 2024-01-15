@@ -54,6 +54,7 @@ public class BacktestController {
             @RequestBody BacktestRequest backtestRequest
             ) throws JsonProcessingException {
         int uid = backtestRequest.parseUid();
+        String title = backtestRequest.getTitle();
         long initialBalance = backtestRequest.parseInitialBalance();
         List<List<Condition>> buyConditions = backtestRequest.parseBuyConditions();
         List<List<Condition>> sellConditions = backtestRequest.parseSellConditions();

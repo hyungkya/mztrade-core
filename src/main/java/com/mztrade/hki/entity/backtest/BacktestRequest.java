@@ -8,6 +8,8 @@ import java.util.List;
 
 public class BacktestRequest {
     private String uid;
+
+    private String title;
     private String initialBalance;
     private List<List<ConditionRequest>> buyConditions;
     private List<List<ConditionRequest>> sellConditions;
@@ -23,6 +25,15 @@ public class BacktestRequest {
 
     public BacktestRequest setUid(String uid) {
         this.uid = uid;
+        return this;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public BacktestRequest setTitle(String title) {
+        this.title = title;
         return this;
     }
 
