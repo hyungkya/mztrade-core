@@ -118,6 +118,15 @@ public class BacktestController {
         return new ResponseEntity<>(backtestHistories, HttpStatus.OK);
     }
 
+    @GetMapping("/backtest/search")
+    public ResponseEntity<List<BacktestHistory>> searchBacktestHistory(
+            @RequestParam Integer uid,
+            @RequestParam String title
+    ) {
+        List<BacktestHistory> queryResult = backtestService.searchByTitle(uid, title);
+        return new ResponseEntity<>(queryResult, HttpStatus.OK);
+    }
+
     @GetMapping("/order_history")
     public ResponseEntity<List<Order>> getOrderHistory(
             @RequestParam Integer aid

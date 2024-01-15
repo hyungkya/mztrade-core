@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.Types;
+import java.util.List;
 
 @Component
 public class BacktestHistoryRepository {
@@ -49,6 +50,28 @@ public class BacktestHistoryRepository {
                             .setParam(rs.getString("b.param"))
             );
         } catch (DataAccessException e) {
+            return null;
+        }
+    }
+
+    public List<BacktestHistory> searchByTitle(int uid, String title) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER)
+                .addValue("title", "%" + title + "%", Types.VARCHAR);
+
+        try {
+            return this.template.query(
+                    "SELECT b.aid, b.uid, b.param " +
+                            "FROM hkidb.backtest_history b " +
+                            "WHERE b.uid = :uid AND JSON_EXTRACT(b.param, '$.title') LIKE :title",
+                    src,
+                    (rs, rowNum) -> new BacktestHistory()
+                            .setUid(rs.getInt("b.uid"))
+                            .setAid(rs.getInt("b.aid"))
+                            .setParam(rs.getString("b.param"))
+            );
+        } catch (DataAccessException e) {
+            System.out.println(e);
             return null;
         }
     }

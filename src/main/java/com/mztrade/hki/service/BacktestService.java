@@ -137,6 +137,10 @@ public class BacktestService {
         return backtestHistoryRepository.get(aid);
     }
 
+    public List<BacktestHistory> searchByTitle(int uid,String title) {
+        return backtestHistoryRepository.searchByTitle(uid, title);
+    }
+
     public Integer getNumberOfHistoryByUid(int uid) {
         return backtestHistoryRepository.getNumberOfHistoryByUid(uid);
     }
