@@ -46,10 +46,11 @@ public class UserRepository {
                 src,
                 (rs, rowNum) ->
                         Optional.of(
-                                new User()
-                                        .setUid(rs.getInt("u.uid"))
-                                        .setName(rs.getString("u.name"))
-                                        .setPassword(rs.getString("u.password"))
+                                User.builder()
+                                        .uid(rs.getInt("u.uid"))
+                                        .name(rs.getString("u.name"))
+                                        .password(rs.getString("u.password"))
+                                        .build()
                         )
         );
     }
