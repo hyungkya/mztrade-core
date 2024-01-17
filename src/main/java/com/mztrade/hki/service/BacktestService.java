@@ -146,13 +146,17 @@ public class BacktestService {
         return backtestHistoryRepository.getNumberOfHistoryByUid(uid);
     }
 
-    public Double getHighestProfitLossRatio(int uid) {
+    public Optional<Integer> getHighestProfitLossRatio(int uid) {
         double highestProfitLossRatio = -1;
+        Optional<Integer> highestAid = Optional.empty();
         for (int aid : accountService.getAll(uid)) {
             double currentProfitLossRatio = backtestHistoryRepository.get(aid).getPlratio();
-            highestProfitLossRatio = Math.max(currentProfitLossRatio, highestProfitLossRatio);
+            if (currentProfitLossRatio > highestProfitLossRatio) {
+                highestProfitLossRatio = currentProfitLossRatio;
+                highestAid = Optional.of(aid);
+            }
         }
-        return highestProfitLossRatio;
+        return highestAid;
     }
 
     public Double calculateFinalProfitLossRatio(long initialBalance, int aid, Instant backtestEndDate) {

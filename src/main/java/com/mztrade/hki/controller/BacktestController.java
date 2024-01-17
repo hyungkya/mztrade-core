@@ -13,6 +13,7 @@ import com.mztrade.hki.service.AccountService;
 import com.mztrade.hki.service.BacktestService;
 import com.mztrade.hki.service.OrderService;
 import com.mztrade.hki.service.StockPriceService;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -130,11 +131,13 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/top-plratio")
-    public ResponseEntity<Double> getHighestProfitLossRatio(
+    public ResponseEntity<BacktestHistory> getHighestProfitLossRatio(
             @RequestParam Integer uid
     ) {
-        Double highestProfitLossRatio = backtestService.getHighestProfitLossRatio(uid);
-        return new ResponseEntity<>(highestProfitLossRatio, HttpStatus.OK);
+        Optional<Integer> highestProfitLossRatioAid = backtestService.getHighestProfitLossRatio(uid);
+        return highestProfitLossRatioAid.map(
+                        aid -> new ResponseEntity<>(backtestService.get(aid), HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(null, HttpStatus.OK));
     }
 
     @GetMapping("/order_history")
