@@ -84,6 +84,3 @@ CREATE TABLE hkidb.backtest_history (
 
 INSERT INTO hkidb.customers (name, password) VALUES ('ADMIN', 'ADMIN');
 INSERT INTO hkidb.order_type (otid, name) VALUES (1, 'BUY'), (2, 'SELL');
-
-grant all privileges on *.* to 'root'@'%' IDENTIFIED BY '1234';
-flush privileges
