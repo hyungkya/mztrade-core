@@ -113,6 +113,7 @@ public class BacktestService {
                     }
                 }
             }
+            /*
             if (!orderService.getPositions(aid).isEmpty()) {
                 System.out.println("===============================================");
                 System.out.println("Date: " + startDate);
@@ -124,7 +125,7 @@ public class BacktestService {
                     System.out.println("   Qty: " + position.getQty());
                 }
                 System.out.println("===============================================");
-            }
+            }*/
         }
         return aid;
     }
