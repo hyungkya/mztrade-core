@@ -1,6 +1,6 @@
-DROP SCHEMA hkidb;
+DROP DATABASE hkidb;
 
-CREATE SCHEMA hkidb;
+CREATE DATABASE hkidb;
 
 CREATE TABLE hkidb.customers (
                                  uid         INT         NOT NULL    AUTO_INCREMENT  PRIMARY KEY,
