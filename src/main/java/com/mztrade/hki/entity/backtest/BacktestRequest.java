@@ -18,6 +18,7 @@ public class BacktestRequest {
     private List<String> tickers;
     private String startDate;
     private String endDate;
+    private Long plratio;
 
     public String getUid() {
         return uid;

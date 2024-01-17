@@ -80,6 +80,7 @@ public class BacktestController {
                 .aid(aid)
                 .uid(uid)
                 .param(objectMapper.writeValueAsString(backtestRequest))
+                .plratio(backtestService.calculateFinalProfitLossRatio(initialBalance, aid, endDate))
                 .build()
         );
 

@@ -26,10 +26,11 @@ public class BacktestHistoryRepository {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("uid", backtestHistory.getUid(), Types.INTEGER)
                 .addValue("aid", backtestHistory.getAid(), Types.INTEGER)
-                .addValue("param", backtestHistory.getParam(), Types.VARCHAR);
+                .addValue("param", backtestHistory.getParam(), Types.VARCHAR)
+                .addValue("plratio", backtestHistory.getPlratio(), Types.DOUBLE);
         try {
             this.template.update(
-                    "INSERT INTO hkidb.backtest_history (uid, aid, param) VALUES (:uid, :aid, :param)",
+                    "INSERT INTO hkidb.backtest_history (uid, aid, param, plratio) VALUES (:uid, :aid, :param, :plratio)",
                     src);
         } catch (DataAccessException e) {
             return false;
@@ -42,12 +43,13 @@ public class BacktestHistoryRepository {
                 .addValue("aid", aid, Types.INTEGER);
         try {
             return this.template.queryForObject(
-                    "SELECT b.aid, b.uid, b.param FROM hkidb.backtest_history b WHERE b.aid = :aid",
+                    "SELECT b.aid, b.uid, b.param, b.plratio FROM hkidb.backtest_history b WHERE b.aid = :aid",
                     src,
                     (rs, rowNum) -> BacktestHistory.builder()
                             .uid(rs.getInt("b.uid"))
                             .aid(rs.getInt("b.aid"))
                             .param(rs.getString("b.param"))
+                            .plratio(rs.getDouble("b.plratio"))
                             .build()
             );
         } catch (DataAccessException e) {
@@ -70,6 +72,7 @@ public class BacktestHistoryRepository {
                             .uid(rs.getInt("b.uid"))
                             .aid(rs.getInt("b.aid"))
                             .param(rs.getString("b.param"))
+                            .plratio(rs.getDouble("b.plratio"))
                             .build()
             );
         } catch (DataAccessException e) {

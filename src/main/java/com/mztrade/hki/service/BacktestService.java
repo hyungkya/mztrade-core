@@ -144,4 +144,14 @@ public class BacktestService {
     public Integer getNumberOfHistoryByUid(int uid) {
         return backtestHistoryRepository.getNumberOfHistoryByUid(uid);
     }
+
+    public Double calculateFinalProfitLossRatio(long initialBalance, int aid, Instant backtestEndDate) {
+        long finalBalance = accountService.getBalance(aid);
+        List<Position> positions = orderService.getPositions(aid);
+        for (Position position : positions) {
+            Integer finalClosePrice = stockPriceService.getLatestPrice(position.getTicker(), backtestEndDate, 10).orElseThrow().getClose();
+            finalBalance += (long) position.getQty() * finalClosePrice;
+        }
+        return (finalBalance / (double) initialBalance) - 1;
+    }
 }

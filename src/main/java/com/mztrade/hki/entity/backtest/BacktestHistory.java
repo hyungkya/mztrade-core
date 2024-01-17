@@ -9,4 +9,5 @@ public class BacktestHistory {
     private int uid;
     private int aid;
     private String param;
+    private double plratio;
 }

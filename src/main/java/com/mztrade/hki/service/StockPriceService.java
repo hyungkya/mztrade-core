@@ -3,14 +3,15 @@ package com.mztrade.hki.service;
 import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.entity.StockInfo;
 import com.mztrade.hki.entity.backtest.Indicator;
-import com.mztrade.hki.entity.backtest.IndicatorBar;
 import com.mztrade.hki.repository.StockInfoRepository;
 import com.mztrade.hki.repository.StockPriceRepository;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,17 @@ public class StockPriceService {
     public Bar getPrice(String ticker, Instant date) {
         // return requested date's ticker data
         return stockPriceRepository.findByDate(ticker, date);
+    }
+
+    public Optional<Bar> getLatestPrice(String ticker, Instant date, Integer maxRange) {
+        for (; maxRange > 0; maxRange--) {
+            try {
+                return Optional.of(stockPriceRepository.findByDate(ticker, date));
+            } catch (EmptyResultDataAccessException ignored) {
+                date = date.minus(1, ChronoUnit.DAYS);
+            }
+        }
+        return Optional.empty();
     }
 
     public Bar getCurrentPrice(String ticker) {

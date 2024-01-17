@@ -76,6 +76,7 @@ CREATE TABLE hkidb.backtest_history (
                                         uid INT NOT NULL,
                                         aid INT NOT NULL,
                                         param JSON NOT NULL,
+                                        plratio DOUBLE NOT NULL,
 
                                         PRIMARY KEY (aid),
                                         FOREIGN KEY (uid) REFERENCES hkidb.customers (uid),
