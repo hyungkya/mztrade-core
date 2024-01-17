@@ -129,6 +129,14 @@ public class BacktestController {
         return new ResponseEntity<>(queryResult, HttpStatus.OK);
     }
 
+    @GetMapping("/backtest/top-plratio")
+    public ResponseEntity<Double> getHighestProfitLossRatio(
+            @RequestParam Integer uid
+    ) {
+        Double highestProfitLossRatio = backtestService.getHighestProfitLossRatio(uid);
+        return new ResponseEntity<>(highestProfitLossRatio, HttpStatus.OK);
+    }
+
     @GetMapping("/order_history")
     public ResponseEntity<List<Order>> getOrderHistory(
             @RequestParam Integer aid
