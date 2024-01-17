@@ -76,10 +76,11 @@ public class BacktestController {
                 endDate
         );
 
-        backtestService.create(new BacktestHistory()
-                .setAid(aid)
-                .setUid(uid)
-                .setParam(objectMapper.writeValueAsString(backtestRequest))
+        backtestService.create(BacktestHistory.builder()
+                .aid(aid)
+                .uid(uid)
+                .param(objectMapper.writeValueAsString(backtestRequest))
+                .build()
         );
 
         return new ResponseEntity<>(true, HttpStatus.OK);

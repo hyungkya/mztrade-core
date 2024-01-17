@@ -44,10 +44,11 @@ public class BacktestHistoryRepository {
             return this.template.queryForObject(
                     "SELECT b.aid, b.uid, b.param FROM hkidb.backtest_history b WHERE b.aid = :aid",
                     src,
-                    (rs, rowNum) -> new BacktestHistory()
-                            .setUid(rs.getInt("b.uid"))
-                            .setAid(rs.getInt("b.aid"))
-                            .setParam(rs.getString("b.param"))
+                    (rs, rowNum) -> BacktestHistory.builder()
+                            .uid(rs.getInt("b.uid"))
+                            .aid(rs.getInt("b.aid"))
+                            .param(rs.getString("b.param"))
+                            .build()
             );
         } catch (DataAccessException e) {
             return null;
@@ -65,10 +66,11 @@ public class BacktestHistoryRepository {
                             "FROM hkidb.backtest_history b " +
                             "WHERE b.uid = :uid AND JSON_EXTRACT(b.param, '$.title') LIKE :title",
                     src,
-                    (rs, rowNum) -> new BacktestHistory()
-                            .setUid(rs.getInt("b.uid"))
-                            .setAid(rs.getInt("b.aid"))
-                            .setParam(rs.getString("b.param"))
+                    (rs, rowNum) -> BacktestHistory.builder()
+                            .uid(rs.getInt("b.uid"))
+                            .aid(rs.getInt("b.aid"))
+                            .param(rs.getString("b.param"))
+                            .build()
             );
         } catch (DataAccessException e) {
             System.out.println(e);
