@@ -22,10 +22,11 @@ public class StockInfoRepository {
     public List<StockInfo> getAll() {
         return this.template.query(
                 "SELECT * FROM hkidb.stock_info ",
-                (rs, rowNum) -> new StockInfo()
-                        .setTicker(rs.getString("ticker"))
-                        .setName(rs.getString("name"))
-                        .setListedDate(rs.getDate("listed_date").toLocalDate())
-                        .setMarketCapital(rs.getInt("market_capital")));
+                (rs, rowNum) -> StockInfo.builder()
+                        .ticker(rs.getString("ticker"))
+                        .name(rs.getString("name"))
+                        .listedDate(rs.getDate("listed_date").toLocalDate())
+                        .marketCapital(rs.getInt("market_capital"))
+                        .build());
     }
 }

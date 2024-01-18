@@ -49,14 +49,15 @@ public class OrderHistoryRepository {
                 "SELECT * FROM hkidb.order_history "
                         + "WHERE (aid = :aid)",
                 src,
-                (rs, rowNum) -> new Order()
-                        .setAid(aid)
-                        .setAvgEntryPrice(rs.getBigDecimal("avg_entry_price"))
-                        .setFilledTime(rs.getTimestamp("filled_time").toInstant())
-                        .setTicker(rs.getString("ticker"))
-                        .setQty(rs.getInt("qty"))
-                        .setPrice(rs.getInt("price"))
-                        .setOid(rs.getInt("oid"))
-                        .setOtid(rs.getInt("otid")));
+                (rs, rowNum) -> Order.builder()
+                        .aid(aid)
+                        .avgEntryPrice(rs.getBigDecimal("avg_entry_price"))
+                        .filledTime(rs.getTimestamp("filled_time").toInstant())
+                        .ticker(rs.getString("ticker"))
+                        .qty(rs.getInt("qty"))
+                        .price(rs.getInt("price"))
+                        .oid(rs.getInt("oid"))
+                        .otid(rs.getInt("otid"))
+                        .build());
     }
 }
