@@ -36,13 +36,14 @@ public class OrderService {
     public Boolean buy(Integer aid, String ticker, Integer qty) {
         Bar currentPrice = stockPriceService.getCurrentPrice(ticker);
 
-        Order order = new Order()
-                .setTicker(ticker)
-                .setAid(aid)
-                .setPrice(currentPrice.getClose())
-                .setFilledTime(currentPrice.getDate())
-                .setQty(qty)
-                .setOtid(OrderType.BUY.id());
+        Order order = Order.builder()
+                .ticker(ticker)
+                .aid(aid)
+                .price(currentPrice.getClose())
+                .filledTime(currentPrice.getDate())
+                .qty(qty)
+                .otid(OrderType.BUY.id())
+                .build();
 
         if (accountService.withdraw(aid, (long) order.getQty() * order.getPrice())) {
             Optional<Position> position = positionRepository.getPositionByTicker(aid, ticker);
@@ -76,13 +77,14 @@ public class OrderService {
             throw new IllegalArgumentException("Buying quantity should be greater than 0.");
         }
         //TODO:: qty 가 0과 같거나 작을 때 에러 쓰로잉 필요
-        Order order = new Order()
-                .setTicker(ticker)
-                .setFilledTime(date)
-                .setAid(aid)
-                .setPrice(stockPriceService.getPrice(ticker, date).getClose())
-                .setQty(qty)
-                .setOtid(OrderType.BUY.id());
+        Order order = Order.builder()
+                .ticker(ticker)
+                .filledTime(date)
+                .aid(aid)
+                .price(stockPriceService.getPrice(ticker, date).getClose())
+                .qty(qty)
+                .otid(OrderType.BUY.id())
+                .build();
 
         if (accountService.withdraw(aid, (long) order.getQty() * order.getPrice())) {
             Optional<Position> position = positionRepository.getPositionByTicker(aid, ticker);
@@ -118,14 +120,15 @@ public class OrderService {
         if (optionalPosition.isPresent()) {
             Position position = optionalPosition.get();
             if (position.getQty() >= qty) {
-                Order order = new Order()
-                        .setTicker(ticker)
-                        .setFilledTime(currentPrice.getDate())
-                        .setAid(aid)
-                        .setPrice(currentPrice.getClose())
-                        .setQty(qty)
-                        .setAvgEntryPrice(position.getAvgEntryPrice())
-                        .setOtid(OrderType.SELL.id());
+                Order order = Order.builder()
+                        .ticker(ticker)
+                        .filledTime(currentPrice.getDate())
+                        .aid(aid)
+                        .price(currentPrice.getClose())
+                        .qty(qty)
+                        .avgEntryPrice(position.getAvgEntryPrice())
+                        .otid(OrderType.SELL.id())
+                        .build();
                 int remainingQty = position.getQty() - qty;
                 if (remainingQty == 0) {
                     positionRepository.deletePosition(aid, ticker);
@@ -150,14 +153,15 @@ public class OrderService {
         if (optionalPosition.isPresent()) {
             Position position = optionalPosition.get();
             if (position.getQty() >= qty) {
-                Order order = new Order()
-                        .setTicker(ticker)
-                        .setFilledTime(date)
-                        .setAid(aid)
-                        .setPrice(stockPriceService.getPrice(ticker, date).getClose())
-                        .setQty(qty)
-                        .setAvgEntryPrice(position.getAvgEntryPrice())
-                        .setOtid(OrderType.SELL.id());
+                Order order = Order.builder()
+                        .ticker(ticker)
+                        .filledTime(date)
+                        .aid(aid)
+                        .price(stockPriceService.getPrice(ticker, date).getClose())
+                        .qty(qty)
+                        .avgEntryPrice(position.getAvgEntryPrice())
+                        .otid(OrderType.SELL.id())
+                        .build();
                 int remainingQty = position.getQty() - qty;
                 if (remainingQty == 0) {
                     positionRepository.deletePosition(aid, ticker);
