@@ -64,7 +64,7 @@ public class BacktestHistoryRepository {
 
         try {
             return this.template.query(
-                    "SELECT b.aid, b.uid, b.param " +
+                    "SELECT b.aid, b.uid, b.param, b.plratio " +
                             "FROM hkidb.backtest_history b " +
                             "WHERE b.uid = :uid AND JSON_EXTRACT(b.param, '$.title') LIKE :title",
                     src,
