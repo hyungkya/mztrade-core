@@ -1,7 +1,9 @@
 package com.mztrade.hki.repository;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
+import com.mztrade.hki.entity.backtest.BacktestRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.Types;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class BacktestHistoryRepository {
@@ -56,6 +59,26 @@ public class BacktestHistoryRepository {
             return null;
         }
     }
+
+    public Optional<BacktestRequest> getBacktestRequest(int aid) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("aid", aid, Types.INTEGER);
+        Optional<BacktestRequest> backtestRequest;
+        backtestRequest = Optional.of(
+                this.template.queryForObject(
+                "SELECT b.param FROM hkidb.backtest_history b WHERE b.aid = :aid",
+                src,
+                (rs, rowNum) -> {
+                    try {
+                        return objectMapper.readValue(rs.getString("b.param"), BacktestRequest.class);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        ));
+        return backtestRequest;
+    }
+
 
     public List<BacktestHistory> searchByTitle(int uid, String title) {
         MapSqlParameterSource src = new MapSqlParameterSource()

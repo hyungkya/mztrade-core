@@ -1,9 +1,12 @@
 package com.mztrade.hki.service;
 
+import com.mztrade.hki.Util;
 import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.entity.Position;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
+import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.entity.backtest.Condition;
+import com.mztrade.hki.entity.backtest.Indicator;
 import com.mztrade.hki.repository.BacktestHistoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -138,6 +141,9 @@ public class BacktestService {
         return backtestHistoryRepository.get(aid);
     }
 
+    public BacktestRequest getBacktestHistory(int aid) throws NoSuchElementException {
+        return backtestHistoryRepository.getBacktestRequest(aid).orElseThrow();
+    }
     public List<BacktestHistory> searchByTitle(int uid,String title) {
         return backtestHistoryRepository.searchByTitle(uid, title);
     }
