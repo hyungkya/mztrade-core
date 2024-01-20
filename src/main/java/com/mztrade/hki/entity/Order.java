@@ -4,9 +4,11 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @Builder
+@ToString
 public class Order {
     private Integer oid;
     private Integer aid;
