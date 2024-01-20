@@ -1,4 +1,4 @@
-package com.mztrade.hki;
+package com.mztrade.hki.outdated;
 
 import com.mztrade.hki.service.AccountService;
 import org.assertj.core.api.Assertions;
