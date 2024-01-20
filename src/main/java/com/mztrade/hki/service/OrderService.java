@@ -181,7 +181,25 @@ public class OrderService {
     }
 
     public List<Order> getOrderHistory(Integer aid) {
-        return orderHistoryRepository.findByAid(aid);
+        return orderHistoryRepository.get(aid);
+    }
+
+    public List<Order> getOrderHistory(Integer aid, String ticker) {
+        return orderHistoryRepository.get(aid, ticker);
+    }
+    public List<Order> getBuyOrderHistory(Integer aid) {
+        return orderHistoryRepository.get(aid, OrderType.BUY.id());
+    }
+
+    public List<Order> getBuyOrderHistory(Integer aid, String ticker) {
+        return orderHistoryRepository.get(aid, ticker, OrderType.BUY.id());
+    }
+    public List<Order> getSellOrderHistory(Integer aid) {
+        return orderHistoryRepository.get(aid, OrderType.SELL.id());
+    }
+
+    public List<Order> getSellOrderHistory(Integer aid, String ticker) {
+        return orderHistoryRepository.get(aid, ticker, OrderType.SELL.id());
     }
     public List<Position> getPositions(Integer aid) {
         return positionRepository.getAllPositions(aid);
@@ -190,4 +208,6 @@ public class OrderService {
     public Optional<Position> getPosition(Integer aid, String ticker) {
         return positionRepository.getPositionByTicker(aid, ticker);
     }
+
+
 }

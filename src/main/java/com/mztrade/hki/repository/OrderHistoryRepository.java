@@ -2,6 +2,7 @@ package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.entity.Order;
+import com.mztrade.hki.entity.OrderType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -42,12 +43,90 @@ public class OrderHistoryRepository {
         return Objects.requireNonNull(keyHolder.getKey()).intValue();
     }
 
-    public List<Order> findByAid(Integer aid) {
+    public List<Order> get(Integer aid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER);
+        String sql = "SELECT * FROM hkidb.order_history "
+                + "WHERE (aid = :aid) ";
         return this.template.query(
-                "SELECT * FROM hkidb.order_history "
-                        + "WHERE (aid = :aid)",
+                sql,
+                src,
+                (rs, rowNum) -> Order.builder()
+                        .aid(aid)
+                        .avgEntryPrice(rs.getBigDecimal("avg_entry_price"))
+                        .filledTime(rs.getTimestamp("filled_time").toInstant())
+                        .ticker(rs.getString("ticker"))
+                        .qty(rs.getInt("qty"))
+                        .price(rs.getInt("price"))
+                        .oid(rs.getInt("oid"))
+                        .otid(rs.getInt("otid"))
+                        .build());
+    }
+
+    public List<Order> get(Integer aid, Integer option) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("aid", aid, Types.INTEGER);
+
+        String sql = "SELECT * FROM hkidb.order_history "
+                + "WHERE (aid = :aid) ";
+
+        if (option == OrderType.BUY.id()) {
+            sql += String.format("AND (otid = %d)", OrderType.BUY.id());
+        } else if (option == OrderType.SELL.id()) {
+            sql += String.format("AND (otid = %d)", OrderType.SELL.id());
+        }
+
+        return this.template.query(
+                sql,
+                src,
+                (rs, rowNum) -> Order.builder()
+                        .aid(aid)
+                        .avgEntryPrice(rs.getBigDecimal("avg_entry_price"))
+                        .filledTime(rs.getTimestamp("filled_time").toInstant())
+                        .ticker(rs.getString("ticker"))
+                        .qty(rs.getInt("qty"))
+                        .price(rs.getInt("price"))
+                        .oid(rs.getInt("oid"))
+                        .otid(rs.getInt("otid"))
+                        .build());
+    }
+
+    public List<Order> get(Integer aid, String ticker) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("aid", aid, Types.INTEGER)
+                .addValue("ticker", ticker, Types.VARCHAR);
+        String sql = "SELECT * FROM hkidb.order_history "
+                + "WHERE (aid = :aid) AND (ticker LIKE :ticker) ";
+        return this.template.query(
+                sql,
+                src,
+                (rs, rowNum) -> Order.builder()
+                        .aid(aid)
+                        .avgEntryPrice(rs.getBigDecimal("avg_entry_price"))
+                        .filledTime(rs.getTimestamp("filled_time").toInstant())
+                        .ticker(rs.getString("ticker"))
+                        .qty(rs.getInt("qty"))
+                        .price(rs.getInt("price"))
+                        .oid(rs.getInt("oid"))
+                        .otid(rs.getInt("otid"))
+                        .build());
+    }
+
+    public List<Order> get(Integer aid, String ticker, Integer option) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("aid", aid, Types.INTEGER)
+                .addValue("ticker", ticker, Types.VARCHAR);
+        String sql = "SELECT * FROM hkidb.order_history "
+                + "WHERE (aid = :aid) AND (ticker LIKE :ticker) ";
+
+        if (option == OrderType.BUY.id()) {
+            sql += String.format("AND (otid = %d)", OrderType.BUY.id());
+        } else if (option == OrderType.SELL.id()) {
+            sql += String.format("AND (otid = %d)", OrderType.SELL.id());
+        }
+
+        return this.template.query(
+                sql,
                 src,
                 (rs, rowNum) -> Order.builder()
                         .aid(aid)
