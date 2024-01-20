@@ -130,6 +130,15 @@ public class BacktestController {
         return new ResponseEntity<>(queryResult, HttpStatus.OK);
     }
 
+    @GetMapping("/backtest/delete")
+    public ResponseEntity<Boolean> deleteBacktestHistory(
+            @RequestParam Integer aid
+    ) {
+        System.out.println("DELETE HAS BEEN CALLED.");
+        backtestService.deleteBacktestHistory(aid);
+        return new ResponseEntity<>(true, HttpStatus.OK);
+    }
+
     @GetMapping("/backtest/top-plratio")
     public ResponseEntity<BacktestHistory> getHighestProfitLossRatio(
             @RequestParam Integer uid

@@ -142,6 +142,11 @@ public class BacktestService {
         return backtestHistoryRepository.searchByTitle(uid, title);
     }
 
+    public Integer deleteBacktestHistory(int aid) {
+
+        return backtestHistoryRepository.deleteBacktestHistory(aid);
+    }
+
     public Integer getNumberOfHistoryByUid(int uid) {
         return backtestHistoryRepository.getNumberOfHistoryByUid(uid);
     }
