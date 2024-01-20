@@ -82,6 +82,3 @@ CREATE TABLE hkidb.backtest_history (
                                         FOREIGN KEY (uid) REFERENCES hkidb.customers (uid),
                                         FOREIGN KEY (aid) REFERENCES hkidb.account (aid)
 );
-
-INSERT INTO hkidb.customers (name, password) VALUES ('ADMIN', 'ADMIN');
-INSERT INTO hkidb.order_type (otid, name) VALUES (1, 'BUY'), (2, 'SELL');
