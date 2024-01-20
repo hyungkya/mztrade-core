@@ -93,4 +93,12 @@ public class BacktestHistoryRepository {
             return 0;
         }
     }
+
+    public Integer deleteBacktestHistory(int aid) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("aid", aid, Types.INTEGER);
+        return this.template.update(
+                "DELETE FROM hkidb.backtest_history WHERE aid = :aid",
+                src);
+    }
 }
