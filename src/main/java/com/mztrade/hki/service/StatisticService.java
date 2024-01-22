@@ -1,12 +1,15 @@
 package com.mztrade.hki.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mztrade.hki.Util;
+import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.entity.Order;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,12 +19,15 @@ public class StatisticService {
     private OrderService orderService;
     private BacktestService backtestService;
 
+    private StockPriceService stockPriceService;
+
     private ObjectMapper objectMapper;
 
     @Autowired
     public StatisticService(OrderService orderService, BacktestService backtestService) {
         this.orderService = orderService;
         this.backtestService = backtestService;
+        this.stockPriceService = stockPriceService;
     }
 
     public Map<String, Double> getTickerProfit(int aid) {
@@ -88,8 +94,23 @@ public class StatisticService {
         }
     }
 
-    public void getTradeFrequency(int aid) {
+    public Double getTradeFrequency(int aid) {
+        int tradeCount = 0;
+        int totalCount = orderService.getOrderHistory(aid).size();
 
+        BacktestRequest br = backtestService.getBacktestHistory(aid);
+        for(String ticker : br.getTickers()) {
+            tradeCount += stockPriceService.getPrices(ticker
+                    ,Instant.parse(Util.formatDate(br.getStartDate()))
+                    ,Instant.parse(Util.formatDate(br.getEndDate()))
+                    ).size();
+        }
+
+        if (totalCount == 0) {
+            return Double.NaN;
+        } else {
+            return (double) tradeCount / (double) (totalCount * br.getTickers().size());
+        }
         //TODO:: 매매 빈도 조회 기능 추가하기
     }
 }
