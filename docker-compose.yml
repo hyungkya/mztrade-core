@@ -1,7 +1,7 @@
 version: '3'
 services: # 컨테이너
     db:
-        image: mysql
+        image: mysql:8.0.33
         container_name: mysql-hkidb
         restart: always
         environment:
