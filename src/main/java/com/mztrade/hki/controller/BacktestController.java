@@ -193,4 +193,28 @@ public class BacktestController {
         System.out.print(winRate);
         return new ResponseEntity<Double>(winRate, HttpStatus.OK);
     }
+
+    @GetMapping("/statistic/ticker-profit")
+    public ResponseEntity<Double> getTickerProfit(
+            @RequestParam Integer aid,
+            @RequestParam String ticker
+    ) {
+        return new ResponseEntity<>(statisticService.getTickerProfit(aid, ticker), HttpStatus.OK);
+    }
+
+    @GetMapping("/statistic/ticker-profit/all")
+    public ResponseEntity<Map<String, Double>> getTickerProfit(
+            @RequestParam Integer aid
+    ) {
+        return new ResponseEntity<>(statisticService.getTickerProfit(aid), HttpStatus.OK);
+    }
+
+    @GetMapping("/statistic/ticker-trade-count")
+    public ResponseEntity<Integer> getTickerTradeCount(
+            @RequestParam Integer aid,
+            @RequestParam String ticker,
+            @RequestParam(defaultValue = "0") Integer option
+    ) {
+        return new ResponseEntity<>(statisticService.getTickerTradeCount(aid, ticker, option), HttpStatus.OK);
+    }
 }

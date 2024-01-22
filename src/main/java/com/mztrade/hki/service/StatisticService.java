@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.Util;
 import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.entity.Order;
+import com.mztrade.hki.entity.OrderType;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class StatisticService {
     private ObjectMapper objectMapper;
 
     @Autowired
-    public StatisticService(OrderService orderService, BacktestService backtestService) {
+    public StatisticService(OrderService orderService, BacktestService backtestService, StockPriceService stockPriceService) {
         this.orderService = orderService;
         this.backtestService = backtestService;
         this.stockPriceService = stockPriceService;
@@ -34,22 +35,7 @@ public class StatisticService {
         Map<String, Double> profits = new HashMap<>();
         List<String> tradedTickers = backtestService.getTradedTickers(aid);
         for (String tradedTicker : tradedTickers) {
-            BigDecimal buyAmount = BigDecimal.valueOf(0L);
-            BigDecimal sellAmount = BigDecimal.valueOf(0L);
-            for (Order order : orderService.getSellOrderHistory(aid, tradedTicker)) {
-                buyAmount = buyAmount.add(
-                        BigDecimal.valueOf(order.getQty()).multiply(order.getAvgEntryPrice())
-                );
-                sellAmount = sellAmount.add(
-                        BigDecimal.valueOf(order.getQty()).multiply(BigDecimal.valueOf(order.getPrice()))
-                );
-            }
-            if (buyAmount.equals(0L)) {
-                profits.put(tradedTicker, null);
-            } else {
-                profits.put(tradedTicker, sellAmount.doubleValue() / buyAmount.doubleValue());
-            }
-
+            profits.put(tradedTicker, getTickerProfit(aid, tradedTicker));
         }
         return profits;
     }
@@ -65,10 +51,20 @@ public class StatisticService {
                     BigDecimal.valueOf(order.getQty()).multiply(BigDecimal.valueOf(order.getPrice()))
             );
         }
-        if (buyAmount.equals(0L)) {
-            return Double.NaN;
+        if (buyAmount.equals(BigDecimal.ZERO)) {
+            return null;
         } else {
-            return sellAmount.doubleValue() / buyAmount.doubleValue();
+            return (sellAmount.doubleValue() / buyAmount.doubleValue()) - 1;
+        }
+    }
+
+    public Integer getTickerTradeCount(int aid, String ticker, int option) {
+        if (option == OrderType.BUY.id()) {
+            return orderService.getBuyOrderHistory(aid, ticker).size();
+        } else if (option == OrderType.SELL.id()) {
+            return orderService.getSellOrderHistory(aid, ticker).size();
+        } else {
+            return orderService.getOrderHistory(aid, ticker).size();
         }
     }
 
