@@ -9,10 +9,8 @@ import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.entity.backtest.Condition;
 import com.mztrade.hki.entity.backtest.IndicatorBar;
-import com.mztrade.hki.service.AccountService;
-import com.mztrade.hki.service.BacktestService;
-import com.mztrade.hki.service.OrderService;
-import com.mztrade.hki.service.StockPriceService;
+import com.mztrade.hki.service.*;
+
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,6 +32,8 @@ public class BacktestController {
     private StockPriceService stockPriceService;
     private OrderService orderService;
     private AccountService accountService;
+
+    private StatisticService statisticService;
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -41,12 +41,14 @@ public class BacktestController {
                               StockPriceService stockPriceService,
                               OrderService orderService,
                               AccountService accountService,
+                              StatisticService statisticService,
                               ObjectMapper objectMapper)
     {
         this.backtestService = backtestService;
         this.stockPriceService = stockPriceService;
         this.orderService = orderService;
         this.accountService = accountService;
+        this.statisticService = statisticService;
         this.objectMapper = objectMapper;
     }
 
@@ -181,5 +183,14 @@ public class BacktestController {
                 stockPriceService.getIndicator(ticker, type, parsedParam),
                 HttpStatus.OK
         );
+    }
+
+    @GetMapping("/statistic/getWinRate")
+    public ResponseEntity<Double> getTradingWinRate(
+            @RequestParam Integer aid
+    ) {
+        Double winRate = statisticService.getTradingWinRate(aid);
+        System.out.print(winRate);
+        return new ResponseEntity<Double>(winRate, HttpStatus.OK);
     }
 }

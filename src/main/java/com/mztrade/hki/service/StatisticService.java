@@ -2,6 +2,7 @@ package com.mztrade.hki.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.entity.Order;
+import com.mztrade.hki.entity.backtest.BacktestRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -65,7 +66,30 @@ public class StatisticService {
         }
     }
 
+    public Double getTradingWinRate(int aid) {
+        int winRate = 0;
+        int totalCount = 0;
+
+        for (Order order : orderService.getSellOrderHistory(aid)) {
+                BigDecimal price = BigDecimal.valueOf(order.getPrice().doubleValue());
+                BigDecimal avgEntryPrice = BigDecimal.valueOf(order.getAvgEntryPrice().doubleValue());
+
+                if (price.compareTo(avgEntryPrice) > 0) {
+                    winRate++;
+                }
+
+            totalCount++;
+        }
+
+        if (totalCount == 0) {
+            return Double.NaN;
+        } else {
+            return (double)winRate / (double)totalCount;
+        }
+    }
+
     public void getTradeFrequency(int aid) {
+
         //TODO:: 매매 빈도 조회 기능 추가하기
     }
 }
