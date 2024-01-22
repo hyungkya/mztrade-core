@@ -91,14 +91,14 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/{aid}")
-    public ResponseEntity<String> getBacktestHistory(
+    public ResponseEntity<BacktestHistory> getBacktestHistory(
             @PathVariable Integer aid
     ) {
         BacktestHistory backtestHistory = backtestService.get(aid);
         if (backtestHistory == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(backtestHistory.getParam(), HttpStatus.OK);
+        return new ResponseEntity<>(backtestHistory, HttpStatus.OK);
     }
 
     @GetMapping("/backtest/count/{uid}")
