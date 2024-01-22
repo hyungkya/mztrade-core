@@ -41,21 +41,12 @@ public class StatisticService {
     }
 
     public Double getTickerProfit(int aid, String ticker) {
-        BigDecimal buyAmount = BigDecimal.valueOf(0L);
-        BigDecimal sellAmount = BigDecimal.valueOf(0L);
+        double totalProfitLoss = 0;
         for (Order order : orderService.getSellOrderHistory(aid, ticker)) {
-            buyAmount = buyAmount.add(
-                    BigDecimal.valueOf(order.getQty()).multiply(order.getAvgEntryPrice())
-            );
-            sellAmount = sellAmount.add(
-                    BigDecimal.valueOf(order.getQty()).multiply(BigDecimal.valueOf(order.getPrice()))
-            );
+            totalProfitLoss +=
+            ((double) order.getQty() * order.getPrice()) - (order.getQty() * order.getAvgEntryPrice().doubleValue());
         }
-        if (buyAmount.equals(BigDecimal.ZERO)) {
-            return null;
-        } else {
-            return (sellAmount.doubleValue() / buyAmount.doubleValue()) - 1;
-        }
+        return totalProfitLoss / Double.parseDouble(backtestService.getBacktestHistory(aid).getInitialBalance());
     }
 
     public Integer getTickerTradeCount(int aid, String ticker, int option) {
