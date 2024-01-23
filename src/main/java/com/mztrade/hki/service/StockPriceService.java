@@ -48,7 +48,7 @@ public class StockPriceService {
     }
 
     public Optional<Bar> getAvailablePriceBefore(String ticker, Instant date) {
-        while (date.isBefore(Instant.parse(Util.formatDate("20100101")))) {
+        while (date.isAfter(Instant.parse(Util.formatDate("20100101")))) {
             try {
                 return Optional.of(stockPriceRepository.findByDate(ticker, date));
             } catch (EmptyResultDataAccessException ignored) {
