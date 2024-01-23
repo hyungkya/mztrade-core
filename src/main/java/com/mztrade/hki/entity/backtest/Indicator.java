@@ -3,10 +3,12 @@ package com.mztrade.hki.entity.backtest;
 import com.mztrade.hki.entity.Bar;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.OptionalDouble;
 
 import static java.lang.Math.abs;
+import static java.lang.Math.max;
 
 public class Indicator {
     private String type;
@@ -38,6 +40,12 @@ public class Indicator {
         }
         if (type.toUpperCase().matches("MACD_SIGNAL")) {
             return calculateMACDSignal(bars, params);
+        }
+        if (type.toUpperCase().matches("SF")) {
+            return calculateStochasticFast(bars, params);
+        }
+        if (type.toUpperCase().matches("SS")) {
+            return calculateStochasticSlow(bars, params);
         }
         throw new IllegalArgumentException("No such indicator exists");
     }
@@ -122,6 +130,45 @@ public class Indicator {
         if (ad.isEmpty()) return 100;
 
         return (au.getAsDouble() / (ad.getAsDouble() + au.getAsDouble())) * 100;
+    }
+
+    public double calculateStochasticFast(List<Bar> bars, List<Float> params) {
+        if (params.size() == 0) throw new IllegalArgumentException("Stochastic Fast needs 2 period parameter but 0 given");
+        if (!(params.get(0) > 0)) throw new IllegalArgumentException("Period parameter should be bigger than 0");
+        int n = params.get(0).intValue();
+        int m = params.get(1).intValue();
+        if (bars.size() < n + m) return Double.NaN;
+        bars = bars.subList(bars.size() - (n + m), bars.size());
+        List<Double> percentKs = new ArrayList<>();
+        for (int i = 0; i < m; i++) {
+            int highestPrice = bars.subList(i, i + n).stream().reduce((acc, c) -> acc.getHigh() > c.getHigh() ? acc : c).orElseThrow().getHigh();
+            int lowestPrice = bars.subList(i, i + n).stream().reduce((acc, c) -> acc.getLow() < c.getLow() ? acc : c).orElseThrow().getLow();
+            double percentK = ((double) (bars.get(i + n - 1).getClose() - lowestPrice) / (highestPrice - lowestPrice)) * 100;
+            percentKs.add(percentK);
+        }
+        return percentKs.stream().mapToDouble(i -> i).average().orElse(-1);
+    }
+
+    public double calculateStochasticSlow(List<Bar> bars, List<Float> params) {
+        if (params.size() == 0) throw new IllegalArgumentException("Stochastic Slow needs 3 period parameter but 0 given");
+        if (!(params.get(0) > 0)) throw new IllegalArgumentException("Period parameter should be bigger than 0");
+        int n = params.get(0).intValue();
+        int m = params.get(1).intValue();
+        int t = params.get(2).intValue();
+        if (bars.size() < n + m + t) return Double.NaN;
+        bars = bars.subList(bars.size() - (n + m + t), bars.size());
+        List<Double> percentDs = new ArrayList<>();
+        for (int j = 0; j < t; j++) {
+            List<Double> percentKs = new ArrayList<>();
+            for (int i = 0; i < m; i++) {
+                int highestPrice = bars.subList(i + j, (i + n) + j).stream().reduce((acc, c) -> acc.getHigh() > c.getHigh() ? acc : c).orElseThrow().getHigh();
+                int lowestPrice = bars.subList(i + j, (i + n) + j).stream().reduce((acc, c) -> acc.getLow() < c.getLow() ? acc : c).orElseThrow().getLow();
+                double percentK = ((double) (bars.get((i + n - 1) + j).getClose() - lowestPrice) / (highestPrice - lowestPrice)) * 100;
+                percentKs.add(percentK);
+            }
+            percentDs.add(percentKs.stream().mapToDouble(i -> i).average().orElseThrow());
+        }
+        return percentDs.stream().mapToDouble(i -> i).average().orElse(-1);
     }
 
     private void _validateParameters(List<Float> params, int requiredQty) {
