@@ -1,6 +1,10 @@
 package com.mztrade.hki.outdated;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import com.mztrade.hki.dto.UserDto;
 import com.mztrade.hki.service.UserService;
+import com.mztrade.hki.util.JwtUtil;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,24 +12,48 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
 @SpringBootTest
-@Sql(scripts = {"classpath:db/schema.sql", "classpath:db/stock_info_1205.sql", "classpath:db/stock_price_1205.sql"})
+// @Sql(scripts = {"classpath:db/schema.sql", "classpath:db/stock_info_1205.sql", "classpath:db/stock_price_1205.sql"})
 public class UserTests {
     @Autowired
     private UserService userService;
+    private JwtUtil jwtUtil;
 
     @Test
-    void simpleUserTest() {
-        int uid = userService.createUser("Hyungkyu", "Hyungkyu");
-        Assertions.assertThat(uid).isEqualTo(2);
-        boolean didLogin = userService.login("Hyungkyu", "Hyungkyu");
-        Assertions.assertThat(didLogin).isEqualTo(true);
+    void saveUserTest() throws Exception {
+        UserDto userDto = new UserDto("testUser", "testUser");
+        int uid = userService.saveUser(userDto);
+        Assertions.assertThat(uid).isEqualTo(6);
     }
 
     @Test
-    void userTest() {
-        int uid = userService.createUser("Hyungkyu", "Hyungkyu");
-        Assertions.assertThat(uid).isEqualTo(2);
-        boolean didLogin = userService.login("Minjun", "Hyungkyu");
-        Assertions.assertThat(didLogin).isEqualTo(false);
+    void loginTest() throws Exception {
+        UserDto userDto = new UserDto("testUser", "testUser");
+        assertDoesNotThrow(()->userService.login(userDto.getName(), userDto.getPassword()));
+    }
+
+    @Test
+    void loginExceptionTest1() throws Exception {
+        UserDto userDto = new UserDto("js", "js");
+        assertThrows(Exception.class, ()->userService.login(userDto.getName(), userDto.getPassword()));
+    }
+
+    @Test
+    void loginExceptionTest2() throws Exception {
+        UserDto userDto = new UserDto("js", "js");
+        try {
+            userService.login(userDto.getName(),userDto.getPassword());
+        }catch (Exception e) {
+            assertEquals("유효한 회원ID가 아닙니다.", e.getMessage());
+        }
+    }
+
+    @Test
+    void loginExceptionTest3() throws Exception {
+        UserDto userDto = new UserDto("ADMIN", "js");
+        try {
+            userService.login(userDto.getName(),userDto.getPassword());
+        }catch (Exception e) {
+            assertEquals("유효한 회원 패스워드가 아닙니다.", e.getMessage());
+        }
     }
 }
