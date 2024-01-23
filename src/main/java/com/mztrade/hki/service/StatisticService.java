@@ -81,22 +81,19 @@ public class StatisticService {
     }
 
     public Double getTradeFrequency(int aid) {
-        int tradeCount = 0;
-        int totalCount = orderService.getOrderHistory(aid).size();
+        int totalCount = 0;
+        int tradeCount = orderService.getOrderHistory(aid).size();
 
         BacktestRequest br = backtestService.getBacktestRequest(aid);
         for(String ticker : br.getTickers()) {
-            tradeCount += stockPriceService.getPrices(ticker
+            totalCount += stockPriceService.getPrices(ticker
                     ,Instant.parse(Util.formatDate(br.getStartDate()))
                     ,Instant.parse(Util.formatDate(br.getEndDate()))
                     ).size();
         }
-
-        if (totalCount == 0) {
-            return Double.NaN;
-        } else {
-            return (double) tradeCount / (double) (totalCount * br.getTickers().size());
-        }
+        System.out.print("total: " + totalCount);
+        System.out.print("trade: " + tradeCount);
+        return (double) tradeCount / (double) (totalCount);
         //TODO:: 매매 빈도 조회 기능 추가하기
     }
 }
