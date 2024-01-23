@@ -30,6 +30,22 @@ public class StatisticService {
         this.stockPriceService = stockPriceService;
     }
 
+    public Map<String, Double> getTickerBenchmarkProfit(int aid) {
+        Map<String, Double> benchmarkProfits = new HashMap<>();
+        BacktestRequest backtestRequest = backtestService.getBacktestRequest(aid);
+        for (String tradedTicker : backtestRequest.getTickers()) {
+            benchmarkProfits.put(tradedTicker, getTickerBenchmarkProfit(tradedTicker,
+                    backtestRequest.parseStartDate(),
+                    backtestRequest.parseEndDate()));
+        }
+        return benchmarkProfits;
+    }
+
+    public double getTickerBenchmarkProfit(String ticker, Instant startDate, Instant endDate) {
+        return ((double) stockPriceService.getAvailablePriceBefore(ticker, endDate).orElseThrow().getClose() /
+                stockPriceService.getAvailablePriceAfter(ticker, startDate).orElseThrow().getClose()) - 1;
+    }
+
     public Map<String, Double> getTickerProfit(int aid) {
         Map<String, Double> profits = new HashMap<>();
         List<String> tradedTickers = backtestService.getTradedTickers(aid);
@@ -46,6 +62,25 @@ public class StatisticService {
             ((double) order.getQty() * order.getPrice()) - (order.getQty() * order.getAvgEntryPrice().doubleValue());
         }
         return totalProfitLoss / Double.parseDouble(backtestService.getBacktestRequest(aid).getInitialBalance());
+    }
+
+    public Double getTickerAlphaProfit(int aid, String ticker) {
+        BacktestRequest backtestRequest = backtestService.getBacktestRequest(aid);
+        double absoluteProfitLoss = getTickerProfit(aid, ticker);
+        double benchmarkProfitLoss = getTickerBenchmarkProfit(
+                ticker,
+                backtestRequest.parseStartDate(),
+                backtestRequest.parseEndDate());
+        return absoluteProfitLoss - benchmarkProfitLoss;
+    }
+
+    public Map<String, Double> getTickerAlphaProfit(int aid) {
+        Map<String, Double> alphaProfits = new HashMap<>();
+        BacktestRequest backtestRequest = backtestService.getBacktestRequest(aid);
+        for (String tradedTicker : backtestRequest.getTickers()) {
+            alphaProfits.put(tradedTicker, getTickerAlphaProfit(aid, tradedTicker));
+        }
+        return alphaProfits;
     }
 
     public Integer getTickerTradeCount(int aid, String ticker, int option) {

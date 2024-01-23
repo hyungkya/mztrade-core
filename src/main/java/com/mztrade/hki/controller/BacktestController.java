@@ -224,4 +224,18 @@ public class BacktestController {
     ) {
         return new ResponseEntity<>(statisticService.getTickerTradeCount(aid, ticker, option), HttpStatus.OK);
     }
+
+    @GetMapping("/statistic/ticker-benchmark-profit/all")
+    public ResponseEntity<Map<String, Double>> getTickerBenchmarkProfit(
+            @RequestParam Integer aid
+    ) {
+        return new ResponseEntity<>(statisticService.getTickerBenchmarkProfit(aid), HttpStatus.OK);
+    }
+
+    @GetMapping("/statistic/ticker-alpha-profit/all")
+    public ResponseEntity<Map<String, Double>> getTickerAlphaProfit(
+            @RequestParam Integer aid
+    ) {
+        return new ResponseEntity<>(statisticService.getTickerAlphaProfit(aid), HttpStatus.OK);
+    }
 }
