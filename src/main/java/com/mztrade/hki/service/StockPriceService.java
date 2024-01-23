@@ -1,5 +1,6 @@
 package com.mztrade.hki.service;
 
+import com.mztrade.hki.Util;
 import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.entity.StockInfo;
 import com.mztrade.hki.entity.backtest.Indicator;
@@ -47,8 +48,7 @@ public class StockPriceService {
     }
 
     public Optional<Bar> getAvailablePriceBefore(String ticker, Instant date) {
-        int maxRange = 5;
-        for (; maxRange > 0; maxRange--) {
+        while (date.isBefore(Instant.parse(Util.formatDate("20100101")))) {
             try {
                 return Optional.of(stockPriceRepository.findByDate(ticker, date));
             } catch (EmptyResultDataAccessException ignored) {
@@ -59,8 +59,7 @@ public class StockPriceService {
     }
 
     public Optional<Bar> getAvailablePriceAfter(String ticker, Instant date) {
-        int maxRange = 5;
-        for (; maxRange > 0; maxRange--) {
+        while (date.isBefore(Instant.now())) {
             try {
                 return Optional.of(stockPriceRepository.findByDate(ticker, date));
             } catch (EmptyResultDataAccessException ignored) {
