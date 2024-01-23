@@ -139,11 +139,11 @@ public class BacktestService {
         return backtestHistoryRepository.get(aid);
     }
 
-    public BacktestRequest getBacktestHistory(int aid) throws NoSuchElementException {
+    public BacktestRequest getBacktestRequest(int aid) throws NoSuchElementException {
         return backtestHistoryRepository.getBacktestRequest(aid).orElseThrow();
     }
     public List<String> getTradedTickers(int aid) {
-        return getBacktestHistory(aid).getTickers();
+        return getBacktestRequest(aid).getTickers();
     }
 
     public List<BacktestHistory> searchByTitle(int uid,String title) {
