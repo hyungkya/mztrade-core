@@ -1,5 +1,6 @@
 package com.mztrade.hki.service;
 
+import com.mztrade.hki.Util;
 import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.entity.StockInfo;
 import com.mztrade.hki.entity.backtest.Indicator;
@@ -46,12 +47,45 @@ public class StockPriceService {
         return stockPriceRepository.findByDate(ticker, date);
     }
 
-    public Optional<Bar> getLatestPrice(String ticker, Instant date, Integer maxRange) {
+    public Optional<Bar> getAvailablePriceBefore(String ticker, Instant date) {
+        while (date.isBefore(Instant.parse(Util.formatDate("20100101")))) {
+            try {
+                return Optional.of(stockPriceRepository.findByDate(ticker, date));
+            } catch (EmptyResultDataAccessException ignored) {
+                date = date.minus(1, ChronoUnit.DAYS);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Bar> getAvailablePriceAfter(String ticker, Instant date) {
+        while (date.isBefore(Instant.now())) {
+            try {
+                return Optional.of(stockPriceRepository.findByDate(ticker, date));
+            } catch (EmptyResultDataAccessException ignored) {
+                date = date.plus(1, ChronoUnit.DAYS);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Bar> getAvailablePriceBefore(String ticker, Instant date, Integer maxRange) {
         for (; maxRange > 0; maxRange--) {
             try {
                 return Optional.of(stockPriceRepository.findByDate(ticker, date));
             } catch (EmptyResultDataAccessException ignored) {
                 date = date.minus(1, ChronoUnit.DAYS);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Bar> getAvailablePriceAfter(String ticker, Instant date, Integer maxRange) {
+        for (; maxRange > 0; maxRange--) {
+            try {
+                return Optional.of(stockPriceRepository.findByDate(ticker, date));
+            } catch (EmptyResultDataAccessException ignored) {
+                date = date.plus(1, ChronoUnit.DAYS);
             }
         }
         return Optional.empty();

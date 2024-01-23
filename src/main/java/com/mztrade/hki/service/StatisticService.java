@@ -2,7 +2,6 @@ package com.mztrade.hki.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.Util;
-import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.entity.Order;
 import com.mztrade.hki.entity.OrderType;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
@@ -46,7 +45,7 @@ public class StatisticService {
             totalProfitLoss +=
             ((double) order.getQty() * order.getPrice()) - (order.getQty() * order.getAvgEntryPrice().doubleValue());
         }
-        return totalProfitLoss / Double.parseDouble(backtestService.getBacktestHistory(aid).getInitialBalance());
+        return totalProfitLoss / Double.parseDouble(backtestService.getBacktestRequest(aid).getInitialBalance());
     }
 
     public Integer getTickerTradeCount(int aid, String ticker, int option) {
@@ -85,7 +84,7 @@ public class StatisticService {
         int totalCount = 0;
         int tradeCount = orderService.getOrderHistory(aid).size();
 
-        BacktestRequest br = backtestService.getBacktestHistory(aid);
+        BacktestRequest br = backtestService.getBacktestRequest(aid);
         for(String ticker : br.getTickers()) {
             totalCount += stockPriceService.getPrices(ticker
                     ,Instant.parse(Util.formatDate(br.getStartDate()))
