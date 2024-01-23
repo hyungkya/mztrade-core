@@ -190,8 +190,15 @@ public class BacktestController {
             @RequestParam Integer aid
     ) {
         Double winRate = statisticService.getTradingWinRate(aid);
-        System.out.print(winRate);
         return new ResponseEntity<Double>(winRate, HttpStatus.OK);
+    }
+
+    @GetMapping("/statistic/tradeFrequency")
+    public ResponseEntity<Double> getTradeFrequency(
+            @RequestParam Integer aid
+    ) {
+        Double tradeFrequency = statisticService.getTradeFrequency(aid);
+        return new ResponseEntity<Double>(tradeFrequency, HttpStatus.OK);
     }
 
     @GetMapping("/statistic/ticker-profit")
