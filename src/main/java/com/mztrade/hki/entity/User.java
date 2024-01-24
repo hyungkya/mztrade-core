@@ -23,10 +23,10 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int uid;
 
-    @Column(name = "name", unique = true, length = 30, nullable = false)
+    @Column(name = "name", unique = true, length = 30)
     private String name;
 
-    @Column(name = "password", length = 30, nullable = false)
+    @Column(name = "password", length = 30)
     private String password;
 
 }
