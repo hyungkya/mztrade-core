@@ -47,6 +47,9 @@ public class Indicator {
         if (type.toUpperCase().matches("SS")) {
             return calculateStochasticSlow(bars, params);
         }
+        if (type.toUpperCase().matches("CCI")) {
+            return calculateCommodityChannelIndex(bars, params);
+        }
         throw new IllegalArgumentException("No such indicator exists");
     }
 
@@ -169,6 +172,29 @@ public class Indicator {
             percentDs.add(percentKs.stream().mapToDouble(i -> i).average().orElseThrow());
         }
         return percentDs.stream().mapToDouble(i -> i).average().orElse(-1);
+    }
+
+    public double calculateCommodityChannelIndex(List<Bar> bars, List<Float> params) {
+        if (params.size() == 0)
+            throw new IllegalArgumentException(
+                    "Stochastic Slow needs 3 period parameter but 0 given");
+        if (!(params.get(0) > 0))
+            throw new IllegalArgumentException("Period parameter should be bigger than 0");
+        int n = params.get(0).intValue();
+        if (bars.size() < n * 2 - 1)
+            return Double.NaN;
+        bars = bars.subList(bars.size() - (n * 2 - 1), bars.size());
+        List<Double> rawD = new ArrayList<>();
+        for (int j = 0; j < n; j++) {
+            double m = bars.subList(j, j+n)
+                    .stream()
+                    .mapToDouble(b -> (b.getClose() + b.getHigh() + b.getLow()) / 3.0)
+                    .average()
+                    .orElseThrow();
+            double M = (bars.get(j+n-1).getClose() + bars.get(j+n-1).getHigh() + bars.get(j+n-1).getLow()) / 3.0;
+            rawD.add(M - m);
+        }
+        return rawD.getLast() / (rawD.stream().mapToDouble(Math::abs).average().orElseThrow() * 0.015);
     }
 
     private void _validateParameters(List<Float> params, int requiredQty) {
