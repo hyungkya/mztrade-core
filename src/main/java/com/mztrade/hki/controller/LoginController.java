@@ -23,18 +23,18 @@ public class LoginController {
     }
 
     /**
-     * @param UserDto
+     * @param userDto
      * @return int uid : 회원정보 uid 반환
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody UserDto UserDto) {
+    public ResponseEntity<?> register(@RequestBody UserDto userDto) {
 
-        boolean isDuplicate = userService.checkUserDuplicate(UserDto.getName());
+        boolean isDuplicate = userService.checkUserDuplicate(userDto.getName());
 
         if (isDuplicate) {
             return new ResponseEntity<>("중복된 계정입니다.", HttpStatus.BAD_REQUEST);
         } else {
-            int uid = userService.saveUser(UserDto);
+            int uid = userService.saveUser(userDto);
             return new ResponseEntity<>(uid, HttpStatus.OK);
 
         }

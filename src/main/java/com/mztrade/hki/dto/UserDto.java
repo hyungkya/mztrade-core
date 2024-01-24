@@ -11,6 +11,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class UserDto {
 
