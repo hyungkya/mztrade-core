@@ -2,17 +2,14 @@ package com.mztrade.hki.dto;
 
 
 import com.mztrade.hki.entity.User;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@RequiredArgsConstructor
 public class UserDto {
 
     private int uid;
@@ -33,4 +30,5 @@ public class UserDto {
         this.name = name;
         this.password = password;
     }
+
 }

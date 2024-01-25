@@ -1,8 +1,6 @@
 package com.mztrade.hki.controller;
 
-import com.mztrade.hki.dto.LoginRequestDto;
-import com.mztrade.hki.dto.LoginResponseDto;
-import com.mztrade.hki.dto.UserDto;
+import com.mztrade.hki.dto.*;
 import com.mztrade.hki.service.UserService;
 import com.mztrade.hki.util.JwtProvider;
 import org.springframework.http.HttpStatus;
@@ -31,10 +29,18 @@ public class LoginController {
         boolean isDuplicate = userService.checkUserDuplicate(userDto.getName());
 
         if (isDuplicate) {
-            return new ResponseEntity<>("중복된 계정입니다.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(DefaultResponse.response(
+                    StatusCode.OK,
+                    ResponseMessage.DUPLICATE_USER
+            ), HttpStatus.BAD_REQUEST);
         } else {
             int uid = userService.saveUser(userDto);
-            return new ResponseEntity<>(uid, HttpStatus.OK);
+            return
+            new ResponseEntity<>(DefaultResponse.response(
+                    StatusCode.OK,
+                    ResponseMessage.CREATED_USER,
+                    new RegisterResponse(uid)
+            ), HttpStatus.OK);
 
         }
 
@@ -43,7 +49,7 @@ public class LoginController {
 
     /**
      * @param loginRequestDto
-     * @return boolean 권한정보 반환
+     * @return Token, 회원정보 반환
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto) {
@@ -51,9 +57,17 @@ public class LoginController {
         try{
             userService.login(loginRequestDto.getName(), loginRequestDto.getPassword()); // 유저 정보 확인
             final String jwt = jwtProvider.generateToken(loginRequestDto.getName());
-            return new ResponseEntity<>(new LoginResponseDto(jwt), HttpStatus.OK);
+            return new ResponseEntity<>(DefaultResponse.response(
+                    StatusCode.OK,
+                    ResponseMessage.LOGIN_SUCCESS,
+                    new LoginResponseDto(jwt)
+            ), HttpStatus.OK);
+
         }catch (Exception e){
-            return new ResponseEntity<>("login failed: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(DefaultResponse.response(
+                    StatusCode.BAD_REQUEST,
+                    ResponseMessage.LOGIN_FAIL
+            ), HttpStatus.BAD_REQUEST);
         }
 
 

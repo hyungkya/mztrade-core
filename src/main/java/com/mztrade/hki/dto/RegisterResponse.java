@@ -1,15 +1,13 @@
 package com.mztrade.hki.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-@Getter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequestDto {
-
-    private String name;
-    private String password;
+public class RegisterResponse {
+    private int uid;
 }
