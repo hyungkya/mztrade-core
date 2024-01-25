@@ -1,18 +1,34 @@
 package com.mztrade.hki.util;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
+
+import java.util.Base64;
 import java.util.Date;
 import javax.crypto.SecretKey;
+
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class JwtUtil {
+public class JwtProvider {
 
-    private SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    @Value("${jwt.secret}")
+    private String secretKey;
+    private SecretKey key;
+    byte[] keyBytes;
+
+    @PostConstruct
+    protected void init(){
+        keyBytes = Base64.getEncoder().encode(secretKey.getBytes());
+        key = Keys.hmacShaKeyFor(keyBytes);
+    }
+
 
     /**
      * @param username

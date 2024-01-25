@@ -6,10 +6,18 @@ spring:
         password: 1234
     jackson:
         property-naming-strategy: SNAKE_CASE
-    jpa: # 쿼리 수행시 콘솔창에 출력되는 옵션 추가
-        properties:
-            hibernate:
-                format_sql: true
-                show_sql: true
-    jwt:
-        secret: aGtpZGItYmFja3Rlc3QtcHJvamVjdC1tenRyYWRlLWNvcmU= #base64로 인코딩한 secret 값
+# 쿼리 수행시 콘솔창에 출력되는 옵션 추가
+#    jpa:
+#        properties:
+#            hibernate:
+#                format_sql: true
+#                show_sql: true
+
+    output:
+        ansi:
+            enabled: always # 콘솔창 색상 적용
+
+
+
+jwt:
+    secret: "HKI_BACKTEST_2024_jwt_token_key_value_spring_boot_flutter_project" #secret 값

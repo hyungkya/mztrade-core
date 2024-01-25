@@ -4,19 +4,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.mztrade.hki.dto.UserDto;
 import com.mztrade.hki.service.UserService;
-import com.mztrade.hki.util.JwtUtil;
+import com.mztrade.hki.util.JwtProvider;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.jdbc.Sql;
 
 @SpringBootTest
 // @Sql(scripts = {"classpath:db/schema.sql", "classpath:db/stock_info_1205.sql", "classpath:db/stock_price_1205.sql"})
 public class UserTests {
     @Autowired
     private UserService userService;
-    private JwtUtil jwtUtil;
+    private JwtProvider jwtProvider;
 
     @Test
     void saveUserTest() throws Exception {
