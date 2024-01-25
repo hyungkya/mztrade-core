@@ -132,7 +132,7 @@ public class BacktestController {
         return new ResponseEntity<>(queryResult, HttpStatus.OK);
     }
 
-    @GetMapping("/backtest/delete")
+    @DeleteMapping("/backtest")
     public ResponseEntity<Boolean> deleteBacktestHistory(
             @RequestParam Integer aid
     ) {
