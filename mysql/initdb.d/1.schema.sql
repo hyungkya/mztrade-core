@@ -44,7 +44,7 @@ CREATE TABLE hkidb.order_history (
                                      price       INT         NOT NULL,
                                      avg_entry_price DECIMAL(10, 2)     NULL,
 
-                                     FOREIGN KEY (aid) REFERENCES hkidb.account (aid),
+                                     FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE,
                                      FOREIGN KEY (otid) REFERENCES hkidb.order_type (otid)
 );
 
@@ -55,7 +55,7 @@ CREATE TABLE hkidb.position (
                                 avg_entry_price DECIMAL(10, 2)     NOT NULL,
 
                                 PRIMARY KEY (aid, ticker),
-                                FOREIGN KEY (aid) REFERENCES hkidb.account (aid),
+                                FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE,
                                 FOREIGN KEY (ticker) REFERENCES hkidb.stock_info (ticker)
 );
 
@@ -80,5 +80,5 @@ CREATE TABLE hkidb.backtest_history (
 
                                         PRIMARY KEY (aid),
                                         FOREIGN KEY (uid) REFERENCES hkidb.customers (uid),
-                                        FOREIGN KEY (aid) REFERENCES hkidb.account (aid)
+                                        FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE
 );

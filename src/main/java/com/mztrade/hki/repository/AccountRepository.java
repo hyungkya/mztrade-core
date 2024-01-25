@@ -2,6 +2,7 @@ package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -33,6 +34,21 @@ public class AccountRepository {
                 src,
                 keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).intValue();
+    }
+
+    public Boolean deleteAccount(Integer aid) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("aid", aid, Types.INTEGER);
+        try {
+            this.template.update(
+                    "DELETE FROM hkidb.account WHERE (aid = :aid)",
+                    src,
+                    keyHolder);
+            return true;
+        } catch (DataAccessException e) {
+            return false;
+        }
     }
 
     public Long getBalance(Integer aid) {

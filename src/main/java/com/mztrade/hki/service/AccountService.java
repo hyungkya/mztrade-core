@@ -18,6 +18,9 @@ public class AccountService {
     public int createAccount(int uid) {
         return accountRepository.createAccount(uid);
     }
+    public boolean deleteAccount(int aid) {
+        return accountRepository.deleteAccount(aid);
+    }
 
     public List<Integer> getAll(int uid) {
         return accountRepository.getAll(uid);

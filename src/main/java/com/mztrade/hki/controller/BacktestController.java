@@ -133,11 +133,10 @@ public class BacktestController {
     }
 
     @DeleteMapping("/backtest")
-    public ResponseEntity<Boolean> deleteBacktestHistory(
+    public ResponseEntity<Boolean> deleteAccount(
             @RequestParam Integer aid
     ) {
-        System.out.println("DELETE HAS BEEN CALLED.");
-        backtestService.deleteBacktestHistory(aid);
+        accountService.deleteAccount(aid);
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
