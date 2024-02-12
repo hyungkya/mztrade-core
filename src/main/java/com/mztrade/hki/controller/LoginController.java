@@ -2,7 +2,7 @@ package com.mztrade.hki.controller;
 
 import com.mztrade.hki.dto.*;
 import com.mztrade.hki.service.UserService;
-import com.mztrade.hki.util.JwtProvider;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -10,13 +10,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Controller
+@Slf4j
 public class LoginController {
     private final UserService userService;
-    private final JwtProvider jwtProvider;
 
-    public LoginController(UserService userService, JwtProvider jwtProvider) {
+    public LoginController(UserService userService) {
         this.userService = userService;
-        this.jwtProvider = jwtProvider;
     }
 
     /**
@@ -26,14 +25,7 @@ public class LoginController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserDto userDto) {
 
-        boolean isDuplicate = userService.checkUserDuplicate(userDto.getName());
-
-        if (isDuplicate) {
-            return new ResponseEntity<>(DefaultResponse.response(
-                    StatusCode.OK,
-                    ResponseMessage.DUPLICATE_USER
-            ), HttpStatus.BAD_REQUEST);
-        } else {
+        try{
             int uid = userService.saveUser(userDto);
             return
             new ResponseEntity<>(DefaultResponse.response(
@@ -41,9 +33,13 @@ public class LoginController {
                     ResponseMessage.CREATED_USER,
                     new RegisterResponse(uid)
             ), HttpStatus.OK);
-
+            }catch (Exception e){
+            return new ResponseEntity<>(
+                    DefaultResponse.response(
+                    StatusCode.BAD_REQUEST,
+                    ResponseMessage.INTERNAL_SERVER_ERROR
+            ), HttpStatus.BAD_REQUEST);
         }
-
 
     }
 
@@ -54,13 +50,14 @@ public class LoginController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto) {
 
+        log.info("로그인 유저요청 = " + loginRequestDto.getName());
+
         try{
             userService.login(loginRequestDto.getName(), loginRequestDto.getPassword()); // 유저 정보 확인
-            final String jwt = jwtProvider.generateToken(loginRequestDto.getName());
             return new ResponseEntity<>(DefaultResponse.response(
                     StatusCode.OK,
                     ResponseMessage.LOGIN_SUCCESS,
-                    new LoginResponseDto(jwt)
+                    new LoginResponseDto(loginRequestDto.getName())
             ), HttpStatus.OK);
 
         }catch (Exception e){

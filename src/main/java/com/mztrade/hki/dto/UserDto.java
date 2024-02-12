@@ -9,12 +9,12 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@RequiredArgsConstructor
 public class UserDto {
 
     private int uid;
     private String name;
     private String password;
+    private String role;
 
 
     public User toEntity(){

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.mztrade.hki.dto.UserDto;
 import com.mztrade.hki.service.UserService;
-import com.mztrade.hki.util.JwtProvider;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class UserTests {
     @Autowired
     private UserService userService;
-    private JwtProvider jwtProvider;
 
     @Test
     void saveUserTest() throws Exception {
