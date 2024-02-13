@@ -12,11 +12,14 @@ import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -32,6 +35,7 @@ import org.springframework.stereotype.Component;
  * 3) 주입받은 secret 값을 Base64 Decode해서 key 변수에 할당위함
  */
 @Component
+@Slf4j
 public class TokenProvider implements InitializingBean {
 
     private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
@@ -39,16 +43,21 @@ public class TokenProvider implements InitializingBean {
     private static final String AUTHORITIES_KEY = "auth";
 
     private final String secret;
-    private final long tokenValidityInMilliseconds;
-
+    private final long accessExpiration;
+    private final long refreshExpiration;
+    private final RedisTemplate<String, String> redisTemplate;
     private Key key;
 
     // 2)
     public TokenProvider(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.token-validity-in-seconds}") long tokenValidityInMilliseconds) {
+            @Value("${jwt.access-expiration-time}") long accessExpiration,
+            @Value("${jwt.refresh-expiration-time}") long refreshExpiration,
+            RedisTemplate<String, String> redisTemplate) {
         this.secret = secret;
-        this.tokenValidityInMilliseconds = tokenValidityInMilliseconds * 1000;
+        this.accessExpiration = accessExpiration;
+        this.refreshExpiration = refreshExpiration;
+        this.redisTemplate = redisTemplate;
     }
 
     // 3) 생성자 주입 및 빈 생성 이후 aferPropertiesSet 함수 실행(InitializingBean 상속받은 이유)
@@ -59,7 +68,7 @@ public class TokenProvider implements InitializingBean {
     }
 
     // Authentication 객체의 권한정보를 이용해 토큰을 생성하는 createToken 메서드 추가
-    public String createToken(Authentication authentication) {
+    public String createAccessToken(Authentication authentication) {
 
         // authentication 권한 초기화
         String authorities = authentication.getAuthorities().stream()
@@ -68,26 +77,37 @@ public class TokenProvider implements InitializingBean {
 
         long now = (new Date()).getTime();
 
-        // application.yml 에서 정의한 token 만료 시간을 호출 시간 설정
-        Date validity = new Date(now + this.tokenValidityInMilliseconds);
-
-
-        // Jwt 토큰을 생성 후 리턴
+        // Access Token 생성
         return Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim(AUTHORITIES_KEY, authorities)
                 .signWith(key, SignatureAlgorithm.HS512)
-                .setExpiration(validity)
+                .setExpiration(new Date(now + this.accessExpiration))
+                .compact();
+    }
+
+    // Refresh Token 생성
+    public String createRefreshToken(Authentication authentication) {
+        Claims claims = Jwts.claims().setSubject(authentication.getName());
+
+        Date now = new Date();
+        Date expireDate = new Date(now.getTime() + this.refreshExpiration);
+
+        String refreshToken = Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expireDate)
+                .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
 
+        // Redis에 Refresh Token 저장
+        redisTemplate.opsForValue().set(authentication.getName(), refreshToken, refreshExpiration, TimeUnit.MILLISECONDS);
 
-
+        return refreshToken;
     }
 
     /**
      * Token에 담긴 정보를 이용해 Authentication 객체를 리턴
-     * @param token
-     * @return Authentication
      */
     public Authentication getAuthentication(String token) {
 
@@ -113,10 +133,9 @@ public class TokenProvider implements InitializingBean {
 
     }
 
+
     /**
-     * 토큰 유효성 검사
-     * @param token
-     * @return 문제없으면 true, 문제가 있으면 false
+     * Access Token 유효성 검증
      */
     public boolean validateToken(String token){
         try {

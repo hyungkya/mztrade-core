@@ -23,7 +23,7 @@ public class JwtFilter extends GenericFilterBean {
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
-    private TokenProvider tokenProvider;
+    private final TokenProvider tokenProvider;
 
     public JwtFilter(TokenProvider tokenProvider) {
         this.tokenProvider = tokenProvider;
@@ -40,18 +40,18 @@ public class JwtFilter extends GenericFilterBean {
 
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
 
-        // Reques에서 토큰을 받아옴
-        String jwt = resolveToken(httpServletRequest);
+        // Request에서 토큰을 받아옴
+        String accessToken = resolveToken(httpServletRequest);
 
         String requestURI = httpServletRequest.getRequestURI();
 
         // 받아온 jwt 토큰을 validateToken 메서드로 유효성 검증
-        if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+        if (StringUtils.hasText(accessToken) && tokenProvider.validateToken(accessToken)) {
 
             // 토큰이 정상이라면 Authentication 객체를 받아옴
-            Authentication authentication = tokenProvider.getAuthentication(jwt);
+            Authentication authentication = tokenProvider.getAuthentication(accessToken);
 
-            // SecurityContext에 Authentication 객체를 저장
+            // 정상 토큰이면 SecurityContext에 Authentication 객체를 저장
             SecurityContextHolder.getContext().setAuthentication(authentication);
             logger.debug("Security Context에 '{}' 인증정보를 저장했습니다., uri: {}", authentication.getName(),
                     requestURI);
