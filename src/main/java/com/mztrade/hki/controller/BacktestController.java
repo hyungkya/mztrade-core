@@ -70,8 +70,7 @@ public class BacktestController {
         LocalDateTime startDate = backtestRequest.parseStartDate();
         LocalDateTime endDate = backtestRequest.parseEndDate();
 
-        log.info("/execute has been called.");
-        log.info(backtestRequest.toString());
+        log.info(String.format("[POST] /excute backtestRequest=%s",backtestRequest));
 
         int aid = backtestService.execute(
                 uid,
@@ -101,6 +100,9 @@ public class BacktestController {
             @PathVariable Integer aid
     ) {
         BacktestHistory backtestHistory = backtestService.get(aid);
+
+        log.info(String.format("[GET] /backtest/aid=%s",aid));
+
         if (backtestHistory == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -112,6 +114,9 @@ public class BacktestController {
             @PathVariable Integer aid
     ) {
         BacktestRequest backtestRequest = backtestService.getBacktestRequest(aid);
+
+        log.info(String.format("[GET] /backtest/param/aid=%s",aid));
+
         if (backtestRequest == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -123,6 +128,9 @@ public class BacktestController {
             @PathVariable Integer uid
     ) {
         Integer recordCount = backtestService.getNumberOfHistoryByUid(uid);
+
+        log.info(String.format("[GET] /backtest/count/uid=%s",uid));
+
         return new ResponseEntity<>(recordCount, HttpStatus.OK);
     }
 
@@ -137,13 +145,15 @@ public class BacktestController {
                 backtestHistories.add(queryResult);
             }
         }
+
+        log.info(String.format("[GET] /backtest/all/uid=%s",uid));
+
         return new ResponseEntity<>(backtestHistories, HttpStatus.OK);
     }
 
     @GetMapping("/backtest/ranking")
     public ResponseEntity<List<BacktestHistory>> getBacktestRanking() {
         List<BacktestHistory> backtestHistories = backtestService.getRanking();
-        System.out.print(backtestHistories);
         return new ResponseEntity<>(backtestHistories, HttpStatus.OK);
     }
 
@@ -153,6 +163,9 @@ public class BacktestController {
             @RequestParam String title
     ) {
         List<BacktestHistory> queryResult = backtestService.searchByTitle(uid, title);
+
+        log.info(String.format("[GET] /backtest/search/uid=%s&title=%s",uid,title));
+
         return new ResponseEntity<>(queryResult, HttpStatus.OK);
     }
 
@@ -160,6 +173,7 @@ public class BacktestController {
     public ResponseEntity<Boolean> deleteAccount(
             @RequestParam Integer aid
     ) {
+        log.info(String.format("[DELETE] /backtest/aid=%s",aid));
         accountService.deleteAccount(aid);
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
@@ -169,6 +183,9 @@ public class BacktestController {
             @RequestParam Integer uid
     ) {
         Optional<Integer> highestProfitLossRatioAid = backtestService.getHighestProfitLossRatio(uid);
+
+        log.info(String.format("[GET] /backtest/top-plratio/uid=%s",uid));
+
         return highestProfitLossRatioAid.map(
                         aid -> new ResponseEntity<>(backtestService.get(aid), HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(null, HttpStatus.OK));
@@ -178,6 +195,7 @@ public class BacktestController {
     public ResponseEntity<List<Order>> getOrderHistory(
             @RequestParam Integer aid
     ) {
+        log.info(String.format("[GET] /order_history/aid=%s",aid));
         return new ResponseEntity<>(orderService.getOrderHistory(aid), HttpStatus.OK);
     }
 
@@ -185,7 +203,7 @@ public class BacktestController {
     public ResponseEntity<List<Bar>> getPricesByTicker(
             @RequestParam String ticker
     ) {
-        System.out.println("/stock_price/ticker?=" + ticker + " has been called.");
+        log.info(String.format("[GET] /stock+price/ticker=%s",ticker));
         return new ResponseEntity<>(stockPriceService.getPrices(ticker), HttpStatus.OK);
     }
 
@@ -202,6 +220,9 @@ public class BacktestController {
     ) {
         List<Float> parsedParam = Stream.of(param.split(","))
                 .map(p -> Float.parseFloat(p.trim())).collect(Collectors.toList());
+
+        log.info(String.format("[GET] /stock+price/indicator/ticker=%s&type=%s&param=%s",ticker,type,param));
+
         return new ResponseEntity<>(
                 stockPriceService.getIndicator(ticker, type, parsedParam),
                 HttpStatus.OK
@@ -213,6 +234,9 @@ public class BacktestController {
             @RequestParam Integer aid
     ) {
         Double winRate = statisticService.getTradingWinRate(aid);
+
+        log.info(String.format("[GET] /statistic/getWinRate/aid=%s",aid));
+
         return new ResponseEntity<Double>(winRate, HttpStatus.OK);
     }
 
@@ -221,6 +245,7 @@ public class BacktestController {
             @RequestParam Integer aid
     ) {
         Double tradeFrequency = statisticService.getTradeFrequency(aid);
+        log.info(String.format("[GET] /statistic/tradeFrequency/aid=%s",aid));
         return new ResponseEntity<Double>(tradeFrequency, HttpStatus.OK);
     }
 
@@ -229,6 +254,7 @@ public class BacktestController {
             @RequestParam Integer aid,
             @RequestParam String ticker
     ) {
+        log.info(String.format("[GET] /statistic/ticker-profit/aid=%s&ticker=%s",aid,ticker));
         return new ResponseEntity<>(statisticService.getTickerProfit(aid, ticker), HttpStatus.OK);
     }
 
@@ -236,6 +262,7 @@ public class BacktestController {
     public ResponseEntity<Map<String, Double>> getTickerProfit(
             @RequestParam Integer aid
     ) {
+        log.info(String.format("[GET] /statistic/ticker-profit/all/aid=%s",aid));
         return new ResponseEntity<>(statisticService.getTickerProfit(aid), HttpStatus.OK);
     }
 
@@ -245,6 +272,7 @@ public class BacktestController {
             @RequestParam String ticker,
             @RequestParam(defaultValue = "0") Integer option
     ) {
+        log.info(String.format("[GET] /statistic/ticker-trade-count/aid=%s&ticker=%s&option=%s",aid,ticker,option));
         return new ResponseEntity<>(statisticService.getTickerTradeCount(aid, ticker, option), HttpStatus.OK);
     }
 
@@ -252,6 +280,7 @@ public class BacktestController {
     public ResponseEntity<Map<String, Double>> getTickerBenchmarkProfit(
             @RequestParam Integer aid
     ) {
+        log.info(String.format("[GET] /statistic/ticker-benchmark-profit/all/aid=%s",aid));
         return new ResponseEntity<>(statisticService.getTickerBenchmarkProfit(aid), HttpStatus.OK);
     }
 
@@ -259,6 +288,7 @@ public class BacktestController {
     public ResponseEntity<Map<String, Double>> getTickerAlphaProfit(
             @RequestParam Integer aid
     ) {
+        log.info(String.format("[GET] /statistic/ticker=alpha-profit/all/aid=%s",aid));
         return new ResponseEntity<>(statisticService.getTickerAlphaProfit(aid), HttpStatus.OK);
     }
 }

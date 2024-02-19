@@ -5,6 +5,7 @@ import com.mztrade.hki.Util;
 import com.mztrade.hki.entity.Order;
 import com.mztrade.hki.entity.OrderType;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class StatisticService {
     private OrderService orderService;
     private BacktestService backtestService;
@@ -32,27 +34,38 @@ public class StatisticService {
 
     public Map<String, Double> getTickerBenchmarkProfit(int aid) {
         Map<String, Double> benchmarkProfits = new HashMap<>();
+
         BacktestRequest backtestRequest = backtestService.getBacktestRequest(aid);
         for (String tradedTicker : backtestRequest.getTickers()) {
             benchmarkProfits.put(tradedTicker, getTickerBenchmarkProfit(tradedTicker,
                     backtestRequest.parseStartDate(),
                     backtestRequest.parseEndDate()));
         }
+
+        log.debug(String.format("[StatisticService] getTickerBenchmarkProfit(aid: %s) -> benchmarkProfits:%s", aid,benchmarkProfits));
+
         return benchmarkProfits;
     }
 
     public double getTickerBenchmarkProfit(String ticker, LocalDateTime startDate, LocalDateTime endDate) {
-        return ((double) stockPriceService.getAvailablePriceBefore(ticker, endDate).orElseThrow().getClose() /
+
+        double BenchmarkProfit = ((double)stockPriceService.getAvailablePriceBefore(ticker, endDate).orElseThrow().getClose() /
                 stockPriceService.getAvailablePriceAfter(ticker, startDate).orElseThrow().getClose()) - 1;
+
+        log.debug(String.format("[StatisticService] getTickerBenchmarkProfit(ticker: %s, startDate: %s, endDate: %s) -> BenchmarkProfit:%s", ticker,startDate,endDate,BenchmarkProfit));
+
+        return BenchmarkProfit;
     }
 
     public Map<String, Double> getTickerProfit(int aid) {
-        Map<String, Double> profits = new HashMap<>();
+        Map<String, Double> profit = new HashMap<>();
         List<String> tradedTickers = backtestService.getTradedTickers(aid);
         for (String tradedTicker : tradedTickers) {
-            profits.put(tradedTicker, getTickerProfit(aid, tradedTicker));
+            profit.put(tradedTicker, getTickerProfit(aid, tradedTicker));
         }
-        return profits;
+
+        log.debug(String.format("[StatisticService] getTickerProfit(aid: %s) -> Profit:%s", aid,profit));
+        return profit;
     }
 
     public Double getTickerProfit(int aid, String ticker) {
@@ -61,7 +74,11 @@ public class StatisticService {
             totalProfitLoss +=
             ((double) order.getQty() * order.getPrice()) - (order.getQty() * order.getAvgEntryPrice().doubleValue());
         }
-        return totalProfitLoss / Double.parseDouble(backtestService.getBacktestRequest(aid).getInitialBalance());
+
+        double profit = totalProfitLoss / Double.parseDouble(backtestService.getBacktestRequest(aid).getInitialBalance());
+
+        log.debug(String.format("[StatisticService] getTickerProfit(aid: %s, ticker: %s) -> Profit:%s", aid, ticker,profit));
+        return profit;
     }
 
     public Double getTickerAlphaProfit(int aid, String ticker) {
@@ -71,7 +88,10 @@ public class StatisticService {
                 ticker,
                 backtestRequest.parseStartDate(),
                 backtestRequest.parseEndDate());
-        return absoluteProfitLoss - benchmarkProfitLoss;
+
+        double profit = absoluteProfitLoss - benchmarkProfitLoss;
+        log.debug(String.format("[StatisticService] getTickerAlphaProfit(aid: %s, ticker: %s) -> profit:%s", aid, ticker,profit));
+        return profit;
     }
 
     public Map<String, Double> getTickerAlphaProfit(int aid) {
@@ -80,17 +100,21 @@ public class StatisticService {
         for (String tradedTicker : backtestRequest.getTickers()) {
             alphaProfits.put(tradedTicker, getTickerAlphaProfit(aid, tradedTicker));
         }
+        log.debug(String.format("[StatisticService] getTickerAlphaProfit(aid: %s) -> alphaProfits:%s", aid,alphaProfits));
         return alphaProfits;
     }
 
     public Integer getTickerTradeCount(int aid, String ticker, int option) {
+        int size;
         if (option == OrderType.BUY.id()) {
-            return orderService.getBuyOrderHistory(aid, ticker).size();
+            size = orderService.getBuyOrderHistory(aid, ticker).size();
         } else if (option == OrderType.SELL.id()) {
-            return orderService.getSellOrderHistory(aid, ticker).size();
+            size = orderService.getSellOrderHistory(aid, ticker).size();
         } else {
-            return orderService.getOrderHistory(aid, ticker).size();
+            size = orderService.getOrderHistory(aid, ticker).size();
         }
+        log.debug(String.format("[StatisticService] getTickerTradeCount(aid: %s, ticker: %s, option: %s) -> size:%s", aid,ticker,option,size));
+        return size;
     }
 
     public Double getTradingWinRate(int aid) {
@@ -108,11 +132,16 @@ public class StatisticService {
             totalCount++;
         }
 
+        double rate;
+
         if (totalCount == 0) {
-            return Double.NaN;
+            rate = Double.NaN;
         } else {
-            return (double)winRate / (double)totalCount;
+            rate = (double)winRate / (double)totalCount;
         }
+
+        log.debug(String.format("[StatisticService] getTradingWinRate(aid: %s) -> rate:%s", aid,rate));
+        return rate;
     }
 
     public Double getTradeFrequency(int aid) {
@@ -126,9 +155,9 @@ public class StatisticService {
                     ,LocalDateTime.parse(Util.formatDate(br.getEndDate()))
                     ).size();
         }
-        System.out.print("total: " + totalCount);
-        System.out.print("trade: " + tradeCount);
-        return (double) tradeCount / (double) (totalCount);
-        //TODO:: 매매 빈도 조회 기능 추가하기
+
+        double TradeFrequency = (double) tradeCount / (double) (totalCount);
+        log.debug(String.format("[StatisticService] getTradeFrequency(aid: %s) -> TradeFrequency:%s", aid,TradeFrequency));
+        return TradeFrequency;
     }
 }
