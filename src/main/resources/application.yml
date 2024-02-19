@@ -13,3 +13,7 @@ spring:
             mode: always
 
 server.port: ${SERVER_PORT}
+
+logging:
+    level:
+        com.mztrade: info
