@@ -8,7 +8,6 @@ import java.util.List;
 
 public class BacktestRequest {
     private String uid;
-
     private String title;
     private String initialBalance;
     private List<List<ConditionRequest>> buyConditions;

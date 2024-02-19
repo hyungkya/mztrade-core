@@ -46,7 +46,7 @@ public class Condition {
     }
 
     public boolean check(List<Bar> bars) {
-        log.info("baseIndicator: " + baseIndicator.calculate(bars) + " targetIndicator: " + targetIndicator.calculate(bars));
+        log.trace("baseIndicator: " + baseIndicator.calculate(bars) + " targetIndicator: " + targetIndicator.calculate(bars));
         if (compareType.matches(">")) {
             if (baseIndicator.calculate(bars) > targetIndicator.calculate(bars) + constantBound) {
                 recentMatches.add(true);

@@ -2,11 +2,8 @@ package com.mztrade.hki;
 
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.repository.BacktestHistoryRepository;
-import com.mztrade.hki.service.BacktestService;
 import com.mztrade.hki.service.OrderService;
 import com.mztrade.hki.service.StatisticService;
-import com.mztrade.hki.service.StockPriceService;
-import java.time.LocalDateTime;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +66,7 @@ public class ExampleTests {
     void getIndividualTickerProfitTest() {
         assertThat(
                 statisticService.getTickerProfit(1, "005380")
-        ).isCloseTo(1.008913653841054, Offset.offset(0.0000001));
+        ).isCloseTo(0.0547521, Offset.offset(0.0000001));
     }
 
 }

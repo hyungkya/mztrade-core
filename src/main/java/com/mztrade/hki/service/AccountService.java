@@ -1,12 +1,14 @@
 package com.mztrade.hki.service;
 
 import com.mztrade.hki.repository.AccountRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class AccountService {
     private final AccountRepository accountRepository;
 
@@ -16,31 +18,42 @@ public class AccountService {
     }
 
     public int createAccount(int uid) {
-        return accountRepository.createAccount(uid);
+        int aid = accountRepository.createAccount(uid);
+        log.debug(String.format("[Account Service] createAccount(uid: %d) -> aid: %d", uid, aid));
+        return aid;
     }
     public boolean deleteAccount(int aid) {
-        return accountRepository.deleteAccount(aid);
+        boolean isDeleted = accountRepository.deleteAccount(aid);
+        log.debug(String.format("[Account Service] deleteAccount(aid: %d) -> isDeleted: %b", aid, isDeleted));
+        return isDeleted;
     }
 
     public List<Integer> getAll(int uid) {
-        return accountRepository.getAll(uid);
+        List<Integer> accounts = accountRepository.getAll(uid);
+        log.debug(String.format("[Account Service] getAll(uid: %d) -> accounts: %s", uid, accounts.toString()));
+        return accounts;
     }
     public long getBalance(int aid) {
-        return accountRepository.getBalance(aid);
+        long balance = accountRepository.getBalance(aid);
+        log.debug(String.format("[Account Service] getBalance(aid: %d) -> balance: %d", aid, balance));
+        return balance;
     }
 
     public boolean deposit(Integer aid, Long amount) {
         Long currentBalance = accountRepository.getBalance(aid);
         accountRepository.updateBalance(aid, currentBalance + amount);
+        log.debug(String.format("[Account Service] deposit(aid: %d, amount: %d) -> success: %b", aid, amount, true));
         return true;
     }
 
     public boolean withdraw(Integer aid, Long amount) {
+        boolean isSuccess = false;
         Long currentBalance = accountRepository.getBalance(aid);
         if (currentBalance >= amount) {
             accountRepository.updateBalance(aid, currentBalance - amount);
-            return true;
+            isSuccess = true;
         }
-        return false;
+        log.debug(String.format("[Account Service] withdraw(aid: %d, amount: %d) -> success: %b", aid, amount, isSuccess));
+        return isSuccess;
     }
 }

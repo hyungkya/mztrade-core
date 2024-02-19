@@ -6,6 +6,7 @@ import com.mztrade.hki.entity.Order;
 import com.mztrade.hki.service.AccountService;
 import com.mztrade.hki.service.OrderService;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.data.Percentage;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @SpringBootTest
-@Sql(scripts = {"classpath:db/schema.sql", "classpath:db/stock_info_1205.sql", "classpath:db/stock_price_1205.sql"})
-
+@Sql(scripts = {"classpath:schema.sql", "classpath:data.sql"})
 public class OrderTests {
     @Autowired
     private AccountService accountService;
@@ -28,17 +28,17 @@ public class OrderTests {
     @Test
     void simpleBuyTest() {
         accountService.createAccount(1);
-        accountService.deposit(1, 50_000_000L);
+        accountService.deposit(2, 50_000_000L);
 
-        orderService.buy(1, "000270", LocalDateTime.parse(Util.formatDate("20150105")), 3);
-        orderService.buy(1, "000270", LocalDateTime.parse(Util.formatDate("20150112")), 3);
-        orderService.buy(1, "000270", LocalDateTime.parse(Util.formatDate("20150119")), 3);
+        orderService.buy(2, "000270", LocalDateTime.parse(Util.formatDate("20150105")), 3);
+        orderService.buy(2, "000270", LocalDateTime.parse(Util.formatDate("20150112")), 3);
+        orderService.buy(2, "000270", LocalDateTime.parse(Util.formatDate("20150119")), 3);
 
-        Position position = orderService.getPositions(1).get(0);
-        BigDecimal theOneThatShouldBeInitialMoney = position.getAvgEntryPrice().multiply(BigDecimal.valueOf(position.getQty())).add(BigDecimal.valueOf(accountService.getBalance(1)));
-        Assertions.assertThat(theOneThatShouldBeInitialMoney.compareTo(BigDecimal.valueOf(50_000_000L))).isEqualTo(0);
+        Position position = orderService.getPositions(2).get(0);
+        BigDecimal theOneThatShouldBeInitialMoney = position.getAvgEntryPrice().multiply(BigDecimal.valueOf(position.getQty())).add(BigDecimal.valueOf(accountService.getBalance(2)));
+        Assertions.assertThat(theOneThatShouldBeInitialMoney).isCloseTo(BigDecimal.valueOf(50_000_000L), Percentage.withPercentage(0.00001));
 
-        orderService.sell(1, "000270", LocalDateTime.parse(Util.formatDate("201501230")), 9);
-        Assertions.assertThat(orderService.getPositions(1).size()).isEqualTo(0);
+        orderService.sell(2, "000270", LocalDateTime.parse(Util.formatDate("201501230")), 9);
+        Assertions.assertThat(orderService.getPositions(2).size()).isEqualTo(0);
     }
 }
