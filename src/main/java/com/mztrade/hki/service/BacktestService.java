@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -42,8 +42,8 @@ public class BacktestService {
             List<Float> dca,
             int maxTradingCount,
             List<String> targetTickers,
-            Instant startDate,
-            Instant endDate) {
+            LocalDateTime startDate,
+            LocalDateTime endDate) {
 
         // Account Settings
         int aid = accountService.createAccount(uid);
@@ -181,7 +181,7 @@ public class BacktestService {
         return highestAid;
     }
 
-    public Double calculateFinalProfitLossRatio(long initialBalance, int aid, Instant backtestEndDate) {
+    public Double calculateFinalProfitLossRatio(long initialBalance, int aid, LocalDateTime backtestEndDate) {
         long finalBalance = accountService.getBalance(aid);
         List<Position> positions = orderService.getPositions(aid);
         for (Position position : positions) {

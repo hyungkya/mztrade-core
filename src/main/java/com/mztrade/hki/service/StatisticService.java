@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +41,7 @@ public class StatisticService {
         return benchmarkProfits;
     }
 
-    public double getTickerBenchmarkProfit(String ticker, Instant startDate, Instant endDate) {
+    public double getTickerBenchmarkProfit(String ticker, LocalDateTime startDate, LocalDateTime endDate) {
         return ((double) stockPriceService.getAvailablePriceBefore(ticker, endDate).orElseThrow().getClose() /
                 stockPriceService.getAvailablePriceAfter(ticker, startDate).orElseThrow().getClose()) - 1;
     }
@@ -122,8 +122,8 @@ public class StatisticService {
         BacktestRequest br = backtestService.getBacktestRequest(aid);
         for(String ticker : br.getTickers()) {
             totalCount += stockPriceService.getPrices(ticker
-                    ,Instant.parse(Util.formatDate(br.getStartDate()))
-                    ,Instant.parse(Util.formatDate(br.getEndDate()))
+                    ,LocalDateTime.parse(Util.formatDate(br.getStartDate()))
+                    ,LocalDateTime.parse(Util.formatDate(br.getEndDate()))
                     ).size();
         }
         System.out.print("total: " + totalCount);

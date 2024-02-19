@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,7 +74,7 @@ public class OrderService {
         }
     }
 
-    public Boolean buy(Integer aid, String ticker, Instant date, Integer qty) {
+    public Boolean buy(Integer aid, String ticker, LocalDateTime date, Integer qty) {
         if (qty <= 0) {
             throw new IllegalArgumentException("Buying quantity should be greater than 0.");
         }
@@ -151,7 +151,7 @@ public class OrderService {
         return false;
     }
 
-    public Boolean sell(Integer aid, String ticker, Instant date, Integer qty) {
+    public Boolean sell(Integer aid, String ticker, LocalDateTime date, Integer qty) {
         log.info("Processing Sell Order: " + "aid: " + aid + " ticker: " + ticker + " date: " + date + " qty: " + qty);
 
         //check if position quantity is enough to sell

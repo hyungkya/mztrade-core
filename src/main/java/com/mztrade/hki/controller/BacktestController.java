@@ -19,7 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,8 +67,8 @@ public class BacktestController {
         List<Float> dca = backtestRequest.getDca();
         int maxTrading = backtestRequest.parseMaxTrading();
         List<String> tickers = backtestRequest.getTickers();
-        Instant startDate = backtestRequest.parseStartDate();
-        Instant endDate = backtestRequest.parseEndDate();
+        LocalDateTime startDate = backtestRequest.parseStartDate();
+        LocalDateTime endDate = backtestRequest.parseEndDate();
 
         log.info("/execute has been called.");
         log.info(backtestRequest.toString());
@@ -188,7 +188,7 @@ public class BacktestController {
     }
 
     @GetMapping("/stock_price/indicator")
-    public ResponseEntity<Map<Instant, Double>> getIndicatorByTicker(
+    public ResponseEntity<Map<LocalDateTime, Double>> getIndicatorByTicker(
             @RequestParam String ticker,
             @RequestParam String type,
             @RequestParam String param

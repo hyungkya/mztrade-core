@@ -2,7 +2,7 @@ package com.mztrade.hki.entity.backtest;
 
 import com.mztrade.hki.Util;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -157,12 +157,12 @@ public class BacktestRequest {
         return Integer.parseInt(this.maxTrading);
     }
 
-    public Instant parseStartDate() {
-        return Instant.parse(Util.formatDate(this.startDate));
+    public LocalDateTime parseStartDate() {
+        return LocalDateTime.parse(Util.formatDate(this.startDate));
     }
 
-    public Instant parseEndDate() {
-        return Instant.parse(Util.formatDate(this.endDate));
+    public LocalDateTime parseEndDate() {
+        return LocalDateTime.parse(Util.formatDate(this.endDate));
     }
 
     @Override

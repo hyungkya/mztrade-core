@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @SpringBootTest
@@ -33,8 +33,8 @@ public class ConditionTests {
                 .setConstantBound(75f)
                 .setCompareType(">");
         List<Bar> bars = stockPriceService.getPrices("000270",
-                Instant.parse(Util.formatDate("20220101")),
-                Instant.parse(Util.formatDate("20221231")));
+                LocalDateTime.parse(Util.formatDate("20220101")),
+                LocalDateTime.parse(Util.formatDate("20221231")));
 
         int mCount = 0;
         for (int i = 0; i < 200; i++) {
@@ -52,8 +52,8 @@ public class ConditionTests {
                 .setCompareType(">")
                 .setFrequency(List.of(10, 5));
         List<Bar> bars = stockPriceService.getPrices("000270",
-                Instant.parse(Util.formatDate("20220101")),
-                Instant.parse(Util.formatDate("20221231")));
+                LocalDateTime.parse(Util.formatDate("20220101")),
+                LocalDateTime.parse(Util.formatDate("20221231")));
 
         int mCount = 0;
         for (int i = 0; i < 200; i++) {
@@ -71,8 +71,8 @@ public class ConditionTests {
                 .setCompareType(">")
                 .setFrequency(List.of(7, 2));
         List<Bar> bars = stockPriceService.getPrices("000270",
-                Instant.parse(Util.formatDate("20200101")),
-                Instant.parse(Util.formatDate("20221231")));
+                LocalDateTime.parse(Util.formatDate("20200101")),
+                LocalDateTime.parse(Util.formatDate("20221231")));
 
         int mCount = 0;
         for (int i = 0; i < bars.size()-101; i++) {

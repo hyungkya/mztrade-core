@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,18 +37,18 @@ public class StockPriceService {
                 .sorted(Bar.COMPARE_BY_DATE).collect(Collectors.toList());
     }
 
-    public List<Bar> getPrices(String ticker, Instant startDate, Instant endDate) {
+    public List<Bar> getPrices(String ticker, LocalDateTime startDate, LocalDateTime endDate) {
         // return requested date range's ticker data
         return stockPriceRepository.findByDate(ticker, startDate, endDate);
     }
 
-    public Bar getPrice(String ticker, Instant date) {
+    public Bar getPrice(String ticker, LocalDateTime date) {
         // return requested date's ticker data
         return stockPriceRepository.findByDate(ticker, date);
     }
 
-    public Optional<Bar> getAvailablePriceBefore(String ticker, Instant date) {
-        while (date.isAfter(Instant.parse(Util.formatDate("20100101")))) {
+    public Optional<Bar> getAvailablePriceBefore(String ticker, LocalDateTime date) {
+        while (date.isAfter(LocalDateTime.parse(Util.formatDate("20100101")))) {
             try {
                 return Optional.of(stockPriceRepository.findByDate(ticker, date));
             } catch (EmptyResultDataAccessException ignored) {
@@ -58,8 +58,8 @@ public class StockPriceService {
         return Optional.empty();
     }
 
-    public Optional<Bar> getAvailablePriceAfter(String ticker, Instant date) {
-        while (date.isBefore(Instant.now())) {
+    public Optional<Bar> getAvailablePriceAfter(String ticker, LocalDateTime date) {
+        while (date.isBefore(LocalDateTime.now())) {
             try {
                 return Optional.of(stockPriceRepository.findByDate(ticker, date));
             } catch (EmptyResultDataAccessException ignored) {
@@ -69,7 +69,7 @@ public class StockPriceService {
         return Optional.empty();
     }
 
-    public Optional<Bar> getAvailablePriceBefore(String ticker, Instant date, Integer maxRange) {
+    public Optional<Bar> getAvailablePriceBefore(String ticker, LocalDateTime date, Integer maxRange) {
         for (; maxRange > 0; maxRange--) {
             try {
                 return Optional.of(stockPriceRepository.findByDate(ticker, date));
@@ -80,7 +80,7 @@ public class StockPriceService {
         return Optional.empty();
     }
 
-    public Optional<Bar> getAvailablePriceAfter(String ticker, Instant date, Integer maxRange) {
+    public Optional<Bar> getAvailablePriceAfter(String ticker, LocalDateTime date, Integer maxRange) {
         for (; maxRange > 0; maxRange--) {
             try {
                 return Optional.of(stockPriceRepository.findByDate(ticker, date));
@@ -101,9 +101,9 @@ public class StockPriceService {
         return stockInfoRepository.getAll();
     }
 
-    public Map<Instant, Double> getIndicator(String ticker, String type, List<Float> params) {
+    public Map<LocalDateTime, Double> getIndicator(String ticker, String type, List<Float> params) {
         List<Bar> bars = stockPriceRepository.findByTicker(ticker);
-        Map<Instant, Double> result = new HashMap<>();
+        Map<LocalDateTime, Double> result = new HashMap<>();
         Indicator indicator = new Indicator(type, params);
         for (int i = 1; i <= bars.size(); i++) {
             result.put(bars.get(i-1).getDate(), indicator.calculate(bars.subList(0, i)));
