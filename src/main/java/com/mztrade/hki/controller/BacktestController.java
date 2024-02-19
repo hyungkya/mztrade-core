@@ -221,7 +221,7 @@ public class BacktestController {
         List<Float> parsedParam = Stream.of(param.split(","))
                 .map(p -> Float.parseFloat(p.trim())).collect(Collectors.toList());
 
-        log.info(String.format("[GET] /stock+price/indicator/ticker=%s&type=%s&param=%s",ticker,type,param));
+        log.info(String.format("[GET] /stock_price/indicator/ticker=%s&type=%s&param=%s",ticker,type,param));
 
         return new ResponseEntity<>(
                 stockPriceService.getIndicator(ticker, type, parsedParam),

@@ -70,7 +70,7 @@ public class BacktestService {
                     }
                     collectedBars.get(ticker).add(bar);
                 } catch (EmptyResultDataAccessException e) {
-                    log.trace("[Backtest Service] " + e);
+                    log.trace("[BacktestService] " + e);
                     continue;
                 }
                 // if 'any' bar collected in a particular ticker ... continue downwards
@@ -117,7 +117,7 @@ public class BacktestService {
                 }
             }
         }
-        log.debug(String.format("[Backtest Service] execute(uid: %d, initialBalance: %d, buyConditions: %s, " +
+        log.debug(String.format("[BacktestService] execute(uid: %d, initialBalance: %d, buyConditions: %s, " +
                 "sellConditions: %s, dca: %s, maxTradingCount: %d, targetTickers: %s, " +
                 "startDate: %s, endDate: %s) -> aid: %d", uid, initialBalance, buyConditions, sellConditions, dca,
                 maxTradingCount, targetTickers, startDate, endDate, aid));
@@ -126,42 +126,42 @@ public class BacktestService {
 
     public boolean create(BacktestHistory backtestHistory) {
         boolean isSuccess = backtestHistoryRepository.create(backtestHistory);;
-        log.debug(String.format("[Backtest Service] create(backtestHistory: %s) -> isSuccess: %b", backtestHistory, isSuccess));
+        log.debug(String.format("[BacktestService] create(backtestHistory: %s) -> isSuccess: %b", backtestHistory, isSuccess));
         return isSuccess;
     }
 
     public BacktestHistory get(int aid) {
         BacktestHistory backtestHistory = backtestHistoryRepository.get(aid);
-        log.debug(String.format("[Backtest Service] get(int: %d) -> backtestHistory: %s", aid, backtestHistory));
+        log.debug(String.format("[BacktestService] get(int: %d) -> backtestHistory: %s", aid, backtestHistory));
         return backtestHistory;
     }
 
     public List<BacktestHistory> getRanking() {
         List<BacktestHistory> backtestHistories = backtestHistoryRepository.getRanking();
-        log.debug(String.format("[Backtest Service] getRanking() -> backtestHistories: %s", backtestHistories));
+        log.debug(String.format("[BacktestService] getRanking() -> backtestHistories: %s", backtestHistories));
         return backtestHistories;
     }
 
     public BacktestRequest getBacktestRequest(int aid) throws NoSuchElementException {
         BacktestRequest backtestRequest = backtestHistoryRepository.getBacktestRequest(aid).orElseThrow();
-        log.debug(String.format("[Backtest Service] getBacktestRequest(aid: %d) -> backtestRequest: %s", aid, backtestRequest));
+        log.debug(String.format("[BacktestService] getBacktestRequest(aid: %d) -> backtestRequest: %s", aid, backtestRequest));
         return backtestRequest;
     }
     public List<String> getTradedTickers(int aid) {
         List<String> tickers = getBacktestRequest(aid).getTickers();
-        log.debug(String.format("[Backtest Service] getTradedTickers(aid: %d) -> tickers: %s", aid, tickers));
+        log.debug(String.format("[BacktestService] getTradedTickers(aid: %d) -> tickers: %s", aid, tickers));
         return tickers;
     }
 
     public List<BacktestHistory> searchByTitle(int uid, String title) {
         List<BacktestHistory> backtestHistories = backtestHistoryRepository.searchByTitle(uid, title);
-        log.debug(String.format("[Backtest Service] searchByTitle(uid: %d, title: %s) -> backtestHistories: %s", uid, title, backtestHistories));
+        log.debug(String.format("[BacktestService] searchByTitle(uid: %d, title: %s) -> backtestHistories: %s", uid, title, backtestHistories));
         return backtestHistories;
     }
 
     public Integer getNumberOfHistoryByUid(int uid) {
         int num = backtestHistoryRepository.getNumberOfHistoryByUid(uid);
-        log.debug(String.format("[Backtest Service] getNumberOfHistoryByUid(uid: %d) -> num: %d", uid, num));
+        log.debug(String.format("[BacktestService] getNumberOfHistoryByUid(uid: %d) -> num: %d", uid, num));
         return num;
     }
 
@@ -175,7 +175,7 @@ public class BacktestService {
                 highestAid = Optional.of(aid);
             }
         }
-        log.debug(String.format("[Backtest Service] getHighestProfitLossRatio(uid: %d) -> highestAid: %s", uid, highestAid));
+        log.debug(String.format("[BacktestService] getHighestProfitLossRatio(uid: %d) -> highestAid: %s", uid, highestAid));
         return highestAid;
     }
 
@@ -187,7 +187,7 @@ public class BacktestService {
             finalBalance += (long) position.getQty() * finalClosePrice;
         }
         double plratio = (finalBalance / (double) initialBalance) - 1;
-        log.debug(String.format("[Backtest Service] calculateFinalProfitLossRatio(initialBalance: %d, aid: %d, " +
+        log.debug(String.format("[BacktestService] calculateFinalProfitLossRatio(initialBalance: %d, aid: %d, " +
                 "backtestEndDate: %s) -> plratio: %f", initialBalance, aid, backtestEndDate, plratio));
         return plratio;
     }

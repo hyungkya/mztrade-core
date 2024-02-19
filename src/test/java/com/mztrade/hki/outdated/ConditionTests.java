@@ -73,15 +73,5 @@ public class ConditionTests {
         List<Bar> bars = stockPriceService.getPrices("000270",
                 LocalDateTime.parse(Util.formatDate("20200101")),
                 LocalDateTime.parse(Util.formatDate("20221231")));
-
-        int mCount = 0;
-        for (int i = 0; i < bars.size()-101; i++) {
-            System.out.println("============================");
-            System.out.println(bars.get(i+99).getDate());
-            System.out.println(c.check(bars.subList(i, i+100)));
-            //if (c.check(bars.subList(i, i+40))) mCount++;
-            }
-        //Assertions.assertThat(mCount).isEqualTo(15);
     }
-
 }

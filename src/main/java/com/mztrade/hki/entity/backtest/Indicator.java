@@ -66,7 +66,6 @@ public class Indicator {
         int period = params.get(0).intValue();
         if (bars.size() < period) return Double.NaN;
         bars = bars.subList(bars.size() - period, bars.size());
-        System.out.println("SMA" + params.get(0) + ": " + bars.stream().mapToInt(b -> b.getClose()).average().getAsDouble());
         return bars.stream().mapToInt(b -> b.getClose()).average().getAsDouble();
     }
 

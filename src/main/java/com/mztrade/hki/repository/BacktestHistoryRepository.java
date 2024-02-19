@@ -117,7 +117,6 @@ public class BacktestHistoryRepository {
                             .build()
             );
         } catch (DataAccessException e) {
-            System.out.println(e);
             return null;
         }
     }
