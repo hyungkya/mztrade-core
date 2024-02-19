@@ -12,6 +12,8 @@ import com.mztrade.hki.entity.backtest.IndicatorBar;
 import com.mztrade.hki.service.*;
 
 import java.util.Optional;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RestController
+@Slf4j
 public class BacktestController {
 
     private BacktestService backtestService;
@@ -66,6 +69,9 @@ public class BacktestController {
         List<String> tickers = backtestRequest.getTickers();
         Instant startDate = backtestRequest.parseStartDate();
         Instant endDate = backtestRequest.parseEndDate();
+
+        log.info("/execute has been called.");
+        log.info(backtestRequest.toString());
 
         int aid = backtestService.execute(
                 uid,

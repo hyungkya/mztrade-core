@@ -6,6 +6,7 @@ import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.entity.backtest.Condition;
 import com.mztrade.hki.repository.BacktestHistoryRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
+@Slf4j
 public class BacktestService {
     private AccountService accountService;
     private StockPriceService stockPriceService;
@@ -59,7 +61,10 @@ public class BacktestService {
         boolean buyFlag = false;
         boolean sellFlag = false;
 
+        log.info("Start backtesting from " + startDate + " to " + endDate);
+
         for (; startDate.isBefore(endDate); startDate = startDate.plus(1, ChronoUnit.DAYS)) {
+            log.info("Backtesting... " + startDate);
             for (String ticker : targetTickers) {
                 // Stacking retrievable bar
                 try {

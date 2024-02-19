@@ -6,6 +6,7 @@ import com.mztrade.hki.entity.OrderType;
 import com.mztrade.hki.entity.Position;
 import com.mztrade.hki.repository.OrderHistoryRepository;
 import com.mztrade.hki.repository.PositionRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class OrderService {
     private final OrderHistoryRepository orderHistoryRepository;
     private final PositionRepository positionRepository;
@@ -86,6 +88,8 @@ public class OrderService {
                 .otid(OrderType.BUY.id())
                 .build();
 
+        log.info("Processing Buy Order: " + "aid: " + aid + " ticker: " + ticker + " date: " + date + " qty: " + qty);
+
         if (accountService.withdraw(aid, (long) order.getQty() * order.getPrice())) {
             Optional<Position> position = positionRepository.getPositionByTicker(aid, ticker);
             if (position.isPresent()) {
@@ -148,6 +152,8 @@ public class OrderService {
     }
 
     public Boolean sell(Integer aid, String ticker, Instant date, Integer qty) {
+        log.info("Processing Sell Order: " + "aid: " + aid + " ticker: " + ticker + " date: " + date + " qty: " + qty);
+
         //check if position quantity is enough to sell
         Optional<Position> optionalPosition = positionRepository.getPositionByTicker(aid, ticker);
         if (optionalPosition.isPresent()) {
