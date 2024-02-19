@@ -51,10 +51,12 @@ public class BacktestService {
 
         // Portfolio Settings
         long maxSingleTickerTradingBalance = initialBalance / maxTradingCount;
+        log.info("maxSingleTickerTradingBalance: " + maxSingleTickerTradingBalance);
         Map<String, Integer> dcaStatus = new HashMap<>();
         for (String ticker : targetTickers) {
             dcaStatus.put(ticker, 0);
         }
+        log.info("dcaStatus: " + dcaStatus);
 
         // Get Bars
         Map<String, List<Bar>> collectedBars = new HashMap<>();
@@ -68,11 +70,13 @@ public class BacktestService {
                 // Stacking retrievable bar
                 try {
                     Bar bar = stockPriceService.getPrice(ticker, startDate);
+                    log.info("bar: " + bar);
                     if (!collectedBars.containsKey(ticker)) {
                         collectedBars.put(ticker, new ArrayList<>());
                     }
                     collectedBars.get(ticker).add(bar);
                 } catch (EmptyResultDataAccessException e) {
+                    log.error("barError: " + e);
                     continue;
                 }
                 // if 'any' bar collected in a particular ticker ... continue downwards
