@@ -165,4 +165,19 @@ public class BacktestRequest {
         return Instant.parse(Util.formatDate(this.endDate));
     }
 
+    @Override
+    public String toString() {
+        return "BacktestRequest{" +
+                "uid='" + uid + '\'' +
+                ", title='" + title + '\'' +
+                ", initialBalance='" + initialBalance + '\'' +
+                ", buyConditions=" + buyConditions.toString() +
+                ", sellConditions=" + sellConditions.toString() +
+                ", dca=" + dca +
+                ", maxTrading='" + maxTrading + '\'' +
+                ", tickers=" + tickers +
+                ", startDate='" + startDate + '\'' +
+                ", endDate='" + endDate + '\'' +
+                '}';
+    }
 }

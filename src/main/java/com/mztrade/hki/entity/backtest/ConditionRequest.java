@@ -77,4 +77,15 @@ public class ConditionRequest {
     public List<Integer> parseFrequency() {
         return Stream.of(this.frequency.trim().split(",")).map(s -> Integer.parseInt(s.trim())).collect(Collectors.toList());
     }
+
+    @Override
+    public String toString() {
+        return "ConditionRequest{" +
+                "baseIndicator='" + baseIndicator + '\'' +
+                ", targetIndicator='" + targetIndicator + '\'' +
+                ", constantBound='" + constantBound + '\'' +
+                ", compareType='" + compareType + '\'' +
+                ", frequency='" + frequency + '\'' +
+                '}';
+    }
 }

@@ -67,4 +67,16 @@ public class Condition {
         }
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "Condition{" +
+                "baseIndicator=" + baseIndicator +
+                ", targetIndicator=" + targetIndicator +
+                ", constantBound=" + constantBound +
+                ", compareType='" + compareType + '\'' +
+                ", frequency=" + frequency +
+                ", recentMatches=" + recentMatches +
+                '}';
+    }
 }
