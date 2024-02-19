@@ -64,7 +64,6 @@ public class BacktestService {
         log.info("Start backtesting from " + startDate + " to " + endDate);
 
         for (; startDate.isBefore(endDate); startDate = startDate.plus(1, ChronoUnit.DAYS)) {
-            log.info("Backtesting... " + startDate);
             for (String ticker : targetTickers) {
                 // Stacking retrievable bar
                 try {
