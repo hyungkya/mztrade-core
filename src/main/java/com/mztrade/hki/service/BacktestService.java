@@ -153,6 +153,10 @@ public class BacktestService {
         return backtestHistoryRepository.get(aid);
     }
 
+    public List<BacktestHistory> getRanking() {
+        return backtestHistoryRepository.getRanking();
+    }
+
     public BacktestRequest getBacktestRequest(int aid) throws NoSuchElementException {
         return backtestHistoryRepository.getBacktestRequest(aid).orElseThrow();
     }

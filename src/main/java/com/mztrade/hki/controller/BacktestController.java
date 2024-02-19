@@ -140,6 +140,13 @@ public class BacktestController {
         return new ResponseEntity<>(backtestHistories, HttpStatus.OK);
     }
 
+    @GetMapping("/backtest/ranking")
+    public ResponseEntity<List<BacktestHistory>> getBacktestRanking() {
+        List<BacktestHistory> backtestHistories = backtestService.getRanking();
+        System.out.print(backtestHistories);
+        return new ResponseEntity<>(backtestHistories, HttpStatus.OK);
+    }
+
     @GetMapping("/backtest/search")
     public ResponseEntity<List<BacktestHistory>> searchBacktestHistory(
             @RequestParam Integer uid,

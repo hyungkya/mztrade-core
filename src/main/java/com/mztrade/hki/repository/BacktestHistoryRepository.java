@@ -60,6 +60,24 @@ public class BacktestHistoryRepository {
         }
     }
 
+    public List<BacktestHistory> getRanking() {
+        MapSqlParameterSource src = new MapSqlParameterSource();
+        try {
+            return this.template.query(
+                    "SELECT b.aid, b.uid, b.param, b.plratio FROM hkidb.backtest_history b ORDER BY b.plratio DESC LIMIT 5",
+                    src,
+                    (rs, rowNum) -> BacktestHistory.builder()
+                            .uid(rs.getInt("b.uid"))
+                            .aid(rs.getInt("b.aid"))
+                            .param(rs.getString("b.param"))
+                            .plratio(rs.getDouble("b.plratio"))
+                            .build()
+            );
+        } catch (DataAccessException e) {
+            return null;
+        }
+    }
+
     public Optional<BacktestRequest> getBacktestRequest(int aid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER);
