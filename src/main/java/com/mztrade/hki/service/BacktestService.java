@@ -79,17 +79,23 @@ public class BacktestService {
 
                 // check buy conditions and buy
                 for (List<Condition> buyConditionGroup : buyConditions) {
+                    log.info("buyCondition for loop depths 1");
                     // check concurrent trading limit
                     if (!orderService.getPositions(aid).contains(ticker) && orderService.getPositions(aid).size() >= maxTradingCount) {
+                        log.info("condition 1: " + !orderService.getPositions(aid).contains(ticker));
+                        log.info("condition 2: " + (orderService.getPositions(aid).size() >= maxTradingCount));
+                        log.info("condition sum: " + (!orderService.getPositions(aid).contains(ticker) && orderService.getPositions(aid).size() >= maxTradingCount));
                         continue;
                     }
                     buyFlag = true;
                     for (Condition buyCondition : buyConditionGroup) {
+                        log.info("buyCondition for loop depths 2a");
                         if (!buyCondition.check(collectedBars.get(ticker))) {
                             buyFlag = false;
                         }
                     }
                     if (buyFlag) {
+                        log.info("buyFlag on");
                         if (dcaStatus.get(ticker) < dca.size()) {
                             double targetBuyAmount = dca.get(dcaStatus.get(ticker)) * maxSingleTickerTradingBalance;
                             int currentPrice = collectedBars.get(ticker).get(collectedBars.size() - 1).getClose();
