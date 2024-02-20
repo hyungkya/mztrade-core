@@ -241,12 +241,13 @@ public class BacktestController {
     public ResponseEntity<List<Bar>> getPricesByTicker(
             @RequestParam String ticker
     ) {
-        log.info(String.format("[GET] /stock+price/ticker=%s",ticker));
+        log.info(String.format("[GET] /stock_price/ticker=%s",ticker));
         return new ResponseEntity<>(stockPriceService.getPrices(ticker), HttpStatus.OK);
     }
 
     @GetMapping("/stock")
     public ResponseEntity<List<StockInfo>> getAllStockInfo() {
+        log.info("[GET] /stock");
         return new ResponseEntity<>(stockPriceService.getAllStockInfo(), HttpStatus.OK);
     }
 
