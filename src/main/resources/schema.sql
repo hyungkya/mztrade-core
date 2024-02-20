@@ -8,7 +8,15 @@ CREATE TABLE hkidb.customers (
                                  password    VARCHAR(30) NOT NULL
 );
 
+CREATE TABLE hkidb.tag (
+                           tid         INT         NOT NULL     AUTO_INCREMENT     PRIMARY KEY,
+                           tname       VARCHAR(16) NOT NULL,
+                           tcolor      VARCHAR(10) NOT NULL,
+                           uid         INT         NOT NULL,
+                           category    INT         NOT NULL,
 
+                           FOREIGN KEY (uid) REFERENCES hkidb.customers (uid)
+);
 
 CREATE TABLE hkidb.order_type (
                                   otid        INT         NOT NULL    PRIMARY KEY,
@@ -32,6 +40,15 @@ CREATE TABLE hkidb.stock_info (
                                   market_capital INTEGER  NOT NULL,
 
                                   PRIMARY KEY (ticker)
+);
+
+CREATE TABLE hkidb.stock_info_tag (
+                                      ticker      VARCHAR(16) NOT NULL,
+                                      tid         INT         NOT NULL,
+
+                                      PRIMARY KEY (ticker, tid),
+                                      FOREIGN KEY (ticker) REFERENCES hkidb.stock_info (ticker)  ON DELETE CASCADE,
+                                      FOREIGN KEY (tid) REFERENCES hkidb.tag (tid)  ON DELETE CASCADE
 );
 
 CREATE TABLE hkidb.order_history (
@@ -81,4 +98,13 @@ CREATE TABLE hkidb.backtest_history (
                                         PRIMARY KEY (aid),
                                         FOREIGN KEY (uid) REFERENCES hkidb.customers (uid),
                                         FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE
+);
+
+CREATE TABLE hkidb.backtest_history_tag (
+                                            aid         INT         NOT NULL,
+                                            tid         INT         NOT NULL,
+
+                                            PRIMARY KEY (aid, tid),
+                                            FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE,
+                                            FOREIGN KEY (tid) REFERENCES hkidb.tag (tid) ON DELETE CASCADE
 );

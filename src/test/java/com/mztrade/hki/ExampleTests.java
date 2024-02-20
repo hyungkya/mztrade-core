@@ -1,7 +1,12 @@
 package com.mztrade.hki;
 
+import com.mztrade.hki.entity.Tag;
+import com.mztrade.hki.entity.TagCategory;
+import com.mztrade.hki.entity.User;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.repository.BacktestHistoryRepository;
+import com.mztrade.hki.repository.TagRepository;
+import com.mztrade.hki.repository.UserRepository;
 import com.mztrade.hki.service.OrderService;
 import com.mztrade.hki.service.StatisticService;
 import org.assertj.core.data.Offset;
@@ -23,6 +28,9 @@ public class ExampleTests {
     private OrderService orderService;
     @Autowired
     private StatisticService statisticService;
+
+    @Autowired
+    private TagRepository tagRepository;
 
 
     @Test
@@ -67,6 +75,21 @@ public class ExampleTests {
         assertThat(
                 statisticService.getTickerProfit(1, "005380")
         ).isCloseTo(0.0547521, Offset.offset(0.0000001));
+    }
+
+    @Test
+    void simpleTagTest() {
+        tagRepository.createTag(1, "매매법1", "0xFFFFFFFF", TagCategory.STOCK_INFO);
+        tagRepository.createTag(1, "매매법2", "0xFFFFFFFF", TagCategory.STOCK_INFO);
+        tagRepository.createTag(1, "종목분류1", "0xFFFFFFFF", TagCategory.STOCK_INFO);
+        tagRepository.createTag(1, "종목분류2", "0xFFFFFFFF", TagCategory.STOCK_INFO);
+
+        tagRepository.findByCategory(1, TagCategory.STOCK_INFO);
+
+        tagRepository.deleteById(0);
+        tagRepository.deleteById(1);
+
+        tagRepository.findByCategory(1, TagCategory.STOCK_INFO);
     }
 
 }
