@@ -2,9 +2,7 @@ package com.mztrade.hki.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mztrade.hki.entity.Bar;
-import com.mztrade.hki.entity.Order;
-import com.mztrade.hki.entity.StockInfo;
+import com.mztrade.hki.entity.*;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.entity.backtest.Condition;
@@ -37,6 +35,8 @@ public class BacktestController {
     private AccountService accountService;
 
     private StatisticService statisticService;
+
+    private TagService tagService;
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -45,6 +45,7 @@ public class BacktestController {
                               OrderService orderService,
                               AccountService accountService,
                               StatisticService statisticService,
+                              TagService tagService,
                               ObjectMapper objectMapper)
     {
         this.backtestService = backtestService;
@@ -52,7 +53,9 @@ public class BacktestController {
         this.orderService = orderService;
         this.accountService = accountService;
         this.statisticService = statisticService;
+        this.tagService = tagService;
         this.objectMapper = objectMapper;
+
     }
 
     @PostMapping("/execute")
@@ -189,6 +192,41 @@ public class BacktestController {
         return highestProfitLossRatioAid.map(
                         aid -> new ResponseEntity<>(backtestService.get(aid), HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(null, HttpStatus.OK));
+    }
+    @GetMapping("/stock_info/tag")
+    public List<Tag> getStockInfoTag(
+            @RequestParam Integer uid
+    ) {
+        List<Tag> tags = tagService.getStockInfoTag(uid);
+        log.info(String.format("[GET] /stock_info/tag/uid=%s",uid));
+        return tags;
+    }
+
+    @GetMapping("/backtest/tag")
+    public List<Tag> getBacktestHistoryTag(
+            @RequestParam Integer uid
+    ) {
+        List<Tag> tags = tagService.getBacktestHistoryTag(uid);
+        log.info(String.format("[GET] /backtest/tag/uid=%s",uid));
+        return tags;
+    }
+
+    @PostMapping("/tag")
+    public boolean createTag(
+            @RequestBody TagRequest tagRequest
+    ) {
+        int create = tagService.createTag(tagRequest.getUid(),tagRequest.getName(),tagRequest.getColor(),tagRequest.getCategory());
+        log.info(String.format("[POST] /tag tag=%s",tagRequest));
+        return create > 0;
+    }
+
+    @DeleteMapping("/tag")
+    public boolean deleteTag(
+            @RequestParam Integer tid
+    ) {
+        boolean delete = tagService.deleteTag(tid);
+        log.info(String.format("[DELETE] /tag/tid=%s",tid));
+        return delete;
     }
 
     @GetMapping("/order_history")
