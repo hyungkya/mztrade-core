@@ -46361,7 +46361,12 @@ values  (1, 1, '{"dca": [0.25, 0.25, 0.25, 0.25], "uid": "1", "title": "포스�
 
 INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '뇌절매매', '0xFF005b96', 1);
 INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '코스피', '0xFFf6abb6', 1);
-INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '코스닥쳐', '0xFFf6cd61', 1);
-INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '뇌절매매', '0xFF005b96', 2);
-INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '코스피', '0xFFf6abb6', 2);
 INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '코스닥쳐', '0xFFf6cd61', 2);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '뇌절매매', '0xFF005b96', 2);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '코스피', '0xFFf6abb6', 1);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '코스닥쳐', '0xFFf6cd61', 1);
+
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000270', 1);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('005930', 2);
+INSERT INTO hkidb.backtest_history_tag (aid, tid) VALUES (1, 3);
+INSERT INTO hkidb.backtest_history_tag (aid, tid) VALUES (1, 4);
