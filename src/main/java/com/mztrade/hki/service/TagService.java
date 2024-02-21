@@ -53,6 +53,18 @@ public class TagService {
         return delete;
     }
 
+    public boolean createBacktestHistoryTagLink(int tid, int aid) {
+        boolean isProcessed = tagRepository.createBacktestHistoryTagLink(tid, aid);
 
+        log.debug(String.format("createBacktestHistoryTagLink(tid: %d, aid: %d) -> isProcessed: %b", tid, aid, isProcessed));
+        return isProcessed;
+    }
+
+    public boolean deleteBacktestHistoryTagLink(int tid, int aid) {
+        boolean isProcessed = tagRepository.deleteBacktestHistoryTagLink(tid, aid);
+
+        log.debug(String.format("deleteBacktestHistoryTagLink(tid: %d, aid: %d) -> isProcessed: %b", tid, aid, isProcessed));
+        return isProcessed;
+    }
 
 }

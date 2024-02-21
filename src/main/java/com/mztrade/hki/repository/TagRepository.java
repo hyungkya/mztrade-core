@@ -89,4 +89,24 @@ public class TagRepository {
         }
         return deletedRows == 1 ? true : false;
     }
+
+    public boolean createBacktestHistoryTagLink(int tid, int aid) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("tid", tid, Types.INTEGER)
+                .addValue("aid", aid, Types.INTEGER);
+        int affectedRows = this.template.update(
+                "INSERT INTO hkidb.backtest_history_tag (tid, aid) VALUES (:tid, :aid)",
+                src);
+        return affectedRows == 1 ? true : false;
+    }
+
+    public boolean deleteBacktestHistoryTagLink(int tid, int aid) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("tid", tid, Types.INTEGER)
+                .addValue("aid", aid, Types.INTEGER);
+        int affectedRows = this.template.update(
+                "DELETE FROM hkidb.backtest_history_tag bht WHERE bht.tid = :tid AND bht.aid = :aid",
+                src);
+        return affectedRows == 1 ? true : false;
+    }
 }

@@ -221,6 +221,26 @@ public class BacktestController {
         return tags;
     }
 
+    @PostMapping("/backtest/tag-link")
+    public ResponseEntity<Boolean> createBacktestHistoryTagLink(
+        @RequestParam Integer tid,
+        @RequestParam Integer aid
+    ) {
+        Boolean isProcessed = tagService.createBacktestHistoryTagLink(tid, aid);
+        log.info(String.format("[POST] /backtest/tag-link/tid=%s&aid=%s",tid,aid));
+        return new ResponseEntity<>(isProcessed, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/backtest/tag-link")
+    public ResponseEntity<Boolean> deleteBacktestHistoryTagLink(
+            @RequestParam Integer tid,
+            @RequestParam Integer aid
+    ) {
+        Boolean isProcessed = tagService.deleteBacktestHistoryTagLink(tid, aid);
+        log.info(String.format("[DELETE] /backtest/tag-link/tid=%s&aid=%s",tid,aid));
+        return new ResponseEntity<>(isProcessed, HttpStatus.OK);
+    }
+
     @PostMapping("/tag")
     public boolean createTag(
             @RequestBody TagRequest tagRequest
