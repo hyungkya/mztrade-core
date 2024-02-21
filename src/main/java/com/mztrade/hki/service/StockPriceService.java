@@ -130,6 +130,12 @@ public class StockPriceService {
         return stockInfos;
     }
 
+    public List<StockInfo> searchStockInfoByName(String name) {
+        List<StockInfo> stockInfos = stockInfoRepository.findByName(name);
+        log.debug(String.format("[StockPriceService] searchStockInfoByName(name: %s) -> StockInfo:%s", name, stockInfos));
+        return stockInfos;
+    }
+
     public Map<LocalDateTime, Double> getIndicator(String ticker, String type, List<Float> params) {
         List<Bar> bars = stockPriceRepository.findByTicker(ticker);
         Map<LocalDateTime, Double> result = new HashMap<>();

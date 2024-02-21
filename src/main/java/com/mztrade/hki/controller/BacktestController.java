@@ -281,6 +281,14 @@ public class BacktestController {
         return new ResponseEntity<>(stockPriceService.getAllStockInfo(), HttpStatus.OK);
     }
 
+    @GetMapping("/stock/search")
+    public ResponseEntity<List<StockInfo>> searchStockInfoByName(
+            @RequestParam String name
+    ) {
+        log.info("[GET] /stock/search?name=%s", name);
+        return new ResponseEntity<>(stockPriceService.searchStockInfoByName(name), HttpStatus.OK);
+    }
+
     @GetMapping("/stock_price/indicator")
     public ResponseEntity<Map<LocalDateTime, Double>> getIndicatorByTicker(
             @RequestParam String ticker,
