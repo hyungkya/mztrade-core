@@ -211,6 +211,16 @@ public class BacktestController {
         return tags;
     }
 
+    @GetMapping("/backtest/tag-by-aid")
+    public List<Tag> getBacktestHistoryTag(
+            @RequestParam Integer uid,
+            @RequestParam Integer aid
+    ) {
+        List<Tag> tags = tagService.getBacktestHistoryTagByAid(uid,aid);
+        log.info(String.format("[GET] /backtest/tag/uid=%s&aid=%s",uid,aid));
+        return tags;
+    }
+
     @PostMapping("/tag")
     public boolean createTag(
             @RequestBody TagRequest tagRequest

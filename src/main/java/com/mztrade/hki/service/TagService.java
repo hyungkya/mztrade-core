@@ -33,6 +33,13 @@ public class TagService {
         return tags;
     }
 
+    public List<Tag> getBacktestHistoryTagByAid(int uid, int aid) {
+        List<Tag> tags = tagRepository.findByAid(uid, aid);
+
+        log.debug(String.format("getBacktestHistoryTagByAid(uid: %s,aid: %s) -> %s",uid, aid, tags));
+        return tags;
+    }
+
     public int createTag(int uid,String name, String color, String category) {
         int tid = tagRepository.createTag(uid,name,color, TagCategory.valueOf(category));
 

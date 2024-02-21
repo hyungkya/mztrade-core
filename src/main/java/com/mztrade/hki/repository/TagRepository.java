@@ -59,6 +59,24 @@ public class TagRepository {
         );
     }
 
+    public List<Tag> findByAid(int uid, int aid) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER)
+                .addValue("aid", aid, Types.INTEGER);
+        return this.template.query(
+                "SELECT t.uid, t.tid, t.tname, t.tcolor, t.category FROM hkidb.tag t JOIN hkidb.backtest_history_tag bht ON t.tid = bht.tid WHERE t.uid = :uid AND bht.aid = :aid",
+                src,
+                (rs, rowNum) ->
+                        Tag.builder()
+                                .uid(rs.getInt("t.uid"))
+                                .tid(rs.getInt("t.tid"))
+                                .tname(rs.getString("t.tname"))
+                                .tcolor(rs.getString("t.tcolor"))
+                                .category(rs.getInt("t.category"))
+                                .build()
+        );
+    }
+
     public boolean deleteById(int tid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("tid", tid, Types.INTEGER);
