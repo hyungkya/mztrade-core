@@ -148,4 +148,31 @@ public class TagRepository {
                 src);
         return affectedRows == 1 ? true : false;
     }
+
+    public List<StockInfo> findStockInfoByNameAndTags(int uid, String name, List<Integer> tids) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER)
+                .addValue("name", name + "%", Types.VARCHAR)
+                .addValue("tids", tids)
+                .addValue("tid_length", tids.size(), Types.INTEGER);
+        return this.template.query(
+                "SELECT si.* " +
+                        "FROM hkidb.stock_info si " +
+                        "WHERE si.name LIKE :name AND si.ticker IN ( " +
+                        "    SELECT sit.ticker " +
+                        "    FROM hkidb.stock_info_tag sit " +
+                        "    JOIN hkidb.tag t ON sit.tid = t.tid AND sit.tid IN (:tids) " +
+                        "    WHERE t.uid = :uid " +
+                        "    GROUP BY sit.ticker " +
+                        "    HAVING COUNT(DISTINCT sit.tid) = :tid_length);",
+                src,
+                (rs, rowNum) ->
+                        StockInfo.builder()
+                                .ticker(rs.getString("ticker"))
+                                .name(rs.getString("name"))
+                                .listedDate(rs.getDate("listed_date").toLocalDate())
+                                .marketCapital(rs.getInt("market_capital"))
+                                .build()
+        );
+    }
 }

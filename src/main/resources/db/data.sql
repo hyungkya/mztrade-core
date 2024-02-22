@@ -46359,14 +46359,48 @@ values  (1, '000270', 15, 52600.00),
 insert into hkidb.backtest_history (uid, aid, param, plratio)
 values  (1, 1, '{"dca": [0.25, 0.25, 0.25, 0.25], "uid": "1", "title": "포스트맨예시", "tickers": ["000270", "000660", "003670", "005380", "005490"], "end_date": "20151231", "start_date": "20120101", "max_trading": "3", "buy_conditions": [[{"frequency": "1, 1", "compare_type": ">", "base_indicator": "MACD_SIGNAL, 12, 26, 9", "constant_bound": "0", "target_indicator": "MACD, 12, 26"}]], "initial_balance": "10000000", "sell_conditions": [[{"frequency": "1, 1", "compare_type": "<", "base_indicator": "MACD_SIGNAL, 12, 26, 9", "constant_bound": "0", "target_indicator": "MACD, 12, 26"}]]}', 0.2553316000000001);
 
-INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '뇌절매매', '0xFF005b96', 1);
-INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '코스피', '0xFFf6abb6', 1);
-INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '코스닥', '0xFFf6cd61', 2);
-INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '뇌절매매', '0xFF005b96', 2);
-INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '코스피', '0xFFf6abb6', 1);
-INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '코스닥', '0xFFf6cd61', 1);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '종목 정보 1번 태그', '0xFFFFB3CB', 1);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '종목 정보 2번 태그', '0xFFFFDE7A', 1);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '종목 정보 3번 태그', '0xFF81FF75', 1);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '종목 정보 4번 태그', '0xFF7DFFDC', 1);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '종목 정보 5번 태그', '0xFF9ED5FF', 1);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '종목 정보 6번 태그', '0xFFAD7AFF', 1);
+
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '백테스팅 기록 1번 태그', '0xFF005b96', 2);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '백테스팅 기록 2번 태그', '0xFFFFDE7A', 2);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '백테스팅 기록 3번 태그', '0xFF81FF75', 2);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '백테스팅 기록 4번 태그', '0xFF7DFFDC', 2);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '백테스팅 기록 5번 태그', '0xFF9ED5FF', 2);
+INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '백테스팅 기록 6번 태그', '0xFFAD7AFF', 2);
 
 INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000270', 1);
-INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('005930', 2);
-INSERT INTO hkidb.backtest_history_tag (aid, tid) VALUES (1, 3);
-INSERT INTO hkidb.backtest_history_tag (aid, tid) VALUES (1, 4);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000270', 1);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000270', 1);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000270', 1);
+
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000660', 1);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000660', 2);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000660', 3);
+
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('003670', 1);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('003670', 3);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('003670', 4);
+
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('005380', 2);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('005380', 3);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('005380', 5);
+
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('005490', 2);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('005490', 3);
+
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('005930', 5);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('005930', 6);
+
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('006400', 6);
+
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('012330', 2);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('012330', 2);
+
+
+INSERT INTO hkidb.backtest_history_tag (aid, tid) VALUES (1, 7);
+INSERT INTO hkidb.backtest_history_tag (aid, tid) VALUES (1, 8);

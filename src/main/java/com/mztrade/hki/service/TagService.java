@@ -1,5 +1,6 @@
 package com.mztrade.hki.service;
 
+import com.mztrade.hki.entity.StockInfo;
 import com.mztrade.hki.entity.Tag;
 import com.mztrade.hki.entity.TagCategory;
 import com.mztrade.hki.repository.TagRepository;
@@ -86,5 +87,12 @@ public class TagService {
 
         log.debug(String.format("deleteStockInfoTagLink(tid: %d, ticker: %s) -> isProcessed: %b", tid, ticker, isProcessed));
         return isProcessed;
+    }
+
+    public List<StockInfo> findStockInfoByNameAndTags(int uid, String name, List<Integer> tids) {
+        List<StockInfo> stockInfos = tagRepository.findStockInfoByNameAndTags(uid, name, tids);
+
+        log.debug(String.format("findStockInfoByNameAndTags(uid: %d, name: %s, tids: %s) -> stockInfos: %b", uid, name, tids, stockInfos));
+        return stockInfos;
     }
 }
