@@ -1,6 +1,7 @@
 package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mztrade.hki.entity.StockInfo;
 import com.mztrade.hki.entity.Tag;
 import com.mztrade.hki.entity.TagCategory;
 import com.mztrade.hki.entity.User;
@@ -77,6 +78,24 @@ public class TagRepository {
         );
     }
 
+    public List<Tag> findByTicker(Integer uid, String ticker) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER)
+                .addValue("ticker", ticker, Types.VARCHAR);
+        return this.template.query(
+                "SELECT t.uid, t.tid, t.tname, t.tcolor, t.category FROM hkidb.tag t JOIN hkidb.stock_info_tag sit ON t.tid = sit.tid WHERE t.uid = :uid AND sit.ticker LIKE :ticker",
+                src,
+                (rs, rowNum) ->
+                        Tag.builder()
+                                .uid(rs.getInt("t.uid"))
+                                .tid(rs.getInt("t.tid"))
+                                .tname(rs.getString("t.tname"))
+                                .tcolor(rs.getString("t.tcolor"))
+                                .category(rs.getInt("t.category"))
+                                .build()
+        );
+    }
+
     public boolean deleteById(int tid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("tid", tid, Types.INTEGER);
@@ -106,6 +125,26 @@ public class TagRepository {
                 .addValue("aid", aid, Types.INTEGER);
         int affectedRows = this.template.update(
                 "DELETE FROM hkidb.backtest_history_tag bht WHERE bht.tid = :tid AND bht.aid = :aid",
+                src);
+        return affectedRows == 1 ? true : false;
+    }
+
+    public boolean createStockInfoTagLink(int tid, String ticker) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("tid", tid, Types.INTEGER)
+                .addValue("ticker", ticker, Types.VARCHAR);
+        int affectedRows = this.template.update(
+                "INSERT INTO hkidb.stock_info_tag (tid, ticker) VALUES (:tid, :ticker)",
+                src);
+        return affectedRows == 1 ? true : false;
+    }
+
+    public boolean deleteStockInfoTagLink(int tid, String ticker) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("tid", tid, Types.INTEGER)
+                .addValue("ticker", ticker, Types.VARCHAR);
+        int affectedRows = this.template.update(
+                "DELETE FROM hkidb.stock_info_tag sit WHERE sit.tid = :tid AND sit.ticker LIKE :ticker",
                 src);
         return affectedRows == 1 ? true : false;
     }

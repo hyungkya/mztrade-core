@@ -40,6 +40,13 @@ public class TagService {
         return tags;
     }
 
+    public List<Tag> getStockInfoTagByTicker(Integer uid, String ticker) {
+        List<Tag> tags = tagRepository.findByTicker(uid, ticker);
+
+        log.debug(String.format("getStockInfoTagByTicker(uid: %s,ticker: %s) -> %s",uid, ticker, tags));
+        return tags;
+    }
+
     public int createTag(int uid,String name, String color, String category) {
         int tid = tagRepository.createTag(uid,name,color, TagCategory.valueOf(category));
 
@@ -67,4 +74,17 @@ public class TagService {
         return isProcessed;
     }
 
+    public boolean createStockInfoTagLink(int tid, String ticker) {
+        boolean isProcessed = tagRepository.createStockInfoTagLink(tid, ticker);
+
+        log.debug(String.format("createStockInfoTagLink(tid: %d, ticker: %s) -> isProcessed: %b", tid, ticker, isProcessed));
+        return isProcessed;
+    }
+
+    public boolean deleteStockInfoTagLink(int tid, String ticker) {
+        boolean isProcessed = tagRepository.deleteStockInfoTagLink(tid, ticker);
+
+        log.debug(String.format("deleteStockInfoTagLink(tid: %d, ticker: %s) -> isProcessed: %b", tid, ticker, isProcessed));
+        return isProcessed;
+    }
 }

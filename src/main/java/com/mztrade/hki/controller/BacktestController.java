@@ -194,12 +194,42 @@ public class BacktestController {
                 .orElseGet(() -> new ResponseEntity<>(null, HttpStatus.OK));
     }
     @GetMapping("/stock_info/tag")
-    public List<Tag> getStockInfoTag(
+    public ResponseEntity<List<Tag>> getStockInfoTag(
             @RequestParam Integer uid
     ) {
         List<Tag> tags = tagService.getStockInfoTag(uid);
         log.info(String.format("[GET] /stock_info/tag/uid=%s",uid));
-        return tags;
+        return new ResponseEntity<>(tags, HttpStatus.OK);
+    }
+
+    @GetMapping("/stock_info/tag-by-ticker")
+    public ResponseEntity<List<Tag>> getStockInfoTagByTicker(
+            @RequestParam Integer uid,
+            @RequestParam String ticker
+    ) {
+        List<Tag> tags = tagService.getStockInfoTagByTicker(uid, ticker);
+        log.info(String.format("[GET] /stock_info/tag/uid=%s&ticker=%s", uid, ticker));
+        return new ResponseEntity<>(tags, HttpStatus.OK);
+    }
+
+    @PostMapping("/stock_info/tag-link")
+    public ResponseEntity<Boolean> createStockInfoTagLink(
+            @RequestParam Integer tid,
+            @RequestParam String ticker
+    ) {
+        Boolean isProcessed = tagService.createStockInfoTagLink(tid, ticker);
+        log.info(String.format("[POST] /stock_info/tag-link/tid=%s&ticker=%s",tid,ticker));
+        return new ResponseEntity<>(isProcessed, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/stock_info/tag-link")
+    public ResponseEntity<Boolean> deleteStockInfoTagLink(
+            @RequestParam Integer tid,
+            @RequestParam String ticker
+    ) {
+        Boolean isProcessed = tagService.deleteStockInfoTagLink(tid, ticker);
+        log.info(String.format("[DELETE] /stock_info/tag-link/tid=%s&ticker=%s",tid,ticker));
+        return new ResponseEntity<>(isProcessed, HttpStatus.OK);
     }
 
     @GetMapping("/backtest/tag")
