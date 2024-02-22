@@ -1,19 +1,24 @@
 spring:
-    datasource:
-        driver-class-name: com.mysql.cj.jdbc.Driver
-        username: ${RDS_USERNAME}
-        url: jdbc:mysql://${RDS_HOSTNAME}:${RDS_PORT}/hkidb
-        password: ${RDS_PASSWORD}
-    jackson:
-        property-naming-strategy: SNAKE_CASE
-    jpa:
-        defer-datasource-initialization: true
-    sql:
-        init:
-            mode: always
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${RDS_USERNAME}
+    url: jdbc:mysql://${RDS_HOSTNAME}:${RDS_PORT}/hkidb?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+    password: ${RDS_PASSWORD}
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  jpa:
+    defer-datasource-initialization: true
+
+  sql:
+    schema-locations: classpath:/db/schema.sql
+    data-locations: classpath:/db/data.sql
+    init:
+      mode: always
+
+
 
 server.port: ${SERVER_PORT}
 
 logging:
-    level:
-        com.mztrade: info
+  level:
+    com.mztrade: info

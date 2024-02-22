@@ -11,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
 @SpringBootTest
-@Sql(scripts = {"classpath:schema.sql"})
+@Sql(scripts = {"classpath:db/schema.sql"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 
 public class AccountTests {

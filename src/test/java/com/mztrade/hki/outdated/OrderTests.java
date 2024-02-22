@@ -2,12 +2,10 @@ package com.mztrade.hki.outdated;
 
 import com.mztrade.hki.Util;
 import com.mztrade.hki.entity.Position;
-import com.mztrade.hki.entity.Order;
 import com.mztrade.hki.service.AccountService;
 import com.mztrade.hki.service.OrderService;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Percentage;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @SpringBootTest
-@Sql(scripts = {"classpath:schema.sql", "classpath:data.sql"})
+@Sql(scripts = {"classpath:db/schema.sql", "classpath:db/data.sql"})
 public class OrderTests {
     @Autowired
     private AccountService accountService;
