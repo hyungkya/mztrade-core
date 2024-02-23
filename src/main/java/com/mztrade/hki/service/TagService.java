@@ -61,6 +61,12 @@ public class TagService {
         return delete;
     }
 
+    public boolean updateTag(int tid,String name, String color) {
+        boolean update = tagRepository.updateTag(tid,name,color);
+        log.debug(String.format("updateTag(tid: %s, name: %s, color: %s) -> update:%s",tid,name,color,update));
+        return update;
+    }
+
     public boolean createBacktestHistoryTagLink(int tid, int aid) {
         boolean isProcessed = tagRepository.createBacktestHistoryTagLink(tid, aid);
 
@@ -95,4 +101,6 @@ public class TagService {
         log.debug(String.format("findStockInfoByNameAndTags(uid: %d, name: %s, tids: %s) -> stockInfos: %b", uid, name, tids, stockInfos));
         return stockInfos;
     }
+
+
 }

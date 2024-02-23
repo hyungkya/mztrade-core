@@ -172,6 +172,19 @@ public class BacktestController {
         return new ResponseEntity<>(queryResult, HttpStatus.OK);
     }
 
+    @GetMapping("/backtest/search-by-tags")
+    public ResponseEntity<List<BacktestHistory>> searchBacktestHistoryWithTags(
+            @RequestParam Integer uid,
+            @RequestParam String title,
+            @RequestParam List<Integer> tids
+    ) {
+        List<BacktestHistory> queryResult = backtestService.searchBacktestHistoryByTags(uid, title, tids);
+
+        log.info(String.format("[GET] /backtest/search-by-tags/uid=%s&title=%s&tids=%s",uid,title,tids));
+
+        return new ResponseEntity<>(queryResult, HttpStatus.OK);
+    }
+
     @DeleteMapping("/backtest")
     public ResponseEntity<Boolean> deleteAccount(
             @RequestParam Integer aid
@@ -287,6 +300,17 @@ public class BacktestController {
         boolean delete = tagService.deleteTag(tid);
         log.info(String.format("[DELETE] /tag/tid=%s",tid));
         return delete;
+    }
+
+    @PutMapping("/tag")
+    public boolean updateTag(
+            @RequestParam Integer tid,
+            @RequestParam String name,
+            @RequestParam String color
+    ) {
+        boolean update = tagService.updateTag(tid,name,color);
+        log.info(String.format("[PUT] /tag/tid=%s&name=%s&color=%s",tid,name,color));
+        return update;
     }
 
     @GetMapping("/order_history")

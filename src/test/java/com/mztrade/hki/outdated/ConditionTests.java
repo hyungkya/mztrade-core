@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @SpringBootTest
-@Sql(scripts = {"classpath:db/schema.sql", "classpath:db/stock_info_1205.sql", "classpath:db/stock_price_1205.sql"})
+@Sql(scripts = {"classpath:schema.sql", "classpath:db/stock_info_1205.sql", "classpath:db/stock_price_1205.sql"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 
 public class ConditionTests {

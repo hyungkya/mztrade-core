@@ -5,6 +5,7 @@ import com.mztrade.hki.entity.StockInfo;
 import com.mztrade.hki.entity.Tag;
 import com.mztrade.hki.entity.TagCategory;
 import com.mztrade.hki.entity.User;
+import com.mztrade.hki.entity.backtest.BacktestHistory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -41,6 +42,19 @@ public class TagRepository {
                 keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).intValue();
     }
+
+    public boolean updateTag(int tid, String name, String color) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("tid", tid, Types.INTEGER)
+                .addValue("name", name, Types.VARCHAR)
+                .addValue("color", color, Types.VARCHAR);
+        int updateRow = this.template.update(
+                "UPDATE hkidb.tag SET tname = :name, tcolor = :color WHERE tid = :tid",
+                src);
+        return updateRow == 1;
+    }
+
+
 
     public List<Tag> findByCategory(int uid, TagCategory category) {
         MapSqlParameterSource src = new MapSqlParameterSource()
@@ -175,4 +189,6 @@ public class TagRepository {
                                 .build()
         );
     }
+
+
 }

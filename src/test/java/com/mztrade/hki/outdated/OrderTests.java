@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @SpringBootTest
-@Sql(scripts = {"classpath:db/schema.sql", "classpath:db/data.sql"})
+@Sql(scripts = {"classpath:schema.sql", "classpath:data.sql"})
 public class OrderTests {
     @Autowired
     private AccountService accountService;

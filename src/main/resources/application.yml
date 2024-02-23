@@ -8,10 +8,9 @@ spring:
     property-naming-strategy: SNAKE_CASE
   jpa:
     defer-datasource-initialization: true
-
   sql:
-    schema-locations: classpath:/db/schema.sql
-    data-locations: classpath:/db/data.sql
+    schema-locations: classpath:/schema.sql
+    data-locations: classpath:/data.sql
     init:
       mode: always
 

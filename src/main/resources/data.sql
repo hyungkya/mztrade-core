@@ -46374,9 +46374,9 @@ INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '백테스팅 �
 INSERT INTO hkidb.tag (uid, tname, tcolor, category) VALUES (1, '백테스팅 기록 6번 태그', '0xFFAD7AFF', 2);
 
 INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000270', 1);
-INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000270', 1);
-INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000270', 1);
-INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000270', 1);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000270', 2);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000270', 3);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000270', 4);
 
 INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000660', 1);
 INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('000660', 2);
@@ -46399,7 +46399,7 @@ INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('005930', 6);
 INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('006400', 6);
 
 INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('012330', 2);
-INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('012330', 2);
+INSERT INTO hkidb.stock_info_tag (ticker, tid) VALUES ('012330', 3);
 
 
 INSERT INTO hkidb.backtest_history_tag (aid, tid) VALUES (1, 7);

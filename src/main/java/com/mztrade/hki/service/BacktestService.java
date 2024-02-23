@@ -159,6 +159,12 @@ public class BacktestService {
         return backtestHistories;
     }
 
+    public List<BacktestHistory> searchBacktestHistoryByTags(int uid, String title, List<Integer> tids) {
+        List<BacktestHistory> backtestHistories = backtestHistoryRepository.findBacktestHistoryByTitleAndTags(uid, title, tids);
+        log.debug(String.format("[BacktestService] searchBacktestHistoryByTags(uid: %d, title: %s, tids: %s) -> backtestHistories: %s", uid, title, tids, backtestHistories));
+        return backtestHistories;
+    }
+
     public Integer getNumberOfHistoryByUid(int uid) {
         int num = backtestHistoryRepository.getNumberOfHistoryByUid(uid);
         log.debug(String.format("[BacktestService] getNumberOfHistoryByUid(uid: %d) -> num: %d", uid, num));

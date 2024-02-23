@@ -141,4 +141,30 @@ public class BacktestHistoryRepository {
                 "DELETE FROM hkidb.backtest_history WHERE aid = :aid",
                 src);
     }
+
+    public List<BacktestHistory> findBacktestHistoryByTitleAndTags(int uid, String title, List<Integer> tids) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER)
+                .addValue("title", "%" + title + "%", Types.VARCHAR)
+                .addValue("tids", tids)
+                .addValue("tid_length", tids.size(), Types.INTEGER);
+        return this.template.query(
+                "SELECT b.* " +
+                        "FROM hkidb.backtest_history b " +
+                        "WHERE JSON_EXTRACT(b.param, '$.title') LIKE :title AND b.aid IN ( " +
+                        "    SELECT bit.aid " +
+                        "    FROM hkidb.backtest_history_tag bit " +
+                        "    JOIN hkidb.tag t ON bit.tid = t.tid AND bit.tid IN (:tids) " +
+                        "    WHERE t.uid = :uid " +
+                        "    GROUP BY bit.aid " +
+                        "    HAVING COUNT(DISTINCT bit.tid) = :tid_length);",
+                src,
+                (rs, rowNum) -> BacktestHistory.builder()
+                        .uid(rs.getInt("uid"))
+                        .aid(rs.getInt("aid"))
+                        .param(rs.getString("param"))
+                        .plratio(rs.getDouble("plratio"))
+                        .build()
+        );
+    }
 }
