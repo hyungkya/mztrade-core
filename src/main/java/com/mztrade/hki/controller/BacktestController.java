@@ -33,10 +33,9 @@ public class BacktestController {
     private StockPriceService stockPriceService;
     private OrderService orderService;
     private AccountService accountService;
-
     private StatisticService statisticService;
-
     private TagService tagService;
+    private ChartSettingService chartSettingService;
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -46,6 +45,7 @@ public class BacktestController {
                               AccountService accountService,
                               StatisticService statisticService,
                               TagService tagService,
+                              ChartSettingService chartSettingService,
                               ObjectMapper objectMapper)
     {
         this.backtestService = backtestService;
@@ -54,6 +54,7 @@ public class BacktestController {
         this.accountService = accountService;
         this.statisticService = statisticService;
         this.tagService = tagService;
+        this.chartSettingService = chartSettingService;
         this.objectMapper = objectMapper;
 
     }
@@ -313,6 +314,24 @@ public class BacktestController {
         return update;
     }
 
+    @GetMapping("/chart-setting")
+    public ChartSetting getChartSetting(
+            @RequestParam int uid
+    ) {
+        ChartSetting chartSetting = chartSettingService.get(uid);
+        log.info(String.format("[GET] /chart-setting/uid=%s",chartSetting));
+        return chartSetting;
+    }
+
+    @PutMapping("/chart-setting/save")
+    public boolean saveChartSetting(
+            @RequestParam ChartSetting chartSetting
+    ) {
+        boolean update = chartSettingService.save(chartSetting);
+        log.info(String.format("[PUT] /chart-setting/save?chartSetting=%s -> update:%b", chartSetting, update));
+        return update;
+    }
+
     @GetMapping("/order_history")
     public ResponseEntity<List<Order>> getOrderHistory(
             @RequestParam Integer aid
@@ -432,4 +451,6 @@ public class BacktestController {
         log.info(String.format("[GET] /statistic/ticker=alpha-profit/all/aid=%s",aid));
         return new ResponseEntity<>(statisticService.getTickerAlphaProfit(aid), HttpStatus.OK);
     }
+
+
 }

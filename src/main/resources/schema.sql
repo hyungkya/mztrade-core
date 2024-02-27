@@ -108,3 +108,22 @@ CREATE TABLE hkidb.backtest_history_tag (
                                             FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE,
                                             FOREIGN KEY (tid) REFERENCES hkidb.tag (tid) ON DELETE CASCADE
 );
+
+CREATE TABLE hkidb.chart_setting (
+                                        uid INT NOT NULL,
+                                        indicator JSON NOT NULL,
+
+                                        FOREIGN KEY (uid) REFERENCES hkidb.customers (uid)
+);
+
+
+CREATE TRIGGER hkidb.create_default_chart_setting
+AFTER INSERT ON hkidb.customers
+FOR EACH ROW
+BEGIN
+    INSERT INTO hkidb.chart_setting
+SET
+    uid = NEW.uid,
+    indicator = '{}';
+END
+
