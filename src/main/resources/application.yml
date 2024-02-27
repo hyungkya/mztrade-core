@@ -9,7 +9,6 @@ spring:
   jpa:
     defer-datasource-initialization: true
 
-
 server.port: ${SERVER_PORT}
 
 logging:

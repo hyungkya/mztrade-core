@@ -2,6 +2,7 @@ package com.mztrade.hki.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mztrade.hki.Util;
 import com.mztrade.hki.entity.*;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
@@ -36,6 +37,7 @@ public class BacktestController {
     private StatisticService statisticService;
     private TagService tagService;
     private ChartSettingService chartSettingService;
+    private IndicatorService indicatorService;
     private ObjectMapper objectMapper;
 
     @Autowired
@@ -46,6 +48,7 @@ public class BacktestController {
                               StatisticService statisticService,
                               TagService tagService,
                               ChartSettingService chartSettingService,
+                              IndicatorService indicatorService,
                               ObjectMapper objectMapper)
     {
         this.backtestService = backtestService;
@@ -55,6 +58,7 @@ public class BacktestController {
         this.statisticService = statisticService;
         this.tagService = tagService;
         this.chartSettingService = chartSettingService;
+        this.indicatorService = indicatorService;
         this.objectMapper = objectMapper;
 
     }
@@ -375,16 +379,18 @@ public class BacktestController {
     @GetMapping("/stock_price/indicator")
     public ResponseEntity<Map<LocalDateTime, Double>> getIndicatorByTicker(
             @RequestParam String ticker,
+            @RequestParam String startDate,
+            @RequestParam String endDate,
             @RequestParam String type,
             @RequestParam String param
     ) {
         List<Float> parsedParam = Stream.of(param.split(","))
                 .map(p -> Float.parseFloat(p.trim())).collect(Collectors.toList());
 
-        log.info(String.format("[GET] /stock_price/indicator/ticker=%s&type=%s&param=%s",ticker,type,param));
+        log.info(String.format("[GET] /stock_price/indicator/ticker=%s&startDate=%s&endDate=%s&type=%s&param=%s",ticker,startDate,endDate,type,param));
 
         return new ResponseEntity<>(
-                stockPriceService.getIndicator(ticker, type, parsedParam),
+                indicatorService.getIndicator(ticker, Util.stringToLocalDateTime(startDate), Util.stringToLocalDateTime(endDate), type, parsedParam),
                 HttpStatus.OK
         );
     }

@@ -135,16 +135,4 @@ public class StockPriceService {
         log.debug(String.format("[StockPriceService] searchStockInfoByName(name: %s) -> StockInfo:%s", name, stockInfos));
         return stockInfos;
     }
-
-    public Map<LocalDateTime, Double> getIndicator(String ticker, String type, List<Float> params) {
-        List<Bar> bars = stockPriceRepository.findByTicker(ticker);
-        Map<LocalDateTime, Double> result = new HashMap<>();
-        Indicator indicator = new Indicator(type, params);
-        for (int i = 1; i <= bars.size(); i++) {
-            result.put(bars.get(i-1).getDate(), indicator.calculate(bars.subList(0, i)));
-        }
-
-        log.debug(String.format("[StockPriceService] getIndicator(ticker: %s, type: %s, params: %s) -> indicator:%s", ticker,type,params,result));
-        return result;
-    }
 }
