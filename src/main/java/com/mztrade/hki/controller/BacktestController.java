@@ -323,16 +323,18 @@ public class BacktestController {
             @RequestParam int uid
     ) {
         ChartSetting chartSetting = chartSettingService.get(uid);
-        log.info(String.format("[GET] /chart-setting/uid=%s",chartSetting));
+        log.info(String.format("[GET] /chart-setting?uid=%s",chartSetting));
         return chartSetting;
     }
 
-    @PutMapping("/chart-setting/save")
+    @PutMapping("/chart-setting")
     public boolean saveChartSetting(
-            @RequestParam ChartSetting chartSetting
+            @RequestParam int uid,
+            @RequestParam String indicator
     ) {
+        ChartSetting chartSetting = ChartSetting.builder().uid(uid).indicator(indicator).build();
         boolean update = chartSettingService.save(chartSetting);
-        log.info(String.format("[PUT] /chart-setting/save?chartSetting=%s -> update:%b", chartSetting, update));
+        log.info(String.format("[PUT] /chart-setting?uid=%s&indicator=%s -> update:%b", uid, indicator, update));
         return update;
     }
 
@@ -382,15 +384,12 @@ public class BacktestController {
             @RequestParam String startDate,
             @RequestParam String endDate,
             @RequestParam String type,
-            @RequestParam String param
+            @RequestParam List<Float> param
     ) {
-        List<Float> parsedParam = Stream.of(param.split(","))
-                .map(p -> Float.parseFloat(p.trim())).collect(Collectors.toList());
-
         log.info(String.format("[GET] /stock_price/indicator/ticker=%s&startDate=%s&endDate=%s&type=%s&param=%s",ticker,startDate,endDate,type,param));
 
         return new ResponseEntity<>(
-                indicatorService.getIndicator(ticker, Util.stringToLocalDateTime(startDate), Util.stringToLocalDateTime(endDate), type, parsedParam),
+                indicatorService.getIndicator(ticker, Util.stringToLocalDateTime(startDate), Util.stringToLocalDateTime(endDate), type, param),
                 HttpStatus.OK
         );
     }

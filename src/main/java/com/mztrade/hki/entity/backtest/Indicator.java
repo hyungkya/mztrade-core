@@ -55,7 +55,7 @@ public class Indicator {
             return calculateBBLow(bars, params);
         }
         if (type.toUpperCase().matches("BBH")) {
-            return calculateBBLow(bars, params);
+            return calculateBBHigh(bars, params);
         }
         throw new IllegalArgumentException("No such indicator exists");
     }

@@ -20,7 +20,7 @@ public class ChartSettingService {
     }
 
     public boolean save(ChartSetting chartSetting) {
-        boolean isSuccess = chartSettingRepository.save(chartSetting);;
+        boolean isSuccess = chartSettingRepository.save(chartSetting);
         log.debug(String.format("[ChartSettingService] save(ChartSetting: %s) -> isSuccess: %b", chartSetting, isSuccess));
         return isSuccess;
     }
