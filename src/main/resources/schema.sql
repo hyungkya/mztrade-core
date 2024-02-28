@@ -124,7 +124,7 @@ CREATE TABLE hkidb.chart_setting (
                                         FOREIGN KEY (uid) REFERENCES hkidb.customers (uid)
 );
 
-
+DELIMITER //
 CREATE TRIGGER hkidb.create_default_chart_setting
 AFTER INSERT ON hkidb.customers
 FOR EACH ROW
@@ -133,5 +133,6 @@ BEGIN
 SET
     uid = NEW.uid,
     indicator = '{}';
-END
+END //
+DELIMITER ;
 
