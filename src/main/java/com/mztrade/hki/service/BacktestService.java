@@ -1,5 +1,6 @@
 package com.mztrade.hki.service;
 
+import com.mztrade.hki.entity.AccountHistory;
 import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.entity.Position;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
@@ -116,6 +117,15 @@ public class BacktestService {
                     }
                 }
             }
+            //계좌잔액기록
+            long balance = accountService.getBalance(aid);
+
+            for(Position p : orderService.getPositions(aid)){
+                Bar bar = stockPriceService.getAvailablePriceBefore(p.getTicker(),startDate).orElseThrow();
+                balance += (long) bar.getClose() * p.getQty();
+            };
+
+            accountService.createAccountHistory(aid,startDate,balance);
         }
         log.debug(String.format("[BacktestService] execute(uid: %d, initialBalance: %d, buyConditions: %s, " +
                 "sellConditions: %s, dca: %s, maxTradingCount: %d, targetTickers: %s, " +
@@ -197,4 +207,6 @@ public class BacktestService {
                 "backtestEndDate: %s) -> plratio: %f", initialBalance, aid, backtestEndDate, plratio));
         return plratio;
     }
+
+
 }

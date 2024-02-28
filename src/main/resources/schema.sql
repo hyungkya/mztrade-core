@@ -33,6 +33,14 @@ CREATE TABLE hkidb.account (
                                FOREIGN KEY (uid) REFERENCES hkidb.customers (uid)
 );
 
+CREATE TABLE hkidb.account_history (
+                               aid         INT         NOT NULL,
+                               date        TIMESTAMP        NOT NULL,
+                               balance     BIGINT      NOT NULL    DEFAULT 0,
+
+                               FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE
+);
+
 CREATE TABLE hkidb.stock_info (
                                   ticker      VARCHAR(16) NOT NULL,
                                   name        VARCHAR(64) NOT NULL,

@@ -1,11 +1,15 @@
 package com.mztrade.hki.service;
 
+import com.mztrade.hki.entity.AccountHistory;
 import com.mztrade.hki.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -56,4 +60,27 @@ public class AccountService {
         log.debug(String.format("[AccountService] withdraw(aid: %d, amount: %d) -> success: %b", aid, amount, isSuccess));
         return isSuccess;
     }
+
+    public boolean createAccountHistory(int aid, LocalDateTime date, long balance) {
+        boolean isSuccess = accountRepository.createAccountHistory(aid,date,balance);
+        log.debug(String.format("[AccountService] createAccountHistory(aid: %d, date: %s, balance:%d) -> isSuccess: %b", aid, date, balance, isSuccess));
+        return isSuccess;
+    }
+
+    public Map<LocalDateTime,Long> getPlRatio(Integer aid) {
+
+        List<AccountHistory> accountHistories = accountRepository.getAccountHistory(aid);
+        Map<LocalDateTime,Long> resultMap = new HashMap<>();
+
+        if(!accountHistories.isEmpty()) {
+            for(AccountHistory accountHistory : accountHistories) {
+                resultMap.put(accountHistory.getDate(),accountHistory.getBalance());
+            }
+        }
+
+        log.debug(String.format("[AccountService] getPlRatio(aid: %d) -> isSuccess: %b", aid, accountHistories));
+
+        return resultMap;
+    }
+
 }
