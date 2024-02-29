@@ -117,6 +117,48 @@ public class StatisticService {
         return size;
     }
 
+    public Double getTickerTradingWinRate(int aid,String ticker) {
+        int winRate = 0;
+        int totalCount = 0;
+
+        for (Order order : orderService.getSellOrderHistory(aid,ticker)) {
+            BigDecimal price = BigDecimal.valueOf(order.getPrice().doubleValue());
+            BigDecimal avgEntryPrice = BigDecimal.valueOf(order.getAvgEntryPrice().doubleValue());
+
+            if (price.compareTo(avgEntryPrice) > 0) {
+                winRate++;
+            }
+
+            totalCount++;
+        }
+
+        double rate;
+
+        if (totalCount == 0) {
+            rate = Double.NaN;
+        } else {
+            rate = (double)winRate / (double)totalCount;
+        }
+
+        log.debug(String.format("[StatisticService] getTradingWinRate(aid: %s) -> rate:%s", aid,rate));
+        return rate;
+    }
+
+    public Double getTickerTradeFrequency(int aid, String ticker) {
+        int totalCount = 0;
+        int tradeCount = orderService.getOrderHistory(aid,ticker).size();
+        BacktestRequest br = backtestService.getBacktestRequest(aid);
+
+        totalCount += stockPriceService.getPrices(ticker
+                ,LocalDateTime.parse(Util.formatDate(br.getStartDate()))
+                ,LocalDateTime.parse(Util.formatDate(br.getEndDate()))
+        ).size();
+
+        double TradeFrequency = (double) tradeCount / (double) (totalCount);
+        log.debug(String.format("[StatisticService] getTradeFrequency(aid: %s) -> TradeFrequency:%s", aid,TradeFrequency));
+        return TradeFrequency;
+    }
+
     public Double getTradingWinRate(int aid) {
         int winRate = 0;
         int totalCount = 0;

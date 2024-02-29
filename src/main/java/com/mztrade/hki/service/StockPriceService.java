@@ -135,4 +135,10 @@ public class StockPriceService {
         log.debug(String.format("[StockPriceService] searchStockInfoByName(name: %s) -> StockInfo:%s", name, stockInfos));
         return stockInfos;
     }
+
+    public StockInfo findStockInfoByTicker(String ticker) {
+        StockInfo stockInfos = stockInfoRepository.findByTicker(ticker);
+        log.debug(String.format("[StockPriceService] findStockInfoByTicker(ticker: %s) -> StockInfo:%s", ticker, stockInfos));
+        return stockInfos;
+    }
 }

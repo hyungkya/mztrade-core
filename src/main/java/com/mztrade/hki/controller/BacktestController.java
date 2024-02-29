@@ -10,7 +10,8 @@ import com.mztrade.hki.entity.backtest.Condition;
 import com.mztrade.hki.entity.backtest.IndicatorBar;
 import com.mztrade.hki.service.*;
 
-import java.util.Optional;
+import java.text.DecimalFormat;
+import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,6 +28,7 @@ import java.util.stream.Stream;
 public class BacktestController {
 
     private BacktestService backtestService;
+
     private StockPriceService stockPriceService;
     private OrderService orderService;
     private AccountService accountService;
@@ -211,6 +209,52 @@ public class BacktestController {
                         aid -> new ResponseEntity<>(backtestService.get(aid), HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(null, HttpStatus.OK));
     }
+
+    @GetMapping("/compare-chart/bt-table")
+    public ResponseEntity<List<CompareTableResponse>> getCompareBtTable(
+            @RequestParam List<Integer> aids
+    ) {
+        List<CompareTableResponse> compareTableResponse = new ArrayList<>();
+
+        for(Integer aid : aids) {
+            compareTableResponse.add(CompareTableResponse.builder()
+                    .aid(aid)
+                    .title(backtestService.getBacktestRequest(aid).getTitle())
+                    .subTitle("")
+                    .plratio(backtestService.get(aid).getPlratio())
+                    .winRate(statisticService.getTradingWinRate(aid))
+                    .frequency(statisticService.getTradeFrequency(aid)
+                    ).build());
+        }
+        log.info(String.format("[GET] /compare-chart/bt-table/aids=%s -> btTableList: %s",aids, compareTableResponse));
+
+        return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/compare-chart/ticker-table")
+    public ResponseEntity<List<CompareTableResponse>> getCompareTickerTable(
+            @RequestParam List<Integer> aids
+    ) {
+        List<CompareTableResponse> compareTableResponse = new ArrayList<>();
+
+        for(Integer aid : aids) {
+            List<String> tickers = backtestService.getBacktestRequest(aid).getTickers();
+            for(String ticker : tickers){
+                compareTableResponse.add(CompareTableResponse.builder()
+                    .aid(aid)
+                    .title(backtestService.getBacktestRequest(aid).getTitle())
+                    .subTitle(stockPriceService.findStockInfoByTicker(ticker).getName())
+                    .plratio(statisticService.getTickerProfit(aid,ticker))
+                    .winRate(statisticService.getTickerTradingWinRate(aid,ticker))
+                    .frequency(statisticService.getTickerTradeFrequency(aid,ticker))
+                    .build());
+            }
+        }
+        log.info(String.format("[GET] /compare-chart/ticker-table/aids=%s -> tickerTableList: %s",aids, compareTableResponse));
+
+        return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
+    }
+
     @GetMapping("/stock_info/tag")
     public ResponseEntity<List<Tag>> getStockInfoTag(
             @RequestParam Integer uid

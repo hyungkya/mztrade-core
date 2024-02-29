@@ -32,6 +32,21 @@ public class StockInfoRepository {
                         .build());
     }
 
+    public StockInfo findByTicker(String ticker) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("ticker", ticker, Types.VARCHAR);
+
+        return this.template.queryForObject(
+                "SELECT * FROM hkidb.stock_info si WHERE si.ticker = :ticker",
+                src,
+                (rs, rowNum) -> StockInfo.builder()
+                        .ticker(rs.getString("ticker"))
+                        .name(rs.getString("name"))
+                        .listedDate(rs.getDate("listed_date").toLocalDate())
+                        .marketCapital(rs.getInt("market_capital"))
+                        .build());
+    }
+
     public List<StockInfo> findByName(String name) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("name", "%" + name + "%", Types.VARCHAR);
