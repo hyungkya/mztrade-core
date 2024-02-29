@@ -23,15 +23,10 @@ import java.util.stream.Stream;
 public class AccountController {
 
     private AccountService accountService;
-    private StatisticService statisticService;
 
     @Autowired
-    public AccountController(
-            AccountService accountService,
-            StatisticService statisticService
-    ) {
+    public AccountController(AccountService accountService) {
         this.accountService = accountService;
-        this.statisticService = statisticService;
     }
 
     @GetMapping("/account")

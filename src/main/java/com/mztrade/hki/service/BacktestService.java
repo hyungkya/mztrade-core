@@ -207,6 +207,4 @@ public class BacktestService {
                 "backtestEndDate: %s) -> plratio: %f", initialBalance, aid, backtestEndDate, plratio));
         return plratio;
     }
-
-
 }
