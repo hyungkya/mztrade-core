@@ -8,8 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @Slf4j
 public class LoginController {
     private final UserService userService;
@@ -54,13 +55,21 @@ public class LoginController {
 
         try{
             userService.login(loginRequestDto.getName(), loginRequestDto.getPassword()); // 유저 정보 확인
+
+            log.info("로그인 완료");
+
             return new ResponseEntity<>(DefaultResponse.response(
                     StatusCode.OK,
                     ResponseMessage.LOGIN_SUCCESS,
                     new LoginResponseDto(loginRequestDto.getName())
             ), HttpStatus.OK);
 
+
+
         }catch (Exception e){
+
+            log.info("로그인 실패");
+
             return new ResponseEntity<>(DefaultResponse.response(
                     StatusCode.BAD_REQUEST,
                     ResponseMessage.LOGIN_FAIL

@@ -42,11 +42,12 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
+    // 하기 등록된 url은 필터에 안걸림
     @Bean
     public WebSecurityCustomizer configure() {
-        // h2-console 및 favicon 하위 요청은 모두 무시
         return (web) -> web.ignoring()
-                .requestMatchers(new AntPathRequestMatcher("/favicon.ico"));
+                .requestMatchers("/login", "/register", "/error", "/auth/issue", "/auth/reissue");
     }
 
     @Bean
@@ -62,7 +63,7 @@ public class SecurityConfig {
                 .headers((header) -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .sessionManagement((session)->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
-                        .requestMatchers("/register", "/authenticate", "/login").permitAll()
+                        .requestMatchers("/register", "/login", "/auth", "/auth/**").permitAll()
                         .requestMatchers("/account", "/account/**",
                                 "/execute", "/execute/**", "/backtest", "/backtest/**",
                                 "/order_history", "/order_history/**", "/stock_price", "/stock_price/**",

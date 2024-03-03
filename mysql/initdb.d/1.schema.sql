@@ -5,7 +5,7 @@ CREATE DATABASE hkidb;
 CREATE TABLE hkidb.customers (
                                  uid         INT         NOT NULL    AUTO_INCREMENT  PRIMARY KEY,
                                  name        VARCHAR(30) NOT NULL    UNIQUE,
-                                 password    VARCHAR(60) NOT NULL,
+                                 password    VARCHAR(64) NOT NULL,
                                  role        VARCHAR(30) NOT NULL    DEFAULT 'ROLE_USER'
 );
 

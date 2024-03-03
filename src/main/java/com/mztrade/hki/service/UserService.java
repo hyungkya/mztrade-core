@@ -34,7 +34,8 @@ public class UserService implements UserDetailsService {
             throw new RuntimeException("이미 가입된 회원입니다.");
         }else{
             User user = User.builder().name(userDto.getName())
-                    .password(passwordEncoder.encode(userDto.getPassword())).role("ROLE_USER").build();
+                    .password(passwordEncoder.encode(userDto.getPassword()))
+                    .role("ROLE_USER").build();
             return userRepository.save(user).getUid();
         }
 
@@ -44,7 +45,6 @@ public class UserService implements UserDetailsService {
 
         User user = userRepository.findByName(username)
                     .orElseThrow(() -> new Exception("유효한 회원ID가 아닙니다."));
-
 
         // 평문과 암호화 비밀번호 비교
         if (!passwordEncoder.matches(password, user.getPassword())) {
