@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 
 /**
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString
 public class TokenDto {
     private String accessToken;
     private String refreshToken;
