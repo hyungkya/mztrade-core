@@ -1,25 +1,22 @@
 package com.mztrade.hki.controller;
 
-import com.mztrade.hki.dto.LoginRequestDto;
-import com.mztrade.hki.dto.LoginResponseDto;
-import com.mztrade.hki.dto.UserDto;
+import com.mztrade.hki.dto.*;
 import com.mztrade.hki.service.UserService;
-import com.mztrade.hki.util.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
+@Slf4j
 public class LoginController {
     private final UserService userService;
-    private final JwtUtil jwtUtil;
 
-    public LoginController(UserService userService, JwtUtil jwtUtil) {
+    public LoginController(UserService userService) {
         this.userService = userService;
-        this.jwtUtil = jwtUtil;
     }
 
     /**
@@ -29,32 +26,54 @@ public class LoginController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserDto userDto) {
 
-        boolean isDuplicate = userService.checkUserDuplicate(userDto.getName());
-
-        if (isDuplicate) {
-            return new ResponseEntity<>("중복된 계정입니다.", HttpStatus.BAD_REQUEST);
-        } else {
+        try{
             int uid = userService.saveUser(userDto);
-            return new ResponseEntity<>(uid, HttpStatus.OK);
-
+            return
+            new ResponseEntity<>(DefaultResponse.response(
+                    StatusCode.OK,
+                    ResponseMessage.CREATED_USER,
+                    new RegisterResponse(uid)
+            ), HttpStatus.OK);
+            }catch (Exception e){
+            return new ResponseEntity<>(
+                    DefaultResponse.response(
+                    StatusCode.BAD_REQUEST,
+                    ResponseMessage.INTERNAL_SERVER_ERROR
+            ), HttpStatus.BAD_REQUEST);
         }
-
 
     }
 
     /**
      * @param loginRequestDto
-     * @return boolean 권한정보 반환
+     * @return Token, 회원정보 반환
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto) {
 
+        log.info("로그인 유저요청 = " + loginRequestDto.getName());
+
         try{
             userService.login(loginRequestDto.getName(), loginRequestDto.getPassword()); // 유저 정보 확인
-            final String jwt = jwtUtil.generateToken(loginRequestDto.getName());
-            return new ResponseEntity<>(new LoginResponseDto(jwt), HttpStatus.OK);
+
+            log.info("로그인 완료");
+
+            return new ResponseEntity<>(DefaultResponse.response(
+                    StatusCode.OK,
+                    ResponseMessage.LOGIN_SUCCESS,
+                    new LoginResponseDto(loginRequestDto.getName())
+            ), HttpStatus.OK);
+
+
+
         }catch (Exception e){
-            return new ResponseEntity<>("login failed: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+
+            log.info("로그인 실패");
+
+            return new ResponseEntity<>(DefaultResponse.response(
+                    StatusCode.BAD_REQUEST,
+                    ResponseMessage.LOGIN_FAIL
+            ), HttpStatus.BAD_REQUEST);
         }
 
 

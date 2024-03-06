@@ -1,16 +1,38 @@
 spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${RDS_USERNAME}
-    url: jdbc:mysql://${RDS_HOSTNAME}:${RDS_PORT}/hkidb?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
-    password: ${RDS_PASSWORD}
-  jackson:
-    property-naming-strategy: SNAKE_CASE
-  jpa:
-    defer-datasource-initialization: true
+    datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/hkidb?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+        username: ${RDS_USERNAME}
+        password: ${RDS_PASSWORD}
+    jackson:
+        property-naming-strategy: SNAKE_CASE
+# 쿼리 수행시 콘솔창에 출력되는 옵션 추가
+#    jpa:
+#        properties:
+#            hibernate:
+#                format_sql: true
+#                show_sql: true
+
+    output:
+        ansi:
+            enabled: always # 콘솔창 색상 적용
+
+    # refresh 토큰을 사용하기 위한 Redis 설정
+    data:
+        redis:
+            host: localhost
+            port: 6379
 
 server.port: ${SERVER_PORT}
 
 logging:
   level:
     com.mztrade: info
+
+jwt:
+    header: Authorization
+    #HS512 알고리즘을 사용할 것이기 때문에 512bit, 즉 64byte 이상의 secret key를 사용해야 한다.
+    #echo 'silvernine-tech-spring-boot-jwt-tutorial-secret-silvernine-tech-spring-boot-jwt-tutorial-secret'|base64
+    secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQtc2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK
+    access-expiration-time: 86400000 # 액세스 토큰 유효시간 1일(밀리초 단위, 1s = 1000ms)
+    refresh-expiration-time: 259200000 # 리프레시 토큰 유효시간 3일(밀리초 단위, 1s = 1000ms)
