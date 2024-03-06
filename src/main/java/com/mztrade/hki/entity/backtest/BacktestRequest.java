@@ -2,13 +2,12 @@ package com.mztrade.hki.entity.backtest;
 
 import com.mztrade.hki.Util;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class BacktestRequest {
     private String uid;
-
     private String title;
     private String initialBalance;
     private List<List<ConditionRequest>> buyConditions;
@@ -157,12 +156,27 @@ public class BacktestRequest {
         return Integer.parseInt(this.maxTrading);
     }
 
-    public Instant parseStartDate() {
-        return Instant.parse(Util.formatDate(this.startDate));
+    public LocalDateTime parseStartDate() {
+        return LocalDateTime.parse(Util.formatDate(this.startDate));
     }
 
-    public Instant parseEndDate() {
-        return Instant.parse(Util.formatDate(this.endDate));
+    public LocalDateTime parseEndDate() {
+        return LocalDateTime.parse(Util.formatDate(this.endDate));
     }
 
+    @Override
+    public String toString() {
+        return "BacktestRequest{" +
+                "uid='" + uid + '\'' +
+                ", title='" + title + '\'' +
+                ", initialBalance='" + initialBalance + '\'' +
+                ", buyConditions=" + buyConditions.toString() +
+                ", sellConditions=" + sellConditions.toString() +
+                ", dca=" + dca +
+                ", maxTrading='" + maxTrading + '\'' +
+                ", tickers=" + tickers +
+                ", startDate='" + startDate + '\'' +
+                ", endDate='" + endDate + '\'' +
+                '}';
+    }
 }

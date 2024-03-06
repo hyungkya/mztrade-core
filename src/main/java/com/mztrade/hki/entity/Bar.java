@@ -1,12 +1,12 @@
 package com.mztrade.hki.entity;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Objects;
 
 public class Bar {
     private String ticker;
-    private Instant date;
+    private LocalDateTime date;
     private Integer open;
     private Integer high;
     private Integer low;
@@ -22,11 +22,11 @@ public class Bar {
         return this;
     }
 
-    public Instant getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 
-    public Bar setDate(Instant date) {
+    public Bar setDate(LocalDateTime date) {
         this.date = date;
         return this;
     }

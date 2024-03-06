@@ -2,8 +2,8 @@ spring:
     datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver
         url: jdbc:mysql://localhost:3306/hkidb?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
-        username: root
-        password: 1234
+        username: ${RDS_USERNAME}
+        password: ${RDS_PASSWORD}
     jackson:
         property-naming-strategy: SNAKE_CASE
 # 쿼리 수행시 콘솔창에 출력되는 옵션 추가
@@ -23,7 +23,11 @@ spring:
             host: localhost
             port: 6379
 
+server.port: ${SERVER_PORT}
 
+logging:
+  level:
+    com.mztrade: info
 
 jwt:
     header: Authorization

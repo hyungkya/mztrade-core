@@ -60,6 +60,24 @@ public class BacktestHistoryRepository {
         }
     }
 
+    public List<BacktestHistory> getRanking() {
+        MapSqlParameterSource src = new MapSqlParameterSource();
+        try {
+            return this.template.query(
+                    "SELECT b.aid, b.uid, b.param, b.plratio FROM hkidb.backtest_history b ORDER BY b.plratio DESC LIMIT 5",
+                    src,
+                    (rs, rowNum) -> BacktestHistory.builder()
+                            .uid(rs.getInt("b.uid"))
+                            .aid(rs.getInt("b.aid"))
+                            .param(rs.getString("b.param"))
+                            .plratio(rs.getDouble("b.plratio"))
+                            .build()
+            );
+        } catch (DataAccessException e) {
+            return null;
+        }
+    }
+
     public Optional<BacktestRequest> getBacktestRequest(int aid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER);
@@ -99,7 +117,6 @@ public class BacktestHistoryRepository {
                             .build()
             );
         } catch (DataAccessException e) {
-            System.out.println(e);
             return null;
         }
     }
@@ -123,5 +140,31 @@ public class BacktestHistoryRepository {
         return this.template.update(
                 "DELETE FROM hkidb.backtest_history WHERE aid = :aid",
                 src);
+    }
+
+    public List<BacktestHistory> findBacktestHistoryByTitleAndTags(int uid, String title, List<Integer> tids) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER)
+                .addValue("title", "%" + title + "%", Types.VARCHAR)
+                .addValue("tids", tids)
+                .addValue("tid_length", tids.size(), Types.INTEGER);
+        return this.template.query(
+                "SELECT b.* " +
+                        "FROM hkidb.backtest_history b " +
+                        "WHERE JSON_EXTRACT(b.param, '$.title') LIKE :title AND b.aid IN ( " +
+                        "    SELECT bit.aid " +
+                        "    FROM hkidb.backtest_history_tag bit " +
+                        "    JOIN hkidb.tag t ON bit.tid = t.tid AND bit.tid IN (:tids) " +
+                        "    WHERE t.uid = :uid " +
+                        "    GROUP BY bit.aid " +
+                        "    HAVING COUNT(DISTINCT bit.tid) = :tid_length);",
+                src,
+                (rs, rowNum) -> BacktestHistory.builder()
+                        .uid(rs.getInt("uid"))
+                        .aid(rs.getInt("aid"))
+                        .param(rs.getString("param"))
+                        .plratio(rs.getDouble("plratio"))
+                        .build()
+        );
     }
 }

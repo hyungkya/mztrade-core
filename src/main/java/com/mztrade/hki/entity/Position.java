@@ -63,4 +63,14 @@ public class Position {
     public int hashCode() {
         return Objects.hash(aid, ticker, qty, avgEntryPrice);
     }
+
+    @Override
+    public String toString() {
+        return "Position{" +
+                "aid=" + aid +
+                ", ticker='" + ticker + '\'' +
+                ", qty=" + qty +
+                ", avgEntryPrice=" + avgEntryPrice +
+                '}';
+    }
 }

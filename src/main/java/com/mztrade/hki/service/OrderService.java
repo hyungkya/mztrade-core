@@ -6,17 +6,19 @@ import com.mztrade.hki.entity.OrderType;
 import com.mztrade.hki.entity.Position;
 import com.mztrade.hki.repository.OrderHistoryRepository;
 import com.mztrade.hki.repository.PositionRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class OrderService {
     private final OrderHistoryRepository orderHistoryRepository;
     private final PositionRepository positionRepository;
@@ -34,6 +36,7 @@ public class OrderService {
     }
 
     public Boolean buy(Integer aid, String ticker, Integer qty) {
+        Boolean isProcessed = false;
         Bar currentPrice = stockPriceService.getCurrentPrice(ticker);
 
         Order order = Order.builder()
@@ -65,14 +68,16 @@ public class OrderService {
             }
 
             orderHistoryRepository.createOrderHistory(order);
-            return true;
-        } else {
-            //Not Enough Balance.
-            return false;
+            isProcessed = true;
         }
+
+        log.debug(String.format("[OrderService] buy(aid: %d, ticker: %s, qty: %d) -> isProcessed: %b", aid, ticker, qty, isProcessed));
+
+        return isProcessed;
     }
 
-    public Boolean buy(Integer aid, String ticker, Instant date, Integer qty) {
+    public Boolean buy(Integer aid, String ticker, LocalDateTime date, Integer qty) {
+        boolean isProcessed = false;
         if (qty <= 0) {
             throw new IllegalArgumentException("Buying quantity should be greater than 0.");
         }
@@ -106,14 +111,14 @@ public class OrderService {
             }
 
             orderHistoryRepository.createOrderHistory(order);
-            return true;
-        } else {
-            //Not Enough Balance.
-            return false;
+            isProcessed = true;
         }
+        log.debug(String.format("[OrderService] buy(aid: %d, ticker: %s, date: %s, qty: %d) -> isProcessed: %b", aid, ticker, date, qty, isProcessed));
+        return isProcessed;
     }
 
     public Boolean sell(Integer aid, String ticker, Integer qty) {
+        boolean isProcessed = false;
         //check if position quantity is enough to sell
         Bar currentPrice = stockPriceService.getCurrentPrice(ticker);
         Optional<Position> optionalPosition = positionRepository.getPositionByTicker(aid, ticker);
@@ -141,13 +146,16 @@ public class OrderService {
                         .longValue();
                 accountService.deposit(aid, profit);
                 orderHistoryRepository.createOrderHistory(order);
-                return true;
+                isProcessed = true;
             }
         }
-        return false;
+        log.debug(String.format("[OrderService] sell(aid: %d, ticker: %s, qty: %d) -> isProcessed: %b", aid, ticker, qty, isProcessed));
+        return isProcessed;
     }
 
-    public Boolean sell(Integer aid, String ticker, Instant date, Integer qty) {
+    public Boolean sell(Integer aid, String ticker, LocalDateTime date, Integer qty) {
+        boolean isProcessed = false;
+
         //check if position quantity is enough to sell
         Optional<Position> optionalPosition = positionRepository.getPositionByTicker(aid, ticker);
         if (optionalPosition.isPresent()) {
@@ -174,40 +182,55 @@ public class OrderService {
                         .longValue();
                 accountService.deposit(aid, profit);
                 orderHistoryRepository.createOrderHistory(order);
-                return true;
+                isProcessed = true;
             }
         }
-        return false;
+        log.debug(String.format("[OrderService] sell(aid: %d, ticker: %s, date: %s, qty: %d) -> isProcessed: %b", aid, ticker, date, qty, isProcessed));
+        return isProcessed;
     }
 
     public List<Order> getOrderHistory(Integer aid) {
-        return orderHistoryRepository.get(aid);
+        List<Order> orders = orderHistoryRepository.get(aid);
+        log.debug(String.format("[OrderService] getOrderHistory(aid: %d) -> orders: %s", aid, orders));
+        return orders;
     }
 
     public List<Order> getOrderHistory(Integer aid, String ticker) {
-        return orderHistoryRepository.get(aid, ticker);
+        List<Order> orders = orderHistoryRepository.get(aid, ticker);
+        log.debug(String.format("[OrderService] getOrderHistory(aid: %d, ticker: %s) -> orders: %s", aid, ticker, orders));
+        return orders;
     }
     public List<Order> getBuyOrderHistory(Integer aid) {
-        return orderHistoryRepository.get(aid, OrderType.BUY.id());
+        List<Order> orders = orderHistoryRepository.get(aid, OrderType.BUY.id());
+        log.debug(String.format("[OrderService] getBuyOrderHistory(aid: %d) -> orders: %s", aid, orders));
+        return orders;
     }
 
     public List<Order> getBuyOrderHistory(Integer aid, String ticker) {
-        return orderHistoryRepository.get(aid, ticker, OrderType.BUY.id());
+        List<Order> orders = orderHistoryRepository.get(aid, ticker, OrderType.BUY.id());
+        log.debug(String.format("[OrderService] getBuyOrderHistory(aid: %d, ticker: %s) -> orders: %s", aid, ticker, orders));
+        return orders;
     }
     public List<Order> getSellOrderHistory(Integer aid) {
-        return orderHistoryRepository.get(aid, OrderType.SELL.id());
+        List<Order> orders = orderHistoryRepository.get(aid, OrderType.SELL.id());
+        log.debug(String.format("[OrderService] getSellOrderHistory(aid: %d) -> orders: %s", aid, orders));
+        return orders;
     }
 
     public List<Order> getSellOrderHistory(Integer aid, String ticker) {
-        return orderHistoryRepository.get(aid, ticker, OrderType.SELL.id());
+        List<Order> orders = orderHistoryRepository.get(aid, ticker, OrderType.SELL.id());
+        log.debug(String.format("[OrderService] getSellOrderHistory(aid: %d, ticker: %s) -> orders: %s", aid, ticker, orders));
+        return orders;
     }
     public List<Position> getPositions(Integer aid) {
-        return positionRepository.getAllPositions(aid);
+        List<Position> positions = positionRepository.getAllPositions(aid);
+        log.debug(String.format("[OrderService] getPositions(aid: %d) -> positions: %s", aid, positions));
+        return positions;
     }
 
     public Optional<Position> getPosition(Integer aid, String ticker) {
-        return positionRepository.getPositionByTicker(aid, ticker);
+        Optional<Position> position = positionRepository.getPositionByTicker(aid, ticker);
+        log.debug(String.format("[OrderService] getPosition(aid: %d, ticker: %s) -> positions: %s", aid, ticker, position));
+        return position;
     }
-
-
 }

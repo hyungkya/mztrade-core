@@ -1,20 +1,23 @@
 package com.mztrade.hki.service;
 
+import com.mztrade.hki.entity.AccountHistory;
 import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.entity.Position;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.entity.backtest.Condition;
 import com.mztrade.hki.repository.BacktestHistoryRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
+@Slf4j
 public class BacktestService {
     private AccountService accountService;
     private StockPriceService stockPriceService;
@@ -40,9 +43,8 @@ public class BacktestService {
             List<Float> dca,
             int maxTradingCount,
             List<String> targetTickers,
-            Instant startDate,
-            Instant endDate) {
-
+            LocalDateTime startDate,
+            LocalDateTime endDate) {
         // Account Settings
         int aid = accountService.createAccount(uid);
         accountService.deposit(aid, initialBalance);
@@ -69,6 +71,7 @@ public class BacktestService {
                     }
                     collectedBars.get(ticker).add(bar);
                 } catch (EmptyResultDataAccessException e) {
+                    log.trace("[BacktestService] " + e);
                     continue;
                 }
                 // if 'any' bar collected in a particular ticker ... continue downwards
@@ -114,49 +117,68 @@ public class BacktestService {
                     }
                 }
             }
-            /*
-            if (!orderService.getPositions(aid).isEmpty()) {
-                System.out.println("===============================================");
-                System.out.println("Date: " + startDate);
-                System.out.println("Current Balance: " + accountService.getBalance(aid));
-                System.out.println("Current Positions ...");
-                for (Position position : orderService.getPositions(aid)) {
-                    System.out.println("   Ticker: " + position.getTicker());
-                    System.out.println("   Entry Price: " + position.getAvgEntryPrice());
-                    System.out.println("   Qty: " + position.getQty());
-                }
-                System.out.println("===============================================");
-            }*/
+            //계좌잔액기록
+            long balance = accountService.getBalance(aid);
+
+            for(Position p : orderService.getPositions(aid)){
+                Bar bar = stockPriceService.getAvailablePriceBefore(p.getTicker(),startDate).orElseThrow();
+                balance += (long) bar.getClose() * p.getQty();
+            };
+
+            accountService.createAccountHistory(aid,startDate,balance);
         }
+        log.debug(String.format("[BacktestService] execute(uid: %d, initialBalance: %d, buyConditions: %s, " +
+                "sellConditions: %s, dca: %s, maxTradingCount: %d, targetTickers: %s, " +
+                "startDate: %s, endDate: %s) -> aid: %d", uid, initialBalance, buyConditions, sellConditions, dca,
+                maxTradingCount, targetTickers, startDate, endDate, aid));
         return aid;
     }
 
     public boolean create(BacktestHistory backtestHistory) {
-        return backtestHistoryRepository.create(backtestHistory);
+        boolean isSuccess = backtestHistoryRepository.create(backtestHistory);;
+        log.debug(String.format("[BacktestService] create(backtestHistory: %s) -> isSuccess: %b", backtestHistory, isSuccess));
+        return isSuccess;
     }
 
     public BacktestHistory get(int aid) {
-        return backtestHistoryRepository.get(aid);
+        BacktestHistory backtestHistory = backtestHistoryRepository.get(aid);
+        log.debug(String.format("[BacktestService] get(int: %d) -> backtestHistory: %s", aid, backtestHistory));
+        return backtestHistory;
+    }
+
+    public List<BacktestHistory> getRanking() {
+        List<BacktestHistory> backtestHistories = backtestHistoryRepository.getRanking();
+        log.debug(String.format("[BacktestService] getRanking() -> backtestHistories: %s", backtestHistories));
+        return backtestHistories;
     }
 
     public BacktestRequest getBacktestRequest(int aid) throws NoSuchElementException {
-        return backtestHistoryRepository.getBacktestRequest(aid).orElseThrow();
+        BacktestRequest backtestRequest = backtestHistoryRepository.getBacktestRequest(aid).orElseThrow();
+        log.debug(String.format("[BacktestService] getBacktestRequest(aid: %d) -> backtestRequest: %s", aid, backtestRequest));
+        return backtestRequest;
     }
     public List<String> getTradedTickers(int aid) {
-        return getBacktestRequest(aid).getTickers();
+        List<String> tickers = getBacktestRequest(aid).getTickers();
+        log.debug(String.format("[BacktestService] getTradedTickers(aid: %d) -> tickers: %s", aid, tickers));
+        return tickers;
     }
 
-    public List<BacktestHistory> searchByTitle(int uid,String title) {
-        return backtestHistoryRepository.searchByTitle(uid, title);
+    public List<BacktestHistory> searchByTitle(int uid, String title) {
+        List<BacktestHistory> backtestHistories = backtestHistoryRepository.searchByTitle(uid, title);
+        log.debug(String.format("[BacktestService] searchByTitle(uid: %d, title: %s) -> backtestHistories: %s", uid, title, backtestHistories));
+        return backtestHistories;
     }
 
-    public Integer deleteBacktestHistory(int aid) {
-
-        return backtestHistoryRepository.deleteBacktestHistory(aid);
+    public List<BacktestHistory> searchBacktestHistoryByTags(int uid, String title, List<Integer> tids) {
+        List<BacktestHistory> backtestHistories = backtestHistoryRepository.findBacktestHistoryByTitleAndTags(uid, title, tids);
+        log.debug(String.format("[BacktestService] searchBacktestHistoryByTags(uid: %d, title: %s, tids: %s) -> backtestHistories: %s", uid, title, tids, backtestHistories));
+        return backtestHistories;
     }
 
     public Integer getNumberOfHistoryByUid(int uid) {
-        return backtestHistoryRepository.getNumberOfHistoryByUid(uid);
+        int num = backtestHistoryRepository.getNumberOfHistoryByUid(uid);
+        log.debug(String.format("[BacktestService] getNumberOfHistoryByUid(uid: %d) -> num: %d", uid, num));
+        return num;
     }
 
     public Optional<Integer> getHighestProfitLossRatio(int uid) {
@@ -169,16 +191,20 @@ public class BacktestService {
                 highestAid = Optional.of(aid);
             }
         }
+        log.debug(String.format("[BacktestService] getHighestProfitLossRatio(uid: %d) -> highestAid: %s", uid, highestAid));
         return highestAid;
     }
 
-    public Double calculateFinalProfitLossRatio(long initialBalance, int aid, Instant backtestEndDate) {
+    public Double calculateFinalProfitLossRatio(long initialBalance, int aid, LocalDateTime backtestEndDate) {
         long finalBalance = accountService.getBalance(aid);
         List<Position> positions = orderService.getPositions(aid);
         for (Position position : positions) {
             Integer finalClosePrice = stockPriceService.getAvailablePriceBefore(position.getTicker(), backtestEndDate, 10).orElseThrow().getClose();
             finalBalance += (long) position.getQty() * finalClosePrice;
         }
-        return (finalBalance / (double) initialBalance) - 1;
+        double plratio = (finalBalance / (double) initialBalance) - 1;
+        log.debug(String.format("[BacktestService] calculateFinalProfitLossRatio(initialBalance: %d, aid: %d, " +
+                "backtestEndDate: %s) -> plratio: %f", initialBalance, aid, backtestEndDate, plratio));
+        return plratio;
     }
 }

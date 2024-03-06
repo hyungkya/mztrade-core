@@ -12,12 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest
-@Sql(scripts = {"classpath:db/schema.sql", "classpath:db/stock_info_1205.sql", "classpath:db/stock_price_1205.sql"})
+@Sql(scripts = {"classpath:schema.sql", "classpath:db/stock_info_1205.sql", "classpath:db/stock_price_1205.sql"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 
 public class BacktestingTests {
@@ -51,8 +51,8 @@ public class BacktestingTests {
                 List.of(0.33f, 0.33f, 0.34f),
                 2,
                 List.of("000270", "000660", "003670", "005380", "005490"),
-                Instant.parse(Util.formatDate("20120101")),
-                Instant.parse(Util.formatDate("20151231"))
+                LocalDateTime.parse(Util.formatDate("20120101")),
+                LocalDateTime.parse(Util.formatDate("20151231"))
         );
     }
 

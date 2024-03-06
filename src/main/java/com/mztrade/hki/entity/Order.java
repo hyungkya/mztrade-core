@@ -1,7 +1,7 @@
 package com.mztrade.hki.entity;
 
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
@@ -12,7 +12,7 @@ import lombok.ToString;
 public class Order {
     private Integer oid;
     private Integer aid;
-    private Instant filledTime;
+    private LocalDateTime filledTime;
     private Integer otid;
     private String ticker;
     private Integer qty;

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.OptionalDouble;
+import java.util.stream.Collectors;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
@@ -50,6 +51,12 @@ public class Indicator {
         if (type.toUpperCase().matches("CCI")) {
             return calculateCommodityChannelIndex(bars, params);
         }
+        if (type.toUpperCase().matches("BBL")) {
+            return calculateBBLow(bars, params);
+        }
+        if (type.toUpperCase().matches("BBH")) {
+            return calculateBBHigh(bars, params);
+        }
         throw new IllegalArgumentException("No such indicator exists");
     }
 
@@ -59,7 +66,6 @@ public class Indicator {
         int period = params.get(0).intValue();
         if (bars.size() < period) return Double.NaN;
         bars = bars.subList(bars.size() - period, bars.size());
-        System.out.println("SMA" + params.get(0) + ": " + bars.stream().mapToInt(b -> b.getClose()).average().getAsDouble());
         return bars.stream().mapToInt(b -> b.getClose()).average().getAsDouble();
     }
 
@@ -195,6 +201,34 @@ public class Indicator {
             rawD.add(M - m);
         }
         return rawD.getLast() / (rawD.stream().mapToDouble(Math::abs).average().orElseThrow() * 0.015);
+    }
+
+    public double calculateBBLow(List<Bar> bars, List<Float> params) {
+        if (params.size() < 2) throw new IllegalArgumentException("BB Low needs 2 parameter but 0 given");
+        if (!(params.get(0) > 0)) throw new IllegalArgumentException("Period parameter should be bigger than 0");
+        if (!(params.get(1) > 0)) throw new IllegalArgumentException("Period parameter should be bigger than 0");
+        if (bars.size() < params.get(0).intValue()) return Double.NaN;
+        int period = params.get(0).intValue();
+        int exp = params.get(1).intValue();
+        bars = bars.subList(bars.size() - period, bars.size());
+        double avg = bars.stream().mapToInt(Bar::getClose).average().orElseThrow();
+        double squareSum = bars.stream().mapToDouble(b -> Math.pow(Math.abs(b.getClose() - avg), 2)).sum();
+        double std = Math.sqrt(squareSum / (period - 1));
+        return avg - (std * exp);
+    }
+
+    public double calculateBBHigh(List<Bar> bars, List<Float> params) {
+        if (params.size() < 2) throw new IllegalArgumentException("BB Low needs 2 parameter but 0 given");
+        if (!(params.get(0) > 0)) throw new IllegalArgumentException("Period parameter should be bigger than 0");
+        if (!(params.get(1) > 0)) throw new IllegalArgumentException("Period parameter should be bigger than 0");
+        if (bars.size() < params.get(0).intValue()) return Double.NaN;
+        int period = params.get(0).intValue();
+        int exp = params.get(1).intValue();
+        bars = bars.subList(bars.size() - period, bars.size());
+        double avg = bars.stream().mapToInt(Bar::getClose).average().orElseThrow();
+        double squareSum = bars.stream().mapToDouble(b -> Math.pow(Math.abs(b.getClose() - avg), 2)).sum();
+        double std = Math.sqrt(squareSum / (period - 1));
+        return avg + (std * exp);
     }
 
     private void _validateParameters(List<Float> params, int requiredQty) {

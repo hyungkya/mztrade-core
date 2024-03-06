@@ -36,3 +36,4 @@ out/
 ### VS Code ###
 .vscode/
 .run/HkiApplication.run.xml
+.DS_Store

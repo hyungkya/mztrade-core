@@ -8,7 +8,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.Types;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -39,7 +39,7 @@ public class StockPriceRepository {
                 src);
     }
 
-    public Bar findByDate(String ticker, Instant date) {
+    public Bar findByDate(String ticker, LocalDateTime date) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("ticker", ticker, Types.VARCHAR)
                 .addValue("date", date, Types.TIMESTAMP);
@@ -50,7 +50,7 @@ public class StockPriceRepository {
                 src,
                 (rs, rowNum) -> new Bar()
                         .setTicker(rs.getString("ticker"))
-                        .setDate(rs.getTimestamp("date").toInstant())
+                        .setDate(rs.getTimestamp("date").toLocalDateTime())
                         .setOpen(rs.getInt("open"))
                         .setHigh(rs.getInt("high"))
                         .setLow(rs.getInt("low"))
@@ -58,7 +58,7 @@ public class StockPriceRepository {
                         .setVolume(rs.getLong("volume")));
     }
 
-    public List<Bar> findByDate(String ticker, Instant startDate, Instant endDate) {
+    public List<Bar> findByDate(String ticker, LocalDateTime startDate, LocalDateTime endDate) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("ticker", ticker, Types.VARCHAR)
                 .addValue("start_date", startDate, Types.TIMESTAMP)
@@ -70,7 +70,7 @@ public class StockPriceRepository {
                 src,
                 (rs, rowNum) -> new Bar()
                         .setTicker(rs.getString("ticker"))
-                        .setDate(rs.getTimestamp("date").toInstant())
+                        .setDate(rs.getTimestamp("date").toLocalDateTime())
                         .setOpen(rs.getInt("open"))
                         .setHigh(rs.getInt("high"))
                         .setLow(rs.getInt("low"))
@@ -88,7 +88,7 @@ public class StockPriceRepository {
                 src,
                 (rs, rowNum) -> new Bar()
                         .setTicker(rs.getString("ticker"))
-                        .setDate(rs.getTimestamp("date").toInstant())
+                        .setDate(rs.getTimestamp("date").toLocalDateTime())
                         .setOpen(rs.getInt("open"))
                         .setHigh(rs.getInt("high"))
                         .setLow(rs.getInt("low"))

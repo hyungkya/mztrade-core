@@ -2,17 +2,17 @@ package com.mztrade.hki.entity.backtest;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 public class IndicatorBar {
-    private Instant date;
+    private LocalDateTime date;
     private double value;
 
-    public Instant getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
-    public IndicatorBar setDate(Instant date) {
+    public IndicatorBar setDate(LocalDateTime date) {
         this.date = date;
         return this;
     }

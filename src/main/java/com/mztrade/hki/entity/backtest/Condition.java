@@ -1,9 +1,11 @@
 package com.mztrade.hki.entity.backtest;
 import com.mztrade.hki.entity.Bar;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class Condition {
     private Indicator baseIndicator;
     private Indicator targetIndicator;
@@ -44,6 +46,7 @@ public class Condition {
     }
 
     public boolean check(List<Bar> bars) {
+        log.trace("baseIndicator: " + baseIndicator.calculate(bars) + " targetIndicator: " + targetIndicator.calculate(bars));
         if (compareType.matches(">")) {
             if (baseIndicator.calculate(bars) > targetIndicator.calculate(bars) + constantBound) {
                 recentMatches.add(true);
@@ -66,5 +69,17 @@ public class Condition {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Condition{" +
+                "baseIndicator=" + baseIndicator +
+                ", targetIndicator=" + targetIndicator +
+                ", constantBound=" + constantBound +
+                ", compareType='" + compareType + '\'' +
+                ", frequency=" + frequency +
+                ", recentMatches=" + recentMatches +
+                '}';
     }
 }

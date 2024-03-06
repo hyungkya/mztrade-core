@@ -1,14 +1,19 @@
 package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mztrade.hki.entity.AccountHistory;
+import com.mztrade.hki.entity.backtest.BacktestHistory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
+import java.math.BigInteger;
 import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +38,21 @@ public class AccountRepository {
                 src,
                 keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).intValue();
+    }
+
+    public Boolean deleteAccount(Integer aid) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("aid", aid, Types.INTEGER);
+        try {
+            this.template.update(
+                    "DELETE FROM hkidb.account WHERE (aid = :aid)",
+                    src,
+                    keyHolder);
+            return true;
+        } catch (DataAccessException e) {
+            return false;
+        }
     }
 
     public Long getBalance(Integer aid) {
@@ -65,4 +85,41 @@ public class AccountRepository {
                 Integer.class
         );
     }
+
+    public Boolean createAccountHistory(Integer aid, LocalDateTime date, long balance) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("aid", aid, Types.INTEGER)
+                .addValue("date", date, Types.TIMESTAMP)
+                .addValue("balance", balance, Types.BIGINT);
+        try {
+            this.template.update(
+                    "INSERT INTO hkidb.account_history (aid, date, balance) VALUES (:aid, :date, :balance)",
+                    src);
+        } catch (DataAccessException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public List<AccountHistory> getAccountHistory(int aid) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("aid", aid, Types.INTEGER);
+        try {
+            return this.template.query(
+                    "SELECT aid, date, balance FROM hkidb.account_history WHERE aid = :aid",
+                    src,
+                    (rs, rowNum) -> AccountHistory.builder()
+                            .aid(rs.getInt("aid"))
+                            .date(rs.getTimestamp("date").toLocalDateTime())
+                            .balance(rs.getLong("balance"))
+                            .build()
+            );
+        } catch (DataAccessException e) {
+            return null;
+        }
+    }
+
+
+
+
 }
