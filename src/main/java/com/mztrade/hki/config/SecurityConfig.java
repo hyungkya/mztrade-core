@@ -47,7 +47,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer configure() {
         return (web) -> web.ignoring()
-                .requestMatchers("/login", "/register", "/error", "/auth/issue", "/auth/reissue");
+                .requestMatchers("/login", "/register", "/error", "/auth/issue", "/auth/reissue", "/**");
     }
 
     @Bean

@@ -11,6 +11,7 @@ import java.util.List;
 @ToString
 public class CompareTableResponse {
     private int aid;
+    private String ticker;
     private String title;
     private String subTitle;
     private double plratio;

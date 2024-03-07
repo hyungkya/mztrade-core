@@ -219,6 +219,7 @@ public class BacktestController {
         for(Integer aid : aids) {
             compareTableResponse.add(CompareTableResponse.builder()
                     .aid(aid)
+                    .ticker("")
                     .title(backtestService.getBacktestRequest(aid).getTitle())
                     .subTitle("")
                     .plratio(backtestService.get(aid).getPlratio())
@@ -242,6 +243,7 @@ public class BacktestController {
             for(String ticker : tickers){
                 compareTableResponse.add(CompareTableResponse.builder()
                     .aid(aid)
+                    .ticker(ticker)
                     .title(backtestService.getBacktestRequest(aid).getTitle())
                     .subTitle(stockPriceService.findStockInfoByTicker(ticker).getName())
                     .plratio(statisticService.getTickerProfit(aid,ticker))
