@@ -7,10 +7,8 @@ import com.mztrade.hki.entity.*;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.entity.backtest.Condition;
-import com.mztrade.hki.entity.backtest.IndicatorBar;
 import com.mztrade.hki.service.*;
 
-import java.text.DecimalFormat;
 import java.util.*;
 
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RestController
 @Slf4j
@@ -425,6 +421,21 @@ public class BacktestController {
     }
 
     @GetMapping("/stock_price/indicator")
+    public ResponseEntity<Double> getSingleIndicatorByTicker(
+            @RequestParam String ticker,
+            @RequestParam String date,
+            @RequestParam String type,
+            @RequestParam List<Float> param
+    ) {
+        log.info(String.format("[GET] /stock_price/indicator/ticker=%s&date=%s&type=%s&param=%s",ticker,date,type,param));
+
+        return new ResponseEntity<>(
+                indicatorService.getIndicator(ticker, Util.stringToLocalDateTime(date), type, param),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping("/stock_price/indicators")
     public ResponseEntity<Map<LocalDateTime, Double>> getIndicatorByTicker(
             @RequestParam String ticker,
             @RequestParam String startDate,
@@ -432,10 +443,10 @@ public class BacktestController {
             @RequestParam String type,
             @RequestParam List<Float> param
     ) {
-        log.info(String.format("[GET] /stock_price/indicator/ticker=%s&startDate=%s&endDate=%s&type=%s&param=%s",ticker,startDate,endDate,type,param));
+        log.info(String.format("[GET] /stock_price/indicators/ticker=%s&startDate=%s&endDate=%s&type=%s&param=%s",ticker,startDate,endDate,type,param));
 
         return new ResponseEntity<>(
-                indicatorService.getIndicator(ticker, Util.stringToLocalDateTime(startDate), Util.stringToLocalDateTime(endDate), type, param),
+                indicatorService.getIndicators(ticker, Util.stringToLocalDateTime(startDate), Util.stringToLocalDateTime(endDate), type, param),
                 HttpStatus.OK
         );
     }
