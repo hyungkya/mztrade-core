@@ -78,10 +78,14 @@ public class BacktestService {
 
                 // check buy conditions and buy
                 for (List<Condition> buyConditionGroup : buyConditions) {
-                    // check concurrent trading limit
-                    if (!orderService.getPositions(aid).contains(ticker) && orderService.getPositions(aid).size() >= maxTradingCount) {
-                        continue;
+                    // check concurrent trading
+                    if (orderService.getPositions(aid).size() >= maxTradingCount) {
+                        Optional<Position> p = orderService.getPosition(aid, ticker);
+                        if (p.isEmpty()) {
+                            continue;
+                        }
                     }
+
                     buyFlag = true;
                     for (Condition buyCondition : buyConditionGroup) {
                         if (!buyCondition.check(collectedBars.get(ticker))) {
@@ -112,8 +116,8 @@ public class BacktestService {
                         Optional<Position> position = orderService.getPosition(aid, ticker);
                         if (position.isPresent()) {
                             orderService.sell(aid, ticker, startDate, position.get().getQty());
+                            dcaStatus.replace(ticker, 0);
                         }
-                        dcaStatus.replace(ticker, 0);
                     }
                 }
             }
