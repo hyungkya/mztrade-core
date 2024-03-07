@@ -76,7 +76,7 @@ public class BacktestController {
         LocalDateTime startDate = backtestRequest.parseStartDate();
         LocalDateTime endDate = backtestRequest.parseEndDate();
 
-        log.info(String.format("[POST] /excute backtestRequest=%s",backtestRequest));
+        log.info(String.format("[POST] /execute backtestRequest=%s",backtestRequest));
 
         int aid = backtestService.execute(
                 uid,
