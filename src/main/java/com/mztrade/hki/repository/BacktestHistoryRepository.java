@@ -59,7 +59,24 @@ public class BacktestHistoryRepository {
             return null;
         }
     }
-
+    public List<BacktestHistory> getBacktestTop5(int uid) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER);
+        try {
+            return this.template.query(
+                    "select * from backtest_history where uid = :uid order by plratio desc limit 5",
+                    src,
+                    (rs, rowNum) -> BacktestHistory.builder()
+                            .uid(rs.getInt("uid"))
+                            .aid(rs.getInt("aid"))
+                            .param(rs.getString("param"))
+                            .plratio(rs.getDouble("plratio"))
+                            .build()
+            );
+        } catch (DataAccessException e) {
+            return null;
+        }
+    }
     public List<BacktestHistory> getRanking() {
         MapSqlParameterSource src = new MapSqlParameterSource();
         try {

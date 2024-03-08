@@ -149,7 +149,11 @@ public class BacktestService {
         log.debug(String.format("[BacktestService] get(int: %d) -> backtestHistory: %s", aid, backtestHistory));
         return backtestHistory;
     }
-
+    public List<BacktestHistory> getBacktestTop5(int uid) {
+        List<BacktestHistory> backtestHistories = backtestHistoryRepository.getBacktestTop5(uid);
+        log.debug(String.format("[BacktestService] getBacktestTop5(uid: %s) -> backtestHistories: %s", uid, backtestHistories));
+        return backtestHistories;
+    }
     public List<BacktestHistory> getRanking() {
         List<BacktestHistory> backtestHistories = backtestHistoryRepository.getRanking();
         log.debug(String.format("[BacktestService] getRanking() -> backtestHistories: %s", backtestHistories));
