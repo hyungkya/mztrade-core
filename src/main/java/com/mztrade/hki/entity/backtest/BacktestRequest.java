@@ -13,6 +13,8 @@ public class BacktestRequest {
     private List<List<ConditionRequest>> buyConditions;
     private List<List<ConditionRequest>> sellConditions;
     private List<Float> dca;
+    private double stopLoss;
+    private double stopProfit;
     private String maxTrading;
     private List<String> tickers;
     private String startDate;
@@ -69,6 +71,24 @@ public class BacktestRequest {
 
     public BacktestRequest setDca(List<Float> dca) {
         this.dca = dca;
+        return this;
+    }
+
+    public double getStopLoss() {
+        return stopLoss;
+    }
+
+    public BacktestRequest setStopLoss(double stopLoss) {
+        this.stopLoss = stopLoss;
+        return this;
+    }
+
+    public double getStopProfit() {
+        return stopProfit;
+    }
+
+    public BacktestRequest setStopProfit(double stopProfit) {
+        this.stopProfit = stopProfit;
         return this;
     }
 

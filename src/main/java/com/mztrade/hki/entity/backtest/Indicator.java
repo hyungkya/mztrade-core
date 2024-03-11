@@ -1,7 +1,11 @@
 package com.mztrade.hki.entity.backtest;
 
 import com.mztrade.hki.entity.Bar;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +15,8 @@ import java.util.stream.Collectors;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 
+@Getter
+@Builder
 public class Indicator {
     private String type;
     private List<Float> params;
@@ -79,7 +85,7 @@ public class Indicator {
         List<Double> emas = new ArrayList<>();
         emas.add((double) bars.getFirst().getClose());
         for (Bar b : bars) {
-            emas.add(((1-m) * emas.getLast()) + (m * b.getClose()));
+            emas.add(((1 - m) * emas.getLast()) + (m * b.getClose()));
         }
         return emas.getLast();
     }
@@ -104,10 +110,10 @@ public class Indicator {
         List<Double> macdSignal = new ArrayList<>();
         for (int i = params.get(2).intValue(); i > 0; i--) {
             macdSignal.add(
-            calculateMACD(
-                    bars.subList(0, bars.size() - i),
-                    List.of(params.get(0), params.get(1))
-            ));
+                    calculateMACD(
+                            bars.subList(0, bars.size() - i),
+                            List.of(params.get(0), params.get(1))
+                    ));
         }
         double k = 2 / (params.get(2) + 1);
         return macdSignal.stream()
@@ -128,8 +134,12 @@ public class Indicator {
 
         for (int i = 0; i < bars.size() - 2; i++) {
             int diff = bars.get(i + 1).getClose() - bars.get(i).getClose();
-            if (diff > 0) { ups.add(diff); }
-            if (diff < 0) { downs.add(diff); }
+            if (diff > 0) {
+                ups.add(diff);
+            }
+            if (diff < 0) {
+                downs.add(diff);
+            }
         }
 
         au = ups.stream().mapToInt(i -> abs(i)).average();
@@ -142,7 +152,8 @@ public class Indicator {
     }
 
     public double calculateStochasticFast(List<Bar> bars, List<Float> params) {
-        if (params.size() == 0) throw new IllegalArgumentException("Stochastic Fast needs 2 period parameter but 0 given");
+        if (params.size() == 0)
+            throw new IllegalArgumentException("Stochastic Fast needs 2 period parameter but 0 given");
         if (!(params.get(0) > 0)) throw new IllegalArgumentException("Period parameter should be bigger than 0");
         int n = params.get(0).intValue();
         int m = params.get(1).intValue();
@@ -159,7 +170,8 @@ public class Indicator {
     }
 
     public double calculateStochasticSlow(List<Bar> bars, List<Float> params) {
-        if (params.size() == 0) throw new IllegalArgumentException("Stochastic Slow needs 3 period parameter but 0 given");
+        if (params.size() == 0)
+            throw new IllegalArgumentException("Stochastic Slow needs 3 period parameter but 0 given");
         if (!(params.get(0) > 0)) throw new IllegalArgumentException("Period parameter should be bigger than 0");
         int n = params.get(0).intValue();
         int m = params.get(1).intValue();
@@ -192,12 +204,12 @@ public class Indicator {
         bars = bars.subList(bars.size() - (n * 2 - 1), bars.size());
         List<Double> rawD = new ArrayList<>();
         for (int j = 0; j < n; j++) {
-            double m = bars.subList(j, j+n)
+            double m = bars.subList(j, j + n)
                     .stream()
                     .mapToDouble(b -> (b.getClose() + b.getHigh() + b.getLow()) / 3.0)
                     .average()
                     .orElseThrow();
-            double M = (bars.get(j+n-1).getClose() + bars.get(j+n-1).getHigh() + bars.get(j+n-1).getLow()) / 3.0;
+            double M = (bars.get(j + n - 1).getClose() + bars.get(j + n - 1).getHigh() + bars.get(j + n - 1).getLow()) / 3.0;
             rawD.add(M - m);
         }
         return rawD.getLast() / (rawD.stream().mapToDouble(Math::abs).average().orElseThrow() * 0.015);

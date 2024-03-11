@@ -7,6 +7,7 @@ import com.mztrade.hki.entity.*;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.entity.backtest.Condition;
+import com.mztrade.hki.entity.backtest.Indicator;
 import com.mztrade.hki.service.*;
 
 import java.util.*;
@@ -43,8 +44,7 @@ public class BacktestController {
                               TagService tagService,
                               ChartSettingService chartSettingService,
                               IndicatorService indicatorService,
-                              ObjectMapper objectMapper)
-    {
+                              ObjectMapper objectMapper) {
         this.backtestService = backtestService;
         this.stockPriceService = stockPriceService;
         this.orderService = orderService;
@@ -60,19 +60,21 @@ public class BacktestController {
     @PostMapping("/execute")
     public ResponseEntity<Boolean> backtest(
             @RequestBody BacktestRequest backtestRequest
-            ) throws JsonProcessingException {
+    ) throws JsonProcessingException {
         int uid = backtestRequest.parseUid();
         String title = backtestRequest.getTitle();
         long initialBalance = backtestRequest.parseInitialBalance();
         List<List<Condition>> buyConditions = backtestRequest.parseBuyConditions();
         List<List<Condition>> sellConditions = backtestRequest.parseSellConditions();
         List<Float> dca = backtestRequest.getDca();
+        double stopLoss = backtestRequest.getStopLoss();
+        double stopProfit = backtestRequest.getStopProfit();
         int maxTrading = backtestRequest.parseMaxTrading();
         List<String> tickers = backtestRequest.getTickers();
         LocalDateTime startDate = backtestRequest.parseStartDate();
         LocalDateTime endDate = backtestRequest.parseEndDate();
 
-        log.info(String.format("[POST] /execute backtestRequest=%s",backtestRequest));
+        log.info(String.format("[POST] /execute backtestRequest=%s", backtestRequest));
 
         int aid = backtestService.execute(
                 uid,
@@ -80,6 +82,8 @@ public class BacktestController {
                 buyConditions,
                 sellConditions,
                 dca,
+                stopLoss,
+                stopProfit,
                 maxTrading,
                 tickers,
                 startDate,
@@ -103,7 +107,7 @@ public class BacktestController {
     ) {
         BacktestHistory backtestHistory = backtestService.get(aid);
 
-        log.info(String.format("[GET] /backtest/aid=%s",aid));
+        log.info(String.format("[GET] /backtest/aid=%s", aid));
 
         if (backtestHistory == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -117,7 +121,7 @@ public class BacktestController {
     ) {
         BacktestRequest backtestRequest = backtestService.getBacktestRequest(aid);
 
-        log.info(String.format("[GET] /backtest/param/aid=%s",aid));
+        log.info(String.format("[GET] /backtest/param/aid=%s", aid));
 
         if (backtestRequest == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -131,7 +135,7 @@ public class BacktestController {
     ) {
         Integer recordCount = backtestService.getNumberOfHistoryByUid(uid);
 
-        log.info(String.format("[GET] /backtest/count/uid=%s",uid));
+        log.info(String.format("[GET] /backtest/count/uid=%s", uid));
 
         return new ResponseEntity<>(recordCount, HttpStatus.OK);
     }
@@ -148,7 +152,7 @@ public class BacktestController {
             }
         }
 
-        log.info(String.format("[GET] /backtest/all/uid=%s",uid));
+        log.info(String.format("[GET] /backtest/all/uid=%s", uid));
 
         return new ResponseEntity<>(backtestHistories, HttpStatus.OK);
     }
@@ -174,7 +178,7 @@ public class BacktestController {
     ) {
         List<BacktestHistory> queryResult = backtestService.searchByTitle(uid, title);
 
-        log.info(String.format("[GET] /backtest/search/uid=%s&title=%s",uid,title));
+        log.info(String.format("[GET] /backtest/search/uid=%s&title=%s", uid, title));
 
         return new ResponseEntity<>(queryResult, HttpStatus.OK);
     }
@@ -187,7 +191,7 @@ public class BacktestController {
     ) {
         List<BacktestHistory> queryResult = backtestService.searchBacktestHistoryByTags(uid, title, tids);
 
-        log.info(String.format("[GET] /backtest/search-by-tags/uid=%s&title=%s&tids=%s",uid,title,tids));
+        log.info(String.format("[GET] /backtest/search-by-tags/uid=%s&title=%s&tids=%s", uid, title, tids));
 
         return new ResponseEntity<>(queryResult, HttpStatus.OK);
     }
@@ -196,7 +200,7 @@ public class BacktestController {
     public ResponseEntity<Boolean> deleteAccount(
             @RequestParam Integer aid
     ) {
-        log.info(String.format("[DELETE] /backtest/aid=%s",aid));
+        log.info(String.format("[DELETE] /backtest/aid=%s", aid));
         accountService.deleteAccount(aid);
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
@@ -207,7 +211,7 @@ public class BacktestController {
     ) {
         Optional<Integer> highestProfitLossRatioAid = backtestService.getHighestProfitLossRatio(uid);
 
-        log.info(String.format("[GET] /backtest/top-plratio/uid=%s",uid));
+        log.info(String.format("[GET] /backtest/top-plratio/uid=%s", uid));
 
         return highestProfitLossRatioAid.map(
                         aid -> new ResponseEntity<>(backtestService.get(aid), HttpStatus.OK))
@@ -220,7 +224,7 @@ public class BacktestController {
     ) {
         List<CompareTableResponse> compareTableResponse = new ArrayList<>();
 
-        for(Integer aid : aids) {
+        for (Integer aid : aids) {
             compareTableResponse.add(CompareTableResponse.builder()
                     .aid(aid)
                     .ticker("")
@@ -231,7 +235,7 @@ public class BacktestController {
                     .frequency(statisticService.getTradeFrequency(aid)
                     ).build());
         }
-        log.info(String.format("[GET] /compare-chart/bt-table/aids=%s -> btTableList: %s",aids, compareTableResponse));
+        log.info(String.format("[GET] /compare-chart/bt-table/aids=%s -> btTableList: %s", aids, compareTableResponse));
 
         return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
     }
@@ -242,21 +246,21 @@ public class BacktestController {
     ) {
         List<CompareTableResponse> compareTableResponse = new ArrayList<>();
 
-        for(Integer aid : aids) {
+        for (Integer aid : aids) {
             List<String> tickers = backtestService.getBacktestRequest(aid).getTickers();
-            for(String ticker : tickers){
+            for (String ticker : tickers) {
                 compareTableResponse.add(CompareTableResponse.builder()
-                    .aid(aid)
-                    .ticker(ticker)
-                    .title(backtestService.getBacktestRequest(aid).getTitle())
-                    .subTitle(stockPriceService.findStockInfoByTicker(ticker).getName())
-                    .plratio(statisticService.getTickerProfit(aid,ticker))
-                    .winRate(statisticService.getTickerTradingWinRate(aid,ticker))
-                    .frequency(statisticService.getTickerTradeFrequency(aid,ticker))
-                    .build());
+                        .aid(aid)
+                        .ticker(ticker)
+                        .title(backtestService.getBacktestRequest(aid).getTitle())
+                        .subTitle(stockPriceService.findStockInfoByTicker(ticker).getName())
+                        .plratio(statisticService.getTickerProfit(aid, ticker))
+                        .winRate(statisticService.getTickerTradingWinRate(aid, ticker))
+                        .frequency(statisticService.getTickerTradeFrequency(aid, ticker))
+                        .build());
             }
         }
-        log.info(String.format("[GET] /compare-chart/ticker-table/aids=%s -> tickerTableList: %s",aids, compareTableResponse));
+        log.info(String.format("[GET] /compare-chart/ticker-table/aids=%s -> tickerTableList: %s", aids, compareTableResponse));
 
         return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
     }
@@ -266,7 +270,7 @@ public class BacktestController {
             @RequestParam Integer uid
     ) {
         List<Tag> tags = tagService.getStockInfoTag(uid);
-        log.info(String.format("[GET] /stock_info/tag/uid=%s",uid));
+        log.info(String.format("[GET] /stock_info/tag/uid=%s", uid));
         return new ResponseEntity<>(tags, HttpStatus.OK);
     }
 
@@ -286,7 +290,7 @@ public class BacktestController {
             @RequestParam String ticker
     ) {
         Boolean isProcessed = tagService.createStockInfoTagLink(tid, ticker);
-        log.info(String.format("[POST] /stock_info/tag-link/tid=%s&ticker=%s",tid,ticker));
+        log.info(String.format("[POST] /stock_info/tag-link/tid=%s&ticker=%s", tid, ticker));
         return new ResponseEntity<>(isProcessed, HttpStatus.OK);
     }
 
@@ -296,7 +300,7 @@ public class BacktestController {
             @RequestParam String ticker
     ) {
         Boolean isProcessed = tagService.deleteStockInfoTagLink(tid, ticker);
-        log.info(String.format("[DELETE] /stock_info/tag-link/tid=%s&ticker=%s",tid,ticker));
+        log.info(String.format("[DELETE] /stock_info/tag-link/tid=%s&ticker=%s", tid, ticker));
         return new ResponseEntity<>(isProcessed, HttpStatus.OK);
     }
 
@@ -305,7 +309,7 @@ public class BacktestController {
             @RequestParam Integer uid
     ) {
         List<Tag> tags = tagService.getBacktestHistoryTag(uid);
-        log.info(String.format("[GET] /backtest/tag/uid=%s",uid));
+        log.info(String.format("[GET] /backtest/tag/uid=%s", uid));
         return tags;
     }
 
@@ -314,18 +318,18 @@ public class BacktestController {
             @RequestParam Integer uid,
             @RequestParam Integer aid
     ) {
-        List<Tag> tags = tagService.getBacktestHistoryTagByAid(uid,aid);
-        log.info(String.format("[GET] /backtest/tag/uid=%s&aid=%s",uid,aid));
+        List<Tag> tags = tagService.getBacktestHistoryTagByAid(uid, aid);
+        log.info(String.format("[GET] /backtest/tag/uid=%s&aid=%s", uid, aid));
         return tags;
     }
 
     @PostMapping("/backtest/tag-link")
     public ResponseEntity<Boolean> createBacktestHistoryTagLink(
-        @RequestParam Integer tid,
-        @RequestParam Integer aid
+            @RequestParam Integer tid,
+            @RequestParam Integer aid
     ) {
         Boolean isProcessed = tagService.createBacktestHistoryTagLink(tid, aid);
-        log.info(String.format("[POST] /backtest/tag-link/tid=%s&aid=%s",tid,aid));
+        log.info(String.format("[POST] /backtest/tag-link/tid=%s&aid=%s", tid, aid));
         return new ResponseEntity<>(isProcessed, HttpStatus.OK);
     }
 
@@ -335,7 +339,7 @@ public class BacktestController {
             @RequestParam Integer aid
     ) {
         Boolean isProcessed = tagService.deleteBacktestHistoryTagLink(tid, aid);
-        log.info(String.format("[DELETE] /backtest/tag-link/tid=%s&aid=%s",tid,aid));
+        log.info(String.format("[DELETE] /backtest/tag-link/tid=%s&aid=%s", tid, aid));
         return new ResponseEntity<>(isProcessed, HttpStatus.OK);
     }
 
@@ -343,8 +347,8 @@ public class BacktestController {
     public boolean createTag(
             @RequestBody TagRequest tagRequest
     ) {
-        int create = tagService.createTag(tagRequest.getUid(),tagRequest.getName(),tagRequest.getColor(),tagRequest.getCategory());
-        log.info(String.format("[POST] /tag tag=%s",tagRequest));
+        int create = tagService.createTag(tagRequest.getUid(), tagRequest.getName(), tagRequest.getColor(), tagRequest.getCategory());
+        log.info(String.format("[POST] /tag tag=%s", tagRequest));
         return create > 0;
     }
 
@@ -353,7 +357,7 @@ public class BacktestController {
             @RequestParam Integer tid
     ) {
         boolean delete = tagService.deleteTag(tid);
-        log.info(String.format("[DELETE] /tag/tid=%s",tid));
+        log.info(String.format("[DELETE] /tag/tid=%s", tid));
         return delete;
     }
 
@@ -363,8 +367,8 @@ public class BacktestController {
             @RequestParam String name,
             @RequestParam String color
     ) {
-        boolean update = tagService.updateTag(tid,name,color);
-        log.info(String.format("[PUT] /tag/tid=%s&name=%s&color=%s",tid,name,color));
+        boolean update = tagService.updateTag(tid, name, color);
+        log.info(String.format("[PUT] /tag/tid=%s&name=%s&color=%s", tid, name, color));
         return update;
     }
 
@@ -373,7 +377,7 @@ public class BacktestController {
             @RequestParam int uid
     ) {
         ChartSetting chartSetting = chartSettingService.get(uid);
-        log.info(String.format("[GET] /chart-setting?uid=%s",chartSetting));
+        log.info(String.format("[GET] /chart-setting?uid=%s", chartSetting));
         return chartSetting;
     }
 
@@ -392,7 +396,7 @@ public class BacktestController {
     public ResponseEntity<List<Order>> getOrderHistory(
             @RequestParam Integer aid
     ) {
-        log.info(String.format("[GET] /order_history/aid=%s",aid));
+        log.info(String.format("[GET] /order_history/aid=%s", aid));
         return new ResponseEntity<>(orderService.getOrderHistory(aid), HttpStatus.OK);
     }
 
@@ -400,7 +404,7 @@ public class BacktestController {
     public ResponseEntity<List<Bar>> getPricesByTicker(
             @RequestParam String ticker
     ) {
-        log.info(String.format("[GET] /stock_price/ticker=%s",ticker));
+        log.info(String.format("[GET] /stock_price/ticker=%s", ticker));
         return new ResponseEntity<>(stockPriceService.getPrices(ticker), HttpStatus.OK);
     }
 
@@ -435,7 +439,7 @@ public class BacktestController {
             @RequestParam String type,
             @RequestParam List<Float> param
     ) {
-        log.info(String.format("[GET] /stock_price/indicator/ticker=%s&date=%s&type=%s&param=%s",ticker,date,type,param));
+        log.info(String.format("[GET] /stock_price/indicator/ticker=%s&date=%s&type=%s&param=%s", ticker, date, type, param));
 
         return new ResponseEntity<>(
                 indicatorService.getIndicator(ticker, Util.stringToLocalDateTime(date), type, param),
@@ -451,10 +455,18 @@ public class BacktestController {
             @RequestParam String type,
             @RequestParam List<Float> param
     ) {
-        log.info(String.format("[GET] /stock_price/indicators/ticker=%s&startDate=%s&endDate=%s&type=%s&param=%s",ticker,startDate,endDate,type,param));
+        log.info(String.format("[GET] /stock_price/indicators/ticker=%s&startDate=%s&endDate=%s&type=%s&param=%s", ticker, startDate, endDate, type, param));
 
         return new ResponseEntity<>(
-                indicatorService.getIndicators(ticker, Util.stringToLocalDateTime(startDate), Util.stringToLocalDateTime(endDate), type, param),
+                indicatorService.getIndicators(
+                        ticker,
+                        Util.stringToLocalDateTime(startDate),
+                        Util.stringToLocalDateTime(endDate),
+                        Indicator.builder()
+                                .type(type)
+                                .params(param)
+                                .build()
+                ),
                 HttpStatus.OK
         );
     }
@@ -465,7 +477,7 @@ public class BacktestController {
     ) {
         Double winRate = statisticService.getTradingWinRate(aid);
 
-        log.info(String.format("[GET] /statistic/getWinRate/aid=%s",aid));
+        log.info(String.format("[GET] /statistic/getWinRate/aid=%s", aid));
 
         return new ResponseEntity<Double>(winRate, HttpStatus.OK);
     }
@@ -475,7 +487,7 @@ public class BacktestController {
             @RequestParam Integer aid
     ) {
         Double tradeFrequency = statisticService.getTradeFrequency(aid);
-        log.info(String.format("[GET] /statistic/tradeFrequency/aid=%s",aid));
+        log.info(String.format("[GET] /statistic/tradeFrequency/aid=%s", aid));
         return new ResponseEntity<Double>(tradeFrequency, HttpStatus.OK);
     }
 
@@ -484,7 +496,7 @@ public class BacktestController {
             @RequestParam Integer aid,
             @RequestParam String ticker
     ) {
-        log.info(String.format("[GET] /statistic/ticker-profit/aid=%s&ticker=%s",aid,ticker));
+        log.info(String.format("[GET] /statistic/ticker-profit/aid=%s&ticker=%s", aid, ticker));
         return new ResponseEntity<>(statisticService.getTickerProfit(aid, ticker), HttpStatus.OK);
     }
 
@@ -492,7 +504,7 @@ public class BacktestController {
     public ResponseEntity<Map<String, Double>> getTickerProfit(
             @RequestParam Integer aid
     ) {
-        log.info(String.format("[GET] /statistic/ticker-profit/all/aid=%s",aid));
+        log.info(String.format("[GET] /statistic/ticker-profit/all/aid=%s", aid));
         return new ResponseEntity<>(statisticService.getTickerProfit(aid), HttpStatus.OK);
     }
 
@@ -502,7 +514,7 @@ public class BacktestController {
             @RequestParam String ticker,
             @RequestParam(defaultValue = "0") Integer option
     ) {
-        log.info(String.format("[GET] /statistic/ticker-trade-count/aid=%s&ticker=%s&option=%s",aid,ticker,option));
+        log.info(String.format("[GET] /statistic/ticker-trade-count/aid=%s&ticker=%s&option=%s", aid, ticker, option));
         return new ResponseEntity<>(statisticService.getTickerTradeCount(aid, ticker, option), HttpStatus.OK);
     }
 
@@ -510,7 +522,7 @@ public class BacktestController {
     public ResponseEntity<Map<String, Double>> getTickerBenchmarkProfit(
             @RequestParam Integer aid
     ) {
-        log.info(String.format("[GET] /statistic/ticker-benchmark-profit/all/aid=%s",aid));
+        log.info(String.format("[GET] /statistic/ticker-benchmark-profit/all/aid=%s", aid));
         return new ResponseEntity<>(statisticService.getTickerBenchmarkProfit(aid), HttpStatus.OK);
     }
 
@@ -518,7 +530,7 @@ public class BacktestController {
     public ResponseEntity<Map<String, Double>> getTickerAlphaProfit(
             @RequestParam Integer aid
     ) {
-        log.info(String.format("[GET] /statistic/ticker=alpha-profit/all/aid=%s",aid));
+        log.info(String.format("[GET] /statistic/ticker=alpha-profit/all/aid=%s", aid));
         return new ResponseEntity<>(statisticService.getTickerAlphaProfit(aid), HttpStatus.OK);
     }
 

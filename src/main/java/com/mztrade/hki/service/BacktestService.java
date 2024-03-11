@@ -41,6 +41,8 @@ public class BacktestService {
             List<List<Condition>> buyConditions,
             List<List<Condition>> sellConditions,
             List<Float> dca,
+            double stopLoss,
+            double stopProfit,
             int maxTradingCount,
             List<String> targetTickers,
             LocalDateTime startDate,
@@ -76,51 +78,75 @@ public class BacktestService {
                 }
                 // if 'any' bar collected in a particular ticker ... continue downwards
 
-                // check buy conditions and buy
-                for (List<Condition> buyConditionGroup : buyConditions) {
-                    // check concurrent trading
-                    if (orderService.getPositions(aid).size() >= maxTradingCount) {
-                        Optional<Position> p = orderService.getPosition(aid, ticker);
-                        if (p.isEmpty()) {
-                            continue;
+                // 보유중이지 않은 종목이면서 동시 매매 종목 자리가 남아있을 때만 매수 조건 체크
+                if (orderService.getPosition(aid, ticker).isEmpty() && orderService.getPositions(aid).size() < maxTradingCount) {
+                    // 그룹별은 OR 적용이고 그룹 내 조건들은 AND로 만족이 되어야함
+                    for (List<Condition> buyConditionGroup : buyConditions) {
+                        buyFlag = true;
+                        for (Condition buyCondition : buyConditionGroup) {
+                            if (!buyCondition.check(collectedBars.get(ticker))) {
+                                buyFlag = false;
+                            }
                         }
-                    }
-
-                    buyFlag = true;
-                    for (Condition buyCondition : buyConditionGroup) {
-                        if (!buyCondition.check(collectedBars.get(ticker))) {
-                            buyFlag = false;
-                        }
-                    }
-                    if (buyFlag) {
-                        if (dcaStatus.get(ticker) < dca.size()) {
+                        if (buyFlag) {
+                            // 종목 구매 금액 계산 (종목별 최대 거래 금액 * 분할 매수 1차 구매 비율)
                             double targetBuyAmount = dca.get(dcaStatus.get(ticker)) * maxSingleTickerTradingBalance;
-                            int currentPrice = collectedBars.get(ticker).get(collectedBars.size() - 1).getClose();
+                            // 현재가 불러오기
+                            int currentPrice = collectedBars.get(ticker).getLast().getClose();
+                            // 구매 가능 수량 계산
                             int targetQty = (int) Math.floor(targetBuyAmount / currentPrice);
+                            // 구매 가능 수량이 0 이상이라면 매수 진행 후 분할 매수 차수 업데이트
                             if (targetQty > 0) {
                                 orderService.buy(aid, ticker, startDate, targetQty);
                                 dcaStatus.replace(ticker, dcaStatus.get(ticker) + 1);
                             }
                         }
                     }
-                }
-                // Check sell conditions and sell
-                for (List<Condition> sellConditionGroup : sellConditions) {
-                    sellFlag = true;
-                    for (Condition sellCondition : sellConditionGroup) {
-                        if (!sellCondition.check(collectedBars.get(ticker))) {
-                            sellFlag = false;
-                        }
-                    }
-                    if (sellFlag) {
-                        Optional<Position> position = orderService.getPosition(aid, ticker);
-                        if (position.isPresent()) {
-                            orderService.sell(aid, ticker, startDate, position.get().getQty());
+                } // 보유중인 종목에 대해서는 손절가 초과 시 분할 매수 진행
+                else if (orderService.getPosition(aid, ticker).isPresent()) {
+                    Position p = orderService.getPosition(aid, ticker).get();
+                    int currentPrice = collectedBars.get(ticker).getLast().getClose();
+                    // 현재 가격이 손절가 이하라면 분할 매수 남은 횟수 체크
+                    if (p.getAvgEntryPrice().doubleValue() * stopLoss > currentPrice) {
+                        // 남은 횟수가 있다면 분할 매수, 없다면 손절
+                        if (dcaStatus.get(ticker) < dca.size()) {
+                            double targetBuyAmount = dca.get(dcaStatus.get(ticker)) * maxSingleTickerTradingBalance;
+                            int targetQty = (int) Math.floor(targetBuyAmount / currentPrice);
+                            if (targetQty > 0) {
+                                orderService.buy(aid, ticker, startDate, targetQty);
+                                dcaStatus.replace(ticker, dcaStatus.get(ticker) + 1);
+                            }
+                        } else {
+                            //손절
+                            orderService.sell(aid, ticker, startDate, p.getQty());
+                            //분할매수 리셋
                             dcaStatus.replace(ticker, 0);
                         }
                     }
                 }
             }
+            List<Position> positions = orderService.getPositions(aid);
+            for (Position position : positions) {
+                int currentPrice = collectedBars.get(position.getTicker()).getLast().getClose();
+                if (position.getAvgEntryPrice().doubleValue() * stopProfit < currentPrice) {
+                    orderService.sell(aid, position.getTicker(), startDate, position.getQty());
+                    dcaStatus.replace(position.getTicker(), 0);
+                } else {
+                    for (List<Condition> sellConditionGroup : sellConditions) {
+                        sellFlag = true;
+                        for (Condition sellCondition : sellConditionGroup) {
+                            if (!sellCondition.check(collectedBars.get(position.getTicker()))) {
+                                sellFlag = false;
+                            }
+                        }
+                        if (sellFlag) {
+                            orderService.sell(aid, position.getTicker(), startDate, position.getQty());
+                            dcaStatus.replace(position.getTicker(), 0);
+                        }
+                    }
+                }
+            }
+
             //계좌잔액기록
             long balance = accountService.getBalance(aid);
 
@@ -132,8 +158,8 @@ public class BacktestService {
             accountService.createAccountHistory(aid,startDate,balance);
         }
         log.debug(String.format("[BacktestService] execute(uid: %d, initialBalance: %d, buyConditions: %s, " +
-                "sellConditions: %s, dca: %s, maxTradingCount: %d, targetTickers: %s, " +
-                "startDate: %s, endDate: %s) -> aid: %d", uid, initialBalance, buyConditions, sellConditions, dca,
+                "sellConditions: %s, dca: %s, stopLoss: %s, stopProfit: %s, maxTradingCount: %d, targetTickers: %s, " +
+                "startDate: %s, endDate: %s) -> aid: %d", uid, initialBalance, buyConditions, sellConditions, dca, stopLoss, stopProfit,
                 maxTradingCount, targetTickers, startDate, endDate, aid));
         return aid;
     }
