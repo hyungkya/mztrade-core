@@ -3,10 +3,16 @@ package com.mztrade.hki.controller;
 
 import com.mztrade.hki.config.jwt.JwtFilter;
 import com.mztrade.hki.config.jwt.TokenProvider;
+import com.mztrade.hki.dto.DefaultResponse;
 import com.mztrade.hki.dto.LoginRequestDto;
+import com.mztrade.hki.dto.LoginResponseDto;
+import com.mztrade.hki.dto.ResponseMessage;
+import com.mztrade.hki.dto.StatusCode;
 import com.mztrade.hki.dto.TokenDto;
 import com.mztrade.hki.service.RedisService;
 import jakarta.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -30,7 +36,7 @@ public class AuthController {
     private final RedisService redisService;
 
     @PostMapping("/auth/issue")
-    public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginRequestDto loginRequestDto) {
+    public ResponseEntity<?> authorize(@Valid @RequestBody LoginRequestDto loginRequestDto) {
 
         log.info("토큰 발급 시작");
 
@@ -51,25 +57,30 @@ public class AuthController {
 
 
         HttpHeaders httpHeaders = new HttpHeaders();
+        Map<String, Object> tokens = new HashMap<>();
+
 
         // 토큰을 Response Header 에 넣어서 반환
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + accessToken);
         httpHeaders.add("Refresh-Token", "Bearer " + refreshToken);
 
+        tokens.put("access_token", accessToken);
+        tokens.put("refresh_token", refreshToken);
 
         log.info("토큰 발급 완료");
-        return new ResponseEntity<>(new TokenDto(accessToken, refreshToken), httpHeaders, HttpStatus.OK);
+
+        return new ResponseEntity<>(tokens, httpHeaders, HttpStatus.OK);
+
 
     }
 
     @PostMapping("/auth/reissue")
-    public ResponseEntity<TokenDto> reissue(@Valid @RequestBody TokenDto tokenDto) {
+    public ResponseEntity<?> reissue(@Valid @RequestBody TokenDto tokenDto) {
 
         log.info("토큰 재발급 시작");
 
-
         try {
-
+            // accessToken 유효성 검사
             boolean validateToken = tokenProvider.validateToken(tokenDto.getAccessToken());
 
             // access token 이 유효하지 않은 경우
@@ -97,9 +108,14 @@ public class AuthController {
                     httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + newAccessToken);
                     httpHeaders.add("Refresh-Token", "Bearer " + newRefreshToken);
 
+                    Map<String, Object> tokens = new HashMap<>();
+
+                    tokens.put("access_token", newAccessToken);
+                    tokens.put("refresh_token", newRefreshToken);
+
                     log.info("토큰 재발급 완료");
-                    return new ResponseEntity<>(new TokenDto(newAccessToken, newRefreshToken),
-                            httpHeaders, HttpStatus.OK);
+                    return new ResponseEntity<>(tokens, httpHeaders, HttpStatus.OK);
+
 
                 }
 
