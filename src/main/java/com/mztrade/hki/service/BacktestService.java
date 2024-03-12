@@ -77,8 +77,6 @@ public class BacktestService {
                     log.trace("[BacktestService] " + e);
                     continue;
                 }
-                // if 'any' bar collected in a particular ticker ... continue downwards
-
                 // 보유중이지 않은 종목이면서 동시 매매 종목 자리가 남아있을 때만 매수 조건 체크
                 if (orderService.getPosition(aid, ticker).isEmpty() && orderService.getPositions(aid).size() < maxTradingCount) {
                     // 그룹별은 OR 적용이고 그룹 내 조건들은 AND로 만족이 되어야함
@@ -89,7 +87,7 @@ public class BacktestService {
                                 buyFlag = false;
                             }
                         }
-                        if (buyFlag) {
+                        if (buyFlag && dcaStatus.get(ticker) < dca.size()) {
                             // 종목 구매 금액 계산 (종목별 최대 거래 금액 * 분할 매수 1차 구매 비율)
                             double targetBuyAmount = dca.get(dcaStatus.get(ticker)) * maxSingleTickerTradingBalance;
                             // 현재가 불러오기
