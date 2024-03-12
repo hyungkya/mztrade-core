@@ -15,6 +15,7 @@ public class BacktestRequest {
     private List<Float> dca;
     private double stopLoss;
     private double stopProfit;
+    private double trailingStop;
     private String maxTrading;
     private List<String> tickers;
     private String startDate;
@@ -89,6 +90,15 @@ public class BacktestRequest {
 
     public BacktestRequest setStopProfit(double stopProfit) {
         this.stopProfit = stopProfit;
+        return this;
+    }
+
+    public double getTrailingStop() {
+        return trailingStop;
+    }
+
+    public BacktestRequest setTrailingStop(double trailingStop) {
+        this.trailingStop = trailingStop;
         return this;
     }
 

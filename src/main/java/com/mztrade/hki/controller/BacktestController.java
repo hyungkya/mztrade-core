@@ -69,6 +69,7 @@ public class BacktestController {
         List<Float> dca = backtestRequest.getDca();
         double stopLoss = backtestRequest.getStopLoss();
         double stopProfit = backtestRequest.getStopProfit();
+        double trailingStop = backtestRequest.getTrailingStop();
         int maxTrading = backtestRequest.parseMaxTrading();
         List<String> tickers = backtestRequest.getTickers();
         LocalDateTime startDate = backtestRequest.parseStartDate();
@@ -84,6 +85,7 @@ public class BacktestController {
                 dca,
                 stopLoss,
                 stopProfit,
+                trailingStop,
                 maxTrading,
                 tickers,
                 startDate,

@@ -43,6 +43,7 @@ public class BacktestService {
             List<Float> dca,
             double stopLoss,
             double stopProfit,
+            double trailingStop,
             int maxTradingCount,
             List<String> targetTickers,
             LocalDateTime startDate,
