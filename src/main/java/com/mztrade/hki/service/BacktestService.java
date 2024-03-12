@@ -106,7 +106,7 @@ public class BacktestService {
                     Position p = orderService.getPosition(aid, ticker).get();
                     int currentPrice = collectedBars.get(ticker).getLast().getClose();
                     // 현재 가격이 손절가 이하라면 분할 매수 남은 횟수 체크
-                    if (!stopLoss.isNaN() && p.getAvgEntryPrice().doubleValue() * stopLoss > currentPrice) {
+                    if (stopLoss != null && p.getAvgEntryPrice().doubleValue() * stopLoss > currentPrice) {
                         // 남은 횟수가 있다면 분할 매수, 없다면 손절
                         if (dcaStatus.get(ticker) < dca.size()) {
                             double targetBuyAmount = dca.get(dcaStatus.get(ticker)) * maxSingleTickerTradingBalance;
@@ -127,7 +127,7 @@ public class BacktestService {
             List<Position> positions = orderService.getPositions(aid);
             for (Position position : positions) {
                 int currentPrice = collectedBars.get(position.getTicker()).getLast().getClose();
-                if (!stopProfit.isNaN() && position.getAvgEntryPrice().doubleValue() * stopProfit < currentPrice) {
+                if (stopProfit != null && position.getAvgEntryPrice().doubleValue() * stopProfit < currentPrice) {
                     orderService.sell(aid, position.getTicker(), startDate, position.getQty());
                     dcaStatus.replace(position.getTicker(), 0);
                 } else {

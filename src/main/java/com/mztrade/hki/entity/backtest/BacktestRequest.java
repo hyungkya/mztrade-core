@@ -13,9 +13,9 @@ public class BacktestRequest {
     private List<List<ConditionRequest>> buyConditions;
     private List<List<ConditionRequest>> sellConditions;
     private List<Float> dca;
-    private double stopLoss;
-    private double stopProfit;
-    private double trailingStop;
+    private Double stopLoss;
+    private Double stopProfit;
+    private Double trailingStop;
     private String maxTrading;
     private List<String> tickers;
     private String startDate;
@@ -75,29 +75,29 @@ public class BacktestRequest {
         return this;
     }
 
-    public double getStopLoss() {
+    public Double getStopLoss() {
         return stopLoss;
     }
 
-    public BacktestRequest setStopLoss(double stopLoss) {
+    public BacktestRequest setStopLoss(Double stopLoss) {
         this.stopLoss = stopLoss;
         return this;
     }
 
-    public double getStopProfit() {
+    public Double getStopProfit() {
         return stopProfit;
     }
 
-    public BacktestRequest setStopProfit(double stopProfit) {
+    public BacktestRequest setStopProfit(Double stopProfit) {
         this.stopProfit = stopProfit;
         return this;
     }
 
-    public double getTrailingStop() {
+    public Double getTrailingStop() {
         return trailingStop;
     }
 
-    public BacktestRequest setTrailingStop(double trailingStop) {
+    public BacktestRequest setTrailingStop(Double trailingStop) {
         this.trailingStop = trailingStop;
         return this;
     }
