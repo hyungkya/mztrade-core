@@ -58,6 +58,7 @@ public class BacktestService {
         for (String ticker : targetTickers) {
             dcaStatus.put(ticker, 0);
         }
+        Map<String, Integer> trailingStopStatus = new HashMap<>();
 
         // Get Bars
         Map<String, List<Bar>> collectedBars = new HashMap<>();
@@ -120,27 +121,57 @@ public class BacktestService {
                             orderService.sell(aid, ticker, startDate, p.getQty());
                             //분할매수 리셋
                             dcaStatus.replace(ticker, 0);
+                            trailingStopStatus.remove(ticker);
                         }
                     }
                 }
-            }
-            List<Position> positions = orderService.getPositions(aid);
-            for (Position position : positions) {
-                int currentPrice = collectedBars.get(position.getTicker()).getLast().getClose();
-                if (stopProfit != null && position.getAvgEntryPrice().doubleValue() * stopProfit < currentPrice) {
-                    orderService.sell(aid, position.getTicker(), startDate, position.getQty());
-                    dcaStatus.replace(position.getTicker(), 0);
-                } else {
+                Optional<Position> position = orderService.getPosition(aid, ticker);
+                if (position.isPresent()) {
+                    int currentPrice = collectedBars.get(position.get().getTicker()).getLast().getClose();
                     for (List<Condition> sellConditionGroup : sellConditions) {
                         sellFlag = true;
                         for (Condition sellCondition : sellConditionGroup) {
-                            if (!sellCondition.check(collectedBars.get(position.getTicker()))) {
+                            if (!sellCondition.check(collectedBars.get(position.get().getTicker()))) {
                                 sellFlag = false;
                             }
                         }
                         if (sellFlag) {
-                            orderService.sell(aid, position.getTicker(), startDate, position.getQty());
-                            dcaStatus.replace(position.getTicker(), 0);
+                            orderService.sell(aid, position.get().getTicker(), startDate, position.get().getQty());
+                            dcaStatus.replace(position.get().getTicker(), 0);
+                            // 매도 후 트레일링 스탑 감시 해제 (있다면)
+                            trailingStopStatus.remove(position.get().getTicker());
+                            break;
+                        }
+                    }
+                    // 매도 조건에서 팔리지 않았을 경우
+                    if (!sellFlag) {
+                        // 익절가 달성 여부 체크
+                        if (stopProfit != null && position.get().getAvgEntryPrice().doubleValue() * stopProfit < currentPrice) {
+                            // 트레일링 스탑 사용 중이라면 감시 시작
+                            if (trailingStop != null && !trailingStopStatus.containsKey(position.get().getTicker())) {
+                                trailingStopStatus.put(position.get().getTicker(), currentPrice);
+                            }
+                            // 아니라면 전량 매도
+                            else {
+                                orderService.sell(aid, position.get().getTicker(), startDate, position.get().getQty());
+                                dcaStatus.replace(position.get().getTicker(), 0);
+                                // 매도 후 트레일링 스탑 감시 해제 (있다면)
+                                trailingStopStatus.remove(position.get().getTicker());
+                            }
+                        }
+                        // 트레일링 스탑 감시 중이라면
+                        if (trailingStop != null && trailingStopStatus.containsKey(position.get().getTicker())) {
+                            // 현재가가 최고가 보다 높다면 최고가 갱신
+                            if (trailingStopStatus.get(position.get().getTicker()) < currentPrice) {
+                                trailingStopStatus.replace(position.get().getTicker(), currentPrice);
+                            }
+                            // 현재가가 트레일링 스탑 제한보다 낮아졌다면 전량 매도
+                            else if (trailingStopStatus.get(position.get().getTicker()) * trailingStop > currentPrice){
+                                orderService.sell(aid, position.get().getTicker(), startDate, position.get().getQty());
+                                dcaStatus.replace(position.get().getTicker(), 0);
+                                // 매도 후 트레일링 스탑 감시 해제
+                                trailingStopStatus.remove(position.get().getTicker());
+                            }
                         }
                     }
                 }
