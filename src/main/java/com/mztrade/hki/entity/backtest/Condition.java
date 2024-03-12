@@ -12,12 +12,12 @@ public class Condition {
     private Float constantBound;
     private String compareType;
     private List<Integer> frequency;
-    private Queue<Boolean> recentMatches;
+    private List<Boolean> recentMatches;
 
     public Condition() {
         this.targetIndicator = new Indicator("NONE", Collections.emptyList());
         this.frequency = List.of(1, 1);
-        this.recentMatches = new LinkedList<>();
+        this.recentMatches = new ArrayList<>();
     }
 
     public Condition setBaseIndicator(Indicator baseIndicator) {
@@ -62,13 +62,22 @@ public class Condition {
             }
         }
         if (recentMatches.size() > frequency.get(0)) {
-            recentMatches.remove();
+            recentMatches.removeFirst();
         }
-        int matchCount = recentMatches.stream().filter(m -> m == true).collect(Collectors.toList()).size();
-        if (matchCount >= frequency.get(1)) {
-            return true;
+
+        if (recentMatches.size() != frequency.get(0)) {
+            return false;
+        } else {
+            int falseTrueTransitionIndex = frequency.get(0) - frequency.get(1);
+            for (int i = 0; i < frequency.get(0); i++) {
+                if (i < falseTrueTransitionIndex && recentMatches.get(i) != false) {
+                    return false;
+                } else if (i >= falseTrueTransitionIndex && recentMatches.get(i) != true) {
+                    return false;
+                }
+            }
         }
-        return false;
+        return true;
     }
 
     @Override
