@@ -110,6 +110,7 @@ public class BacktestService {
                     if (stopLoss != null && p.getAvgEntryPrice().doubleValue() * stopLoss > currentPrice) {
                         // 남은 횟수가 있다면 분할 매수, 없다면 손절
                         if (dcaStatus.get(ticker) < dca.size()) {
+                            System.out.println(startDate);
                             double targetBuyAmount = dca.get(dcaStatus.get(ticker)) * maxSingleTickerTradingBalance;
                             int targetQty = (int) Math.floor(targetBuyAmount / currentPrice);
                             if (targetQty > 0) {
@@ -148,8 +149,10 @@ public class BacktestService {
                         // 익절가 달성 여부 체크
                         if (stopProfit != null && position.get().getAvgEntryPrice().doubleValue() * stopProfit < currentPrice) {
                             // 트레일링 스탑 사용 중이라면 감시 시작
-                            if (trailingStop != null && !trailingStopStatus.containsKey(position.get().getTicker())) {
-                                trailingStopStatus.put(position.get().getTicker(), currentPrice);
+                            if (trailingStop != null) {
+                                if (!trailingStopStatus.containsKey(position.get().getTicker())) {
+                                    trailingStopStatus.put(position.get().getTicker(), currentPrice);
+                                }
                             }
                             // 아니라면 전량 매도
                             else {
@@ -166,7 +169,7 @@ public class BacktestService {
                                 trailingStopStatus.replace(position.get().getTicker(), currentPrice);
                             }
                             // 현재가가 트레일링 스탑 제한보다 낮아졌다면 전량 매도
-                            else if (trailingStopStatus.get(position.get().getTicker()) * trailingStop > currentPrice){
+                            else if (trailingStopStatus.get(position.get().getTicker()) * (1 - trailingStop) > currentPrice){
                                 orderService.sell(aid, position.get().getTicker(), startDate, position.get().getQty());
                                 dcaStatus.replace(position.get().getTicker(), 0);
                                 // 매도 후 트레일링 스탑 감시 해제

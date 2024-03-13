@@ -12,12 +12,12 @@ public class Condition {
     private Float constantBound;
     private String compareType;
     private List<Integer> frequency;
-    private List<Boolean> recentMatches;
+    private Map<String, List<Boolean>> recentMatches;
 
     public Condition() {
         this.targetIndicator = new Indicator("NONE", Collections.emptyList());
         this.frequency = List.of(1, 1);
-        this.recentMatches = new ArrayList<>();
+        this.recentMatches = new HashMap<>();
     }
 
     public Condition setBaseIndicator(Indicator baseIndicator) {
@@ -46,33 +46,37 @@ public class Condition {
     }
 
     public boolean check(List<Bar> bars) {
+        String ticker = bars.getFirst().getTicker();
+        if (!recentMatches.containsKey(ticker)) {
+            recentMatches.put(ticker, new ArrayList<>());
+        }
         log.trace("baseIndicator: " + baseIndicator.calculate(bars) + " targetIndicator: " + targetIndicator.calculate(bars));
-        if (compareType.matches(">")) {
+        if (compareType.matches(">") || compareType.matches(">>")) {
             if (baseIndicator.calculate(bars) > targetIndicator.calculate(bars) + constantBound) {
-                recentMatches.add(true);
+                recentMatches.get(ticker).add(true);
             } else {
-                recentMatches.add(false);
+                recentMatches.get(ticker).add(false);
             }
         }
-        if (compareType.matches("<")) {
+        if (compareType.matches("<") || compareType.matches("<<")) {
             if (baseIndicator.calculate(bars) < targetIndicator.calculate(bars) + constantBound) {
-                recentMatches.add(true);
+                recentMatches.get(ticker).add(true);
             } else {
-                recentMatches.add(false);
+                recentMatches.get(ticker).add(false);
             }
         }
-        if (recentMatches.size() > frequency.get(0)) {
-            recentMatches.removeFirst();
+        if (recentMatches.get(ticker).size() > frequency.get(0)) {
+            recentMatches.get(ticker).removeFirst();
         }
 
-        if (recentMatches.size() != frequency.get(0)) {
+        if (recentMatches.get(ticker).size() != frequency.get(0)) {
             return false;
         } else {
             int falseTrueTransitionIndex = frequency.get(0) - frequency.get(1);
             for (int i = 0; i < frequency.get(0); i++) {
-                if (i < falseTrueTransitionIndex && recentMatches.get(i) != false) {
+                if (i < falseTrueTransitionIndex && recentMatches.get(ticker).get(i) != false) {
                     return false;
-                } else if (i >= falseTrueTransitionIndex && recentMatches.get(i) != true) {
+                } else if (i >= falseTrueTransitionIndex && recentMatches.get(ticker).get(i) != true) {
                     return false;
                 }
             }
