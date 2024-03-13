@@ -22,7 +22,7 @@ public class AccountService {
     }
 
     public int createAccount(int uid) {
-        int aid = accountRepository.createAccount(uid);
+        int aid = accountRepository.createBacktestAccount(uid);
         log.debug(String.format("[AccountService] createAccount(uid: %d) -> aid: %d", uid, aid));
         return aid;
     }

@@ -2,7 +2,6 @@ package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.entity.AccountHistory;
-import com.mztrade.hki.entity.backtest.BacktestHistory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -11,7 +10,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
-import java.math.BigInteger;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -29,12 +27,24 @@ public class AccountRepository {
         this.objectMapper = objectMapper;
     }
 
-    public Integer createAccount(Integer uid) {
+    public Integer createBacktestAccount(Integer uid) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("uid", uid, Types.INTEGER);
         this.template.update(
                 "INSERT INTO hkidb.account (uid) VALUES (:uid)",
+                src,
+                keyHolder);
+        return Objects.requireNonNull(keyHolder.getKey()).intValue();
+    }
+
+    public Integer createGameAccount(Integer uid) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER)
+                .addValue("type", "GAME", Types.VARCHAR);
+        this.template.update(
+                "INSERT INTO hkidb.account (uid, type) VALUES (:uid, :type)",
                 src,
                 keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).intValue();

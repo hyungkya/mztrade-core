@@ -30,6 +30,7 @@ CREATE TABLE hkidb.account (
                                aid         INT         NOT NULL    AUTO_INCREMENT  PRIMARY KEY,
                                uid         INT         NOT NULL,
                                balance     BIGINT      NOT NULL    DEFAULT 0,
+                               type        VARCHAR(16) NOT NULL    DEFAULT 'BACKTEST',
 
                                FOREIGN KEY (uid) REFERENCES hkidb.customers (uid)
 );
@@ -60,6 +61,18 @@ CREATE TABLE hkidb.stock_info_tag (
                                       FOREIGN KEY (tid) REFERENCES hkidb.tag (tid)  ON DELETE CASCADE
 );
 
+CREATE TABLE hkidb.game_history (
+                                    aid         INT         NOT NULL,
+                                    gid         INT         NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                                    start_date  TIMESTAMP   NOT NULL,
+                                    turns       INT         NOT NULL DEFAULT 0,
+                                    ticker      VARCHAR(16) NOT NULL,
+                                    plratio     DOUBLE      NOT NULL DEFAULT 0,
+
+                                    FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE,
+                                    FOREIGN KEY (ticker) REFERENCES hkidb.stock_info (ticker)  ON DELETE CASCADE
+);
+
 CREATE TABLE hkidb.order_history (
                                      oid         INT         NOT NULL    AUTO_INCREMENT  PRIMARY KEY,
                                      aid         INT         NOT NULL,
@@ -69,9 +82,11 @@ CREATE TABLE hkidb.order_history (
                                      qty         INT         NOT NULL,
                                      price       INT         NOT NULL,
                                      avg_entry_price DECIMAL(10, 2)     NULL,
+                                     gid         INT         NULL,
 
                                      FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE,
-                                     FOREIGN KEY (otid) REFERENCES hkidb.order_type (otid)
+                                     FOREIGN KEY (otid) REFERENCES hkidb.order_type (otid),
+                                     FOREIGN KEY (gid) REFERENCES hkidb.game_history (gid) ON DELETE CASCADE
 );
 
 CREATE TABLE hkidb.position (
