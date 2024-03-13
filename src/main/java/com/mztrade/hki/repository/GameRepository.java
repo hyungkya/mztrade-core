@@ -1,6 +1,8 @@
 package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mztrade.hki.entity.AccountHistory;
+import com.mztrade.hki.entity.GameHistory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -10,6 +12,8 @@ import org.springframework.stereotype.Component;
 
 import java.sql.Types;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Component
@@ -34,6 +38,23 @@ public class GameRepository {
                 src,
                 keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).intValue();
+    }
+
+    public List<GameHistory> getGameHistory(int aid) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("aid", aid, Types.INTEGER);
+        return this.template.query(
+                "SELECT * FROM hkidb.game_history WHERE aid = :aid",
+                src,
+                (rs, rowNum) -> GameHistory.builder()
+                        .aid(rs.getInt("aid"))
+                        .gid(rs.getInt("gid"))
+                        .turns(rs.getInt("turns"))
+                        .ticker(rs.getString("ticker"))
+                        .startDate(rs.getTimestamp("start_date").toLocalDateTime())
+                        .plratio(rs.getDouble("plratio"))
+                        .build()
+        );
     }
 
 }

@@ -152,3 +152,16 @@ SET
 END //
 DELIMITER ;
 
+DELIMITER //
+CREATE TRIGGER hkidb.create_default_game_account
+    AFTER INSERT ON hkidb.customers
+    FOR EACH ROW
+BEGIN
+    INSERT INTO hkidb.account
+    SET
+        uid = NEW.uid,
+        balance = 10000000,
+        type = 'GAME';
+END //
+DELIMITER ;
+

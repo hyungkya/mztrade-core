@@ -33,7 +33,7 @@ public class AccountService {
     }
 
     public List<Integer> getAll(int uid) {
-        List<Integer> accounts = accountRepository.getAll(uid);
+        List<Integer> accounts = accountRepository.getBacktestAccountIds(uid);
         log.debug(String.format("[AccountService] getAll(uid: %d) -> accounts: %s", uid, accounts.toString()));
         return accounts;
     }
@@ -69,7 +69,7 @@ public class AccountService {
 
     public Map<LocalDateTime,Long> getPlRatio(Integer aid) {
 
-        List<AccountHistory> accountHistories = accountRepository.getAccountHistory(aid);
+        List<AccountHistory> accountHistories = accountRepository.getAccountHistories(aid);
         Map<LocalDateTime,Long> resultMap = new HashMap<>();
 
         if(!accountHistories.isEmpty()) {

@@ -1,6 +1,7 @@
 package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mztrade.hki.entity.Account;
 import com.mztrade.hki.entity.AccountHistory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -85,12 +86,12 @@ public class AccountRepository {
         );
     }
 
-    public List<Integer> getAll(int uid) {
+    public List<Integer> getBacktestAccountIds(int uid) {
         List<Integer> aids = new ArrayList<>();
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("uid", uid, Types.INTEGER);
         return this.template.queryForList(
-                "SELECT a.aid FROM hkidb.account a WHERE a.uid = :uid",
+                "SELECT a.aid FROM hkidb.account a WHERE a.uid = :uid AND type = 'BACKTEST'",
                 src,
                 Integer.class
         );
@@ -111,7 +112,7 @@ public class AccountRepository {
         return true;
     }
 
-    public List<AccountHistory> getAccountHistory(int aid) {
+    public List<AccountHistory> getAccountHistories(int aid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER);
         try {
@@ -129,7 +130,19 @@ public class AccountRepository {
         }
     }
 
-
-
+    public List<Account> getGameAccount(Integer uid) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER);
+        return this.template.query(
+                "SELECT * FROM hkidb.account WHERE uid = :uid AND type = 'GAME'",
+                src,
+                (rs, rowNum) -> Account.builder()
+                        .aid(rs.getInt("aid"))
+                        .uid(rs.getInt("uid"))
+                        .balance(rs.getLong("balance"))
+                        .type(rs.getString("type"))
+                        .build()
+        );
+    }
 
 }

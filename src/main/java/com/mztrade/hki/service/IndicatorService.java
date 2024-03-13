@@ -30,8 +30,6 @@ public class IndicatorService {
                 maxRange += value.intValue();
             }
         }
-        System.out.println(params);
-        System.out.println(maxRange);
         List<Bar> bars = new ArrayList<>();
         int maxFail = 10;
         while (bars.size() < maxRange && maxFail > 0) {
@@ -267,7 +265,6 @@ public class IndicatorService {
             if (i < period) {
                 result.put(bars.get(i).getDate(), Double.NaN);
             } else {
-                System.out.println(i);
                 double au = diffs.subList(i - period, i).stream().filter(e -> e > 0).mapToInt(Math::abs).average().orElse(0);
                 double ad = diffs.subList(i - period, i).stream().filter(e -> e < 0).mapToInt(Math::abs).average().orElse(100);
                 result.put(bars.get(i).getDate(), (au / (ad + au)) * 100);

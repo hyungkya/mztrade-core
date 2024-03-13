@@ -110,7 +110,6 @@ public class BacktestService {
                     if (stopLoss != null && p.getAvgEntryPrice().doubleValue() * stopLoss > currentPrice) {
                         // 남은 횟수가 있다면 분할 매수, 없다면 손절
                         if (dcaStatus.get(ticker) < dca.size()) {
-                            System.out.println(startDate);
                             double targetBuyAmount = dca.get(dcaStatus.get(ticker)) * maxSingleTickerTradingBalance;
                             int targetQty = (int) Math.floor(targetBuyAmount / currentPrice);
                             if (targetQty > 0) {
