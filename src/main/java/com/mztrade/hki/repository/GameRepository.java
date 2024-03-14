@@ -40,14 +40,15 @@ public class GameRepository {
         return Objects.requireNonNull(keyHolder.getKey()).intValue();
     }
 
-    public void updateGame(Integer gid, Integer turns, Integer maxTurn, Boolean finished) {
+    public void updateGame(Integer gid, Integer turns, Integer maxTurn, Long finalBalance, Boolean finished) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("gid", gid, Types.INTEGER)
                 .addValue("turns", turns, Types.INTEGER)
                 .addValue("max_turn", maxTurn, Types.INTEGER)
+                .addValue("final_balance", finalBalance, Types.BIGINT)
                 .addValue("finished", finished, Types.BOOLEAN);
         this.template.update(
-                "UPDATE hkidb.game_history SET turns = :turns, max_turn = :max_turn, finished = :finished WHERE gid = :gid",
+                "UPDATE hkidb.game_history SET turns = :turns, max_turn = :max_turn, finished = :finished, final_balance = :final_balance WHERE gid = :gid",
                 src);
     }
 

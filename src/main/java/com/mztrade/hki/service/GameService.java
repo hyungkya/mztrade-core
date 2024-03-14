@@ -40,7 +40,7 @@ public class GameService {
         String ticker = stockInfoList.get(random.nextInt(stockInfoList.size())).getTicker();
 
         List<Bar> bars = stockPriceService.getPrices(ticker);
-        bars = bars.stream().skip(200).limit(200).toList();
+        bars = bars.stream().skip(200).limit(bars.size() - 400).toList();
 
         LocalDateTime startDate = bars.get(random.nextInt(bars.size())).getDate();
 
@@ -104,19 +104,20 @@ public class GameService {
 
     public void increaseTurns(Integer gid) {
         GameHistory gameHistory = gameRepository.getGameHistoryByGameId(gid).getFirst();
-        gameRepository.updateGame(gid, gameHistory.getTurns() + 1, gameHistory.getMaxTurn(), false);
+        gameRepository.updateGame(gid, gameHistory.getTurns() + 1, gameHistory.getMaxTurn(), gameHistory.getFinalBalance(), false);
         log.debug(String.format("increaseGameTurns(gid: %d)", gid));
     }
 
     public void updateMaxTurn(Integer gid, Integer extraTurns) {
         GameHistory gameHistory = gameRepository.getGameHistoryByGameId(gid).getFirst();
-        gameRepository.updateGame(gid, gameHistory.getTurns(), gameHistory.getMaxTurn() + extraTurns, false);
+        gameRepository.updateGame(gid, gameHistory.getTurns(), gameHistory.getMaxTurn() + extraTurns, gameHistory.getFinalBalance(), false);
         log.debug(String.format("increaseGameTurns(gid: %d)", gid));
     }
 
     public void finishGame(Integer gid) {
         GameHistory gameHistory = gameRepository.getGameHistoryByGameId(gid).getFirst();
-        gameRepository.updateGame(gid, gameHistory.getTurns(), gameHistory.getMaxTurn(), true);
+        long balance = accountRepository.getBalance(gameHistory.getAid());
+        gameRepository.updateGame(gid, gameHistory.getTurns(), gameHistory.getMaxTurn(), balance, true);
         log.debug(String.format("finishGame(gid: %d)", gid));
     }
 }
