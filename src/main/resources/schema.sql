@@ -66,8 +66,10 @@ CREATE TABLE hkidb.game_history (
                                     gid         INT         NOT NULL AUTO_INCREMENT PRIMARY KEY,
                                     start_date  TIMESTAMP   NOT NULL,
                                     turns       INT         NOT NULL DEFAULT 0,
+                                    max_turn    INT         NOT NULL DEFAULT 100,
                                     ticker      VARCHAR(16) NOT NULL,
                                     plratio     DOUBLE      NOT NULL DEFAULT 0,
+                                    finished    BOOLEAN     NOT NULL DEFAULT FALSE,
 
                                     FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE,
                                     FOREIGN KEY (ticker) REFERENCES hkidb.stock_info (ticker)  ON DELETE CASCADE
@@ -82,11 +84,17 @@ CREATE TABLE hkidb.order_history (
                                      qty         INT         NOT NULL,
                                      price       INT         NOT NULL,
                                      avg_entry_price DECIMAL(10, 2)     NULL,
-                                     gid         INT         NULL,
 
                                      FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE,
-                                     FOREIGN KEY (otid) REFERENCES hkidb.order_type (otid),
-                                     FOREIGN KEY (gid) REFERENCES hkidb.game_history (gid) ON DELETE CASCADE
+                                     FOREIGN KEY (otid) REFERENCES hkidb.order_type (otid)
+);
+
+CREATE TABLE hkidb.game_order_history (
+                                    gid INT NOT NULL,
+                                    oid INT NOT NULL,
+                                    PRIMARY KEY (gid, oid),
+                                    FOREIGN KEY (oid) REFERENCES hkidb.order_history (oid) ON DELETE CASCADE,
+                                    FOREIGN KEY (gid) REFERENCES hkidb.game_history (gid) ON DELETE CASCADE
 );
 
 CREATE TABLE hkidb.position (

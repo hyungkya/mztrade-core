@@ -15,5 +15,7 @@ public class GameHistory {
     private String ticker;
     private LocalDateTime startDate;
     private int turns;
+    private int maxTurn;
     private double plratio;
+    private boolean finished;
 }

@@ -35,8 +35,8 @@ public class OrderService {
         this.stockPriceService = stockPriceService;
     }
 
-    public Boolean buy(Integer aid, String ticker, Integer qty) {
-        Boolean isProcessed = false;
+    public Integer buy(Integer aid, String ticker, Integer qty) {
+        Integer oid = null;
         Bar currentPrice = stockPriceService.getCurrentPrice(ticker);
 
         Order order = Order.builder()
@@ -67,17 +67,16 @@ public class OrderService {
                 positionRepository.createPosition(p);
             }
 
-            orderHistoryRepository.createOrderHistory(order);
-            isProcessed = true;
+            oid = orderHistoryRepository.createOrderHistory(order);
         }
 
-        log.debug(String.format("[OrderService] buy(aid: %d, ticker: %s, qty: %d) -> isProcessed: %b", aid, ticker, qty, isProcessed));
+        log.debug(String.format("[OrderService] buy(aid: %d, ticker: %s, qty: %d) -> oid: %s", aid, ticker, qty, oid));
 
-        return isProcessed;
+        return oid;
     }
 
-    public Boolean buy(Integer aid, String ticker, LocalDateTime date, Integer qty) {
-        boolean isProcessed = false;
+    public Integer buy(Integer aid, String ticker, LocalDateTime date, Integer qty) {
+        Integer oid = null;
         if (qty <= 0) {
             throw new IllegalArgumentException("Buying quantity should be greater than 0.");
         }
@@ -110,15 +109,15 @@ public class OrderService {
                 positionRepository.createPosition(p);
             }
 
-            orderHistoryRepository.createOrderHistory(order);
-            isProcessed = true;
+            oid = orderHistoryRepository.createOrderHistory(order);
         }
-        log.debug(String.format("[OrderService] buy(aid: %d, ticker: %s, date: %s, qty: %d) -> isProcessed: %b", aid, ticker, date, qty, isProcessed));
-        return isProcessed;
+        log.debug(String.format("[OrderService] buy(aid: %d, ticker: %s, date: %s, qty: %d) -> oid: %s", aid, ticker, date, qty, oid));
+        return oid;
     }
 
-    public Boolean sell(Integer aid, String ticker, Integer qty) {
-        boolean isProcessed = false;
+    public Integer sell(Integer aid, String ticker, Integer qty) {
+        Integer oid = null;
+
         //check if position quantity is enough to sell
         Bar currentPrice = stockPriceService.getCurrentPrice(ticker);
         Optional<Position> optionalPosition = positionRepository.getPositionByTicker(aid, ticker);
@@ -145,16 +144,15 @@ public class OrderService {
                         .multiply(BigInteger.valueOf(qty))
                         .longValue();
                 accountService.deposit(aid, profit);
-                orderHistoryRepository.createOrderHistory(order);
-                isProcessed = true;
+                oid = orderHistoryRepository.createOrderHistory(order);
             }
         }
-        log.debug(String.format("[OrderService] sell(aid: %d, ticker: %s, qty: %d) -> isProcessed: %b", aid, ticker, qty, isProcessed));
-        return isProcessed;
+        log.debug(String.format("[OrderService] sell(aid: %d, ticker: %s, qty: %d) -> oid: %s", aid, ticker, qty, oid));
+        return oid;
     }
 
-    public Boolean sell(Integer aid, String ticker, LocalDateTime date, Integer qty) {
-        boolean isProcessed = false;
+    public Integer sell(Integer aid, String ticker, LocalDateTime date, Integer qty) {
+        Integer oid = null;
 
         //check if position quantity is enough to sell
         Optional<Position> optionalPosition = positionRepository.getPositionByTicker(aid, ticker);
@@ -181,12 +179,11 @@ public class OrderService {
                         .multiply(BigInteger.valueOf(qty))
                         .longValue();
                 accountService.deposit(aid, profit);
-                orderHistoryRepository.createOrderHistory(order);
-                isProcessed = true;
+                oid = orderHistoryRepository.createOrderHistory(order);
             }
         }
-        log.debug(String.format("[OrderService] sell(aid: %d, ticker: %s, date: %s, qty: %d) -> isProcessed: %b", aid, ticker, date, qty, isProcessed));
-        return isProcessed;
+        log.debug(String.format("[OrderService] sell(aid: %d, ticker: %s, date: %s, qty: %d) -> oid: %s", aid, ticker, date, qty, oid));
+        return oid;
     }
 
     public List<Order> getOrderHistory(Integer aid) {

@@ -394,11 +394,27 @@ public class BacktestController {
         return update;
     }
 
+    @GetMapping("/positions")
+    public ResponseEntity<List<Position>> getPositions(
+            @RequestParam Integer aid
+    ) {
+        log.info(String.format("[GET] /positions?aid=%s", aid));
+        return new ResponseEntity<>(orderService.getPositions(aid), HttpStatus.OK);
+    }
+
+    @GetMapping("/cash-balance")
+    public ResponseEntity<Long> getBalance(
+            @RequestParam Integer aid
+    ) {
+        log.info(String.format("[GET] /balance?aid=%s", aid));
+        return new ResponseEntity<>(accountService.getBalance(aid), HttpStatus.OK);
+    }
+
     @GetMapping("/order_history")
     public ResponseEntity<List<Order>> getOrderHistory(
             @RequestParam Integer aid
     ) {
-        log.info(String.format("[GET] /order_history/aid=%s", aid));
+        log.info(String.format("[GET] /order_history?aid=%s", aid));
         return new ResponseEntity<>(orderService.getOrderHistory(aid), HttpStatus.OK);
     }
 
