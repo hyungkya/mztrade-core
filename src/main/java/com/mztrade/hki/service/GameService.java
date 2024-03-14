@@ -43,7 +43,10 @@ public class GameService {
         bars = bars.stream().skip(200).limit(200).toList();
 
         LocalDateTime startDate = bars.get(random.nextInt(bars.size())).getDate();
-        int gid = gameRepository.createGame(aid,ticker, startDate);
+
+        long balance = accountRepository.getBalance(aid);
+
+        int gid = gameRepository.createGame(aid, ticker, startDate, balance);
         log.debug(String.format("createGame(aid: %d) -> gid: %d", aid, gid));
 
         return gid;

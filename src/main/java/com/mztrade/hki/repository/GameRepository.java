@@ -26,14 +26,15 @@ public class GameRepository {
         this.objectMapper = objectMapper;
     }
 
-    public Integer createGame(Integer aid, String ticker, LocalDateTime startDate) {
+    public Integer createGame(Integer aid, String ticker, LocalDateTime startDate, Long balance) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER)
                 .addValue("ticker", ticker, Types.VARCHAR)
-                .addValue("start_date", startDate, Types.TIMESTAMP);
+                .addValue("start_date", startDate, Types.TIMESTAMP)
+                .addValue("start_balance", balance, Types.BIGINT);
         this.template.update(
-                "INSERT INTO hkidb.game_history (aid, ticker, start_date) VALUES (:aid, :ticker, :start_date)",
+                "INSERT INTO hkidb.game_history (aid, ticker, start_date, start_balance) VALUES (:aid, :ticker, :start_date, :start_balance)",
                 src,
                 keyHolder);
         return Objects.requireNonNull(keyHolder.getKey()).intValue();
@@ -63,7 +64,8 @@ public class GameRepository {
                         .maxTurn(rs.getInt("max_turn"))
                         .ticker(rs.getString("ticker"))
                         .startDate(rs.getTimestamp("start_date").toLocalDateTime())
-                        .plratio(rs.getDouble("plratio"))
+                        .startBalance(rs.getLong("start_balance"))
+                        .finalBalance(rs.getLong("final_balance"))
                         .finished(rs.getBoolean("finished"))
                         .build()
         );
@@ -82,7 +84,8 @@ public class GameRepository {
                         .maxTurn(rs.getInt("max_turn"))
                         .ticker(rs.getString("ticker"))
                         .startDate(rs.getTimestamp("start_date").toLocalDateTime())
-                        .plratio(rs.getDouble("plratio"))
+                        .startBalance(rs.getLong("start_balance"))
+                        .finalBalance(rs.getLong("final_balance"))
                         .finished(rs.getBoolean("finished"))
                         .build()
         );

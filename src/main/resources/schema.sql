@@ -68,7 +68,8 @@ CREATE TABLE hkidb.game_history (
                                     turns       INT         NOT NULL DEFAULT 0,
                                     max_turn    INT         NOT NULL DEFAULT 100,
                                     ticker      VARCHAR(16) NOT NULL,
-                                    plratio     DOUBLE      NOT NULL DEFAULT 0,
+                                    start_balance BIGINT  NOT NULL,
+                                    final_balance   BIGINT  NOT NULL DEFAULT 0,
                                     finished    BOOLEAN     NOT NULL DEFAULT FALSE,
 
                                     FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE,

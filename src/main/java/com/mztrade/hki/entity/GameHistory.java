@@ -16,6 +16,7 @@ public class GameHistory {
     private LocalDateTime startDate;
     private int turns;
     private int maxTurn;
-    private double plratio;
+    private long startBalance;
+    private long finalBalance;
     private boolean finished;
 }

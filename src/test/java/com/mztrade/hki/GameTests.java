@@ -30,7 +30,7 @@ public class GameTests {
     @Test
     void getBacktestRequestTest() {
         int aid = accountRepository.createGameAccount(1);
-        gameRepository.createGame(aid, "000270", Util.stringToLocalDateTime("20211115"));
+        gameRepository.createGame(aid, "000270", Util.stringToLocalDateTime("20211115"), 10000000L);
     }
 
     @Test
