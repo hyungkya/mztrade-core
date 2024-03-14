@@ -55,7 +55,7 @@ public class GameRepository {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER);
         return this.template.query(
-                "SELECT * FROM hkidb.game_history WHERE aid = :aid",
+                "SELECT * FROM hkidb.game_history WHERE aid = :aid AND finished = true",
                 src,
                 (rs, rowNum) -> GameHistory.builder()
                         .aid(rs.getInt("aid"))
@@ -76,6 +76,26 @@ public class GameRepository {
                 .addValue("gid", gid, Types.INTEGER);
         return this.template.query(
                 "SELECT * FROM hkidb.game_history WHERE gid = :gid",
+                src,
+                (rs, rowNum) -> GameHistory.builder()
+                        .aid(rs.getInt("aid"))
+                        .gid(rs.getInt("gid"))
+                        .turns(rs.getInt("turns"))
+                        .maxTurn(rs.getInt("max_turn"))
+                        .ticker(rs.getString("ticker"))
+                        .startDate(rs.getTimestamp("start_date").toLocalDateTime())
+                        .startBalance(rs.getLong("start_balance"))
+                        .finalBalance(rs.getLong("final_balance"))
+                        .finished(rs.getBoolean("finished"))
+                        .build()
+        );
+    }
+
+    public GameHistory getUnFinishedGameHistory(int aid) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("aid", aid, Types.INTEGER);
+        return this.template.queryForObject(
+                "SELECT * FROM hkidb.game_history WHERE aid = :aid AND finished = false",
                 src,
                 (rs, rowNum) -> GameHistory.builder()
                         .aid(rs.getInt("aid"))

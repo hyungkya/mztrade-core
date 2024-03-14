@@ -70,6 +70,12 @@ public class GameService {
         return gameHistories;
     }
 
+    public GameHistory getUnFinishedGameHistory(int aid) {
+        GameHistory gameHistory = gameRepository.getUnFinishedGameHistory(aid);
+        log.debug(String.format("getUnFinishedGameHistory(gid: %d) -> gameHistory: %s", aid, gameHistory));
+        return gameHistory;
+    }
+
     public Boolean sell(Integer gid, Integer aid, String ticker, LocalDateTime date, Integer qty) {
         Boolean isProcessed = false;
         Integer oid = orderService.sell(aid, ticker, date, qty);

@@ -58,6 +58,15 @@ public class GameController {
         return gameHistories;
     }
 
+    @GetMapping("/game/un-finished")
+    public GameHistory getUnFinishedGameHistory(
+            @RequestParam Integer aid
+    ) {
+        GameHistory gameHistory = gameService.getUnFinishedGameHistory(aid);
+        log.info(String.format("[GET] /game/un-finished?aid=%s", aid));
+        return gameHistory;
+    }
+
     @PostMapping("/game/order/buy")
     public ResponseEntity<Boolean> processBuyOrder(
             @RequestParam Integer gid,
