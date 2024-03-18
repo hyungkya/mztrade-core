@@ -63,7 +63,7 @@ public class OrderService {
                         .divide(BigDecimal.valueOf(order.getQty() + p.getQty()), 2, RoundingMode.HALF_UP);
                 p.setQty(p.getQty() + order.getQty());
                 p.setAvgEntryPrice(newAvgEntryPrice);
-                positionRepositoryImpl.updatePosition(p);
+                positionRepository.save(p);
             } else {
                 Position p = new Position().toBuilder()
                         .aid(aid)
@@ -105,7 +105,7 @@ public class OrderService {
                         .divide(BigDecimal.valueOf(order.getQty() + p.getQty()), 2, RoundingMode.HALF_UP);
                 p.setQty(p.getQty() + order.getQty());
                 p.setAvgEntryPrice(newAvgEntryPrice);
-                positionRepositoryImpl.updatePosition(p);
+                positionRepository.save(p);
             } else {
                 Position p = new Position().toBuilder()
                         .aid(aid)
@@ -144,7 +144,7 @@ public class OrderService {
                     positionRepository.deleteByAidAndTicker(aid, ticker);
                 } else {
                     position.setQty(remainingQty);
-                    positionRepositoryImpl.updatePosition(position);
+                    positionRepository.save(position);
                 }
                 Long profit = BigInteger.valueOf(currentPrice.getClose())
                         .multiply(BigInteger.valueOf(qty))
@@ -179,7 +179,7 @@ public class OrderService {
                     positionRepository.deleteByAidAndTicker(aid, ticker);
                 } else {
                     position.setQty(remainingQty);
-                    positionRepositoryImpl.updatePosition(position);
+                    positionRepository.save(position);
                 }
                 Long profit = BigInteger.valueOf(stockPriceService.getPrice(ticker, date).getClose())
                         .multiply(BigInteger.valueOf(qty))
