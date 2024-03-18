@@ -1,6 +1,5 @@
 package com.mztrade.hki.service;
 
-import com.mztrade.hki.entity.AccountHistory;
 import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.entity.Position;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
@@ -250,7 +249,7 @@ public class BacktestService {
     public Optional<Integer> getHighestProfitLossRatio(int uid) {
         double highestProfitLossRatio = -1;
         Optional<Integer> highestAid = Optional.empty();
-        for (int aid : accountService.getAll(uid)) {
+        for (int aid : accountService.getAllBacktestAccountIds(uid)) {
             double currentProfitLossRatio = backtestHistoryRepository.get(aid).getPlratio();
             if (currentProfitLossRatio > highestProfitLossRatio) {
                 highestProfitLossRatio = currentProfitLossRatio;

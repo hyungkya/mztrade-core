@@ -1,7 +1,7 @@
 package com.mztrade.hki.service;
 
 import com.mztrade.hki.entity.*;
-import com.mztrade.hki.repository.AccountRepository;
+import com.mztrade.hki.repository.AccountRepositoryImpl;
 import com.mztrade.hki.repository.GameRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,19 +15,19 @@ import java.util.Random;
 @Slf4j
 public class GameService {
     private final GameRepository gameRepository;
-    private final AccountRepository accountRepository;
+    private final AccountService accountService;
     private final StockPriceService stockPriceService;
     private final OrderService orderService;
 
     @Autowired
     public GameService(
             GameRepository gameRepository,
-            AccountRepository accountRepository,
+            AccountService accountService,
             OrderService orderService,
             StockPriceService stockPriceService
     ) {
         this.gameRepository = gameRepository;
-        this.accountRepository = accountRepository;
+        this.accountService = accountService;
         this.orderService = orderService;
         this.stockPriceService = stockPriceService;
     }
@@ -44,7 +44,7 @@ public class GameService {
 
         LocalDateTime startDate = bars.get(random.nextInt(bars.size())).getDate();
 
-        long balance = accountRepository.getBalance(aid);
+        long balance = accountService.getBalance(aid);
 
         int gid = gameRepository.createGame(aid, ticker, startDate, balance);
         log.debug(String.format("createGame(aid: %d) -> gid: %d", aid, gid));
@@ -53,7 +53,7 @@ public class GameService {
     }
 
     public List<Account> getAccounts(int uid) {
-        List<Account> accounts = accountRepository.getGameAccount(uid);
+        List<Account> accounts = accountService.getGameAccount(uid);
         log.debug(String.format("getAccounts(uid: %d) -> accounts: %s", uid, accounts));
         return accounts;
     }
@@ -116,7 +116,7 @@ public class GameService {
 
     public void finishGame(Integer gid) {
         GameHistory gameHistory = gameRepository.getGameHistoryByGameId(gid).getFirst();
-        long balance = accountRepository.getBalance(gameHistory.getAid());
+        long balance = accountService.getBalance(gameHistory.getAid());
         gameRepository.updateGame(gid, gameHistory.getTurns(), gameHistory.getMaxTurn(), balance, true);
         log.debug(String.format("finishGame(gid: %d)", gid));
     }

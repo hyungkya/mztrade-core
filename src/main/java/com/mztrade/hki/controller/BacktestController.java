@@ -147,7 +147,7 @@ public class BacktestController {
             @RequestParam Integer uid
     ) {
         List<BacktestHistory> backtestHistories = new ArrayList<>();
-        for (Integer aid : accountService.getAll(uid)) {
+        for (Integer aid : accountService.getAllBacktestAccountIds(uid)) {
             BacktestHistory queryResult = backtestService.get(aid);
             if (queryResult != null) {
                 backtestHistories.add(queryResult);
