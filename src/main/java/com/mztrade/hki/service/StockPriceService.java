@@ -3,8 +3,8 @@ package com.mztrade.hki.service;
 import com.mztrade.hki.Util;
 import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.entity.StockInfo;
-import com.mztrade.hki.entity.backtest.Indicator;
 import com.mztrade.hki.repository.StockInfoRepository;
+import com.mztrade.hki.repository.StockInfoRepositoryImpl;
 import com.mztrade.hki.repository.StockPriceRepository;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
@@ -15,21 +15,21 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class StockPriceService {
     private final StockPriceRepository stockPriceRepository;
+    private final StockInfoRepositoryImpl stockInfoRepositoryImpl;
     private final StockInfoRepository stockInfoRepository;
 
     @Autowired
     public StockPriceService(StockPriceRepository stockPriceRepository,
-                             StockInfoRepository stockInfoRepository) {
+                             StockInfoRepositoryImpl stockInfoRepositoryImpl, StockInfoRepository stockInfoRepository) {
         this.stockPriceRepository = stockPriceRepository;
+        this.stockInfoRepositoryImpl = stockInfoRepositoryImpl;
         this.stockInfoRepository = stockInfoRepository;
     }
 
@@ -131,14 +131,14 @@ public class StockPriceService {
     }
 
     public List<StockInfo> searchStockInfoByName(String name) {
-        List<StockInfo> stockInfos = stockInfoRepository.findByName(name);
+        List<StockInfo> stockInfos = stockInfoRepository.findAllByNameContainsIgnoreCase(name);
         log.debug(String.format("[StockPriceService] searchStockInfoByName(name: %s) -> StockInfo:%s", name, stockInfos));
         return stockInfos;
     }
 
     public StockInfo findStockInfoByTicker(String ticker) {
-        StockInfo stockInfos = stockInfoRepository.findByTicker(ticker);
-        log.debug(String.format("[StockPriceService] findStockInfoByTicker(ticker: %s) -> StockInfo:%s", ticker, stockInfos));
-        return stockInfos;
+        StockInfo stockInfo = stockInfoRepository.findByTicker(ticker).get();
+        log.debug(String.format("[StockPriceService] findStockInfoByTicker(ticker: %s) -> StockInfo:%s", ticker, stockInfo));
+        return stockInfo;
     }
 }

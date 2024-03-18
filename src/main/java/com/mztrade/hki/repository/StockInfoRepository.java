@@ -1,64 +1,15 @@
 package com.mztrade.hki.repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.entity.StockInfo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.stereotype.Component;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.sql.Types;
 import java.util.List;
+import java.util.Optional;
 
-@Component
-public class StockInfoRepository {
-    private final NamedParameterJdbcTemplate template;
-    private final ObjectMapper objectMapper;
-
-    @Autowired
-    public StockInfoRepository(NamedParameterJdbcTemplate template, ObjectMapper objectMapper) {
-        this.template = template;
-        this.objectMapper = objectMapper;
-    }
-    //TODO::페이징 기능 추가하기
-    public List<StockInfo> getAll() {
-        return this.template.query(
-                "SELECT * FROM hkidb.stock_info ",
-                (rs, rowNum) -> StockInfo.builder()
-                        .ticker(rs.getString("ticker"))
-                        .name(rs.getString("name"))
-                        .listedDate(rs.getDate("listed_date").toLocalDate())
-                        .marketCapital(rs.getInt("market_capital"))
-                        .build());
-    }
-
-    public StockInfo findByTicker(String ticker) {
-        MapSqlParameterSource src = new MapSqlParameterSource()
-                .addValue("ticker", ticker, Types.VARCHAR);
-
-        return this.template.queryForObject(
-                "SELECT * FROM hkidb.stock_info si WHERE si.ticker = :ticker",
-                src,
-                (rs, rowNum) -> StockInfo.builder()
-                        .ticker(rs.getString("ticker"))
-                        .name(rs.getString("name"))
-                        .listedDate(rs.getDate("listed_date").toLocalDate())
-                        .marketCapital(rs.getInt("market_capital"))
-                        .build());
-    }
-
-    public List<StockInfo> findByName(String name) {
-        MapSqlParameterSource src = new MapSqlParameterSource()
-                .addValue("name", "%" + name + "%", Types.VARCHAR);
-
-        return this.template.query(
-                "SELECT * FROM hkidb.stock_info si WHERE si.name LIKE :name",
-                src,
-                (rs, rowNum) -> StockInfo.builder()
-                        .ticker(rs.getString("ticker"))
-                        .name(rs.getString("name"))
-                        .listedDate(rs.getDate("listed_date").toLocalDate())
-                        .marketCapital(rs.getInt("market_capital"))
-                        .build());
-    }
+@Repository
+public interface StockInfoRepository extends JpaRepository<StockInfo, Integer> {
+    List<StockInfo> getAll();
+    Optional<StockInfo> findByTicker(String ticker);
+    List<StockInfo> findAllByNameContainsIgnoreCase(String name);
 }
