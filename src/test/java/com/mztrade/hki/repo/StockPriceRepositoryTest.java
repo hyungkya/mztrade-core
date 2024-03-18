@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,8 +32,15 @@ public class StockPriceRepositoryTest {
 
     @Test
     void findByTickerAndDate() {
-        Optional<Bar> bar = stockPriceRepository.findByTickerAndDate("000270", Util.stringToLocalDateTime("20220103"));
-        System.out.println(bar.isPresent());
-        System.out.println(bar.get());
+        for(LocalDateTime start = Util.stringToLocalDateTime("20220101");
+            start.isBefore(Util.stringToLocalDateTime("20221231"));
+            start = start.plus( 1, ChronoUnit.DAYS)) {
+            Optional<Bar> bar = stockPriceRepository.findByTickerAndDate("000270", start);
+            if (bar.isPresent()) {
+                System.out.println(bar.get());
+            }
+            System.out.println(bar.isPresent());
+        }
+
     }
 }

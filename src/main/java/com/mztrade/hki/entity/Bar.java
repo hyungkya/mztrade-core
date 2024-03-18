@@ -12,6 +12,7 @@ import java.util.Objects;
 @Builder(toBuilder = true)
 @ToString
 @EqualsAndHashCode
+@IdClass(BarId.class)
 @Table(name = "stock_price")
 @Entity
 @AllArgsConstructor
@@ -20,6 +21,7 @@ public class Bar {
     @Id
     @JoinColumn(table = "stock_info", referencedColumnName = "ticker")
     private String ticker;
+    @Id
     @Column
     private LocalDateTime date;
     @Column

@@ -69,6 +69,8 @@ public class BacktestService {
                 // Stacking retrievable bar
                 try {
                     Bar bar = stockPriceService.getPrice(ticker, startDate);
+                    System.out.println(startDate);
+                    System.out.println(bar);
                     if (!collectedBars.containsKey(ticker)) {
                         collectedBars.put(ticker, new ArrayList<>());
                     }
