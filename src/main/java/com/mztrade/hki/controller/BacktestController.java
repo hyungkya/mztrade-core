@@ -301,9 +301,9 @@ public class BacktestController {
             @RequestParam Integer tid,
             @RequestParam String ticker
     ) {
-        Boolean isProcessed = tagService.deleteStockInfoTagLink(tid, ticker);
+        tagService.deleteStockInfoTagLink(tid, ticker);
         log.info(String.format("[DELETE] /stock_info/tag-link/tid=%s&ticker=%s", tid, ticker));
-        return new ResponseEntity<>(isProcessed, HttpStatus.OK);
+        return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
     @GetMapping("/backtest/tag")
@@ -340,9 +340,9 @@ public class BacktestController {
             @RequestParam Integer tid,
             @RequestParam Integer aid
     ) {
-        Boolean isProcessed = tagService.deleteBacktestHistoryTagLink(tid, aid);
+        tagService.deleteBacktestHistoryTagLink(tid, aid);
         log.info(String.format("[DELETE] /backtest/tag-link/tid=%s&aid=%s", tid, aid));
-        return new ResponseEntity<>(isProcessed, HttpStatus.OK);
+        return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
     @PostMapping("/tag")
@@ -355,12 +355,12 @@ public class BacktestController {
     }
 
     @DeleteMapping("/tag")
-    public boolean deleteTag(
+    public ResponseEntity<Boolean> deleteTag(
             @RequestParam Integer tid
     ) {
-        boolean delete = tagService.deleteTag(tid);
+        tagService.deleteTag(tid);
         log.info(String.format("[DELETE] /tag/tid=%s", tid));
-        return delete;
+        return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
     @PutMapping("/tag")
