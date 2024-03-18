@@ -55,18 +55,21 @@ public class StockPriceService {
 
     public Bar getPrice(String ticker, LocalDateTime date) {
         // return requested date's ticker data
-        Bar bar = stockPriceRepository.findByTickerAndDate(ticker, date).get();
-        log.debug(String.format("[StockPriceService] getPrice(ticker: %s, date: %s) -> Bar:%s", ticker,date, bar));
-        return bar;
+        Optional<Bar> bar = stockPriceRepository.findByTickerAndDate(ticker, date);
+        if (bar.isEmpty()) {
+            throw new EmptyResultDataAccessException(1);
+        }
+        log.debug(String.format("[StockPriceService] getPrice(ticker: %s, date: %s) -> Bar:%s", ticker,date, bar.get()));
+        return bar.get();
     }
 
     public Optional<Bar> getAvailablePriceBefore(String ticker, LocalDateTime date) {
         Optional<Bar> bar = Optional.empty();
         while (date.isAfter(LocalDateTime.parse(Util.formatDate("20100101")))) {
-            try {
-                bar = stockPriceRepository.findByTickerAndDate(ticker, date);
+            bar = stockPriceRepository.findByTickerAndDate(ticker, date);
+            if (bar.isPresent()) {
                 break;
-            } catch (EmptyResultDataAccessException ignored) {
+            } else {
                 date = date.minus(1, ChronoUnit.DAYS);
             }
         }
@@ -78,10 +81,10 @@ public class StockPriceService {
     public Optional<Bar> getAvailablePriceAfter(String ticker, LocalDateTime date) {
         Optional<Bar> bar = Optional.empty();
         while (date.isBefore(LocalDateTime.now())) {
-            try {
-                bar = stockPriceRepository.findByTickerAndDate(ticker, date);
+            bar = stockPriceRepository.findByTickerAndDate(ticker, date);
+            if (bar.isPresent()) {
                 break;
-            } catch (EmptyResultDataAccessException ignored) {
+            } else {
                 date = date.plus(1, ChronoUnit.DAYS);
             }
         }
@@ -93,10 +96,10 @@ public class StockPriceService {
     public Optional<Bar> getAvailablePriceBefore(String ticker, LocalDateTime date, Integer maxRange) {
         Optional<Bar> bar = Optional.empty();
         for (; maxRange > 0; maxRange--) {
-            try {
-                bar = stockPriceRepository.findByTickerAndDate(ticker, date);
+            bar = stockPriceRepository.findByTickerAndDate(ticker, date);
+            if (bar.isPresent()) {
                 break;
-            } catch (EmptyResultDataAccessException ignored) {
+            } else {
                 date = date.minus(1, ChronoUnit.DAYS);
             }
         }
@@ -108,10 +111,10 @@ public class StockPriceService {
     public Optional<Bar> getAvailablePriceAfter(String ticker, LocalDateTime date, Integer maxRange) {
         Optional<Bar> bar = Optional.empty();
         for (; maxRange > 0; maxRange--) {
-            try {
-                bar = stockPriceRepository.findByTickerAndDate(ticker, date);
+            bar = stockPriceRepository.findByTickerAndDate(ticker, date);
+            if (bar.isPresent()) {
                 break;
-            } catch (EmptyResultDataAccessException ignored) {
+            } else {
                 date = date.plus(1, ChronoUnit.DAYS);
             }
         }

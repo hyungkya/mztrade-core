@@ -6,6 +6,7 @@ import com.mztrade.hki.entity.OrderType;
 import com.mztrade.hki.entity.Position;
 import com.mztrade.hki.repository.OrderHistoryRepository;
 import com.mztrade.hki.repository.PositionRepository;
+import com.mztrade.hki.repository.PositionRepositoryImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,18 +22,20 @@ import java.util.Optional;
 @Slf4j
 public class OrderService {
     private final OrderHistoryRepository orderHistoryRepository;
-    private final PositionRepository positionRepository;
+    private final PositionRepositoryImpl positionRepositoryImpl;
     private final AccountService accountService;
     private final StockPriceService stockPriceService;
+    private final PositionRepository positionRepository;
 
     @Autowired
     public OrderService(OrderHistoryRepository orderHistoryRepository,
-                        PositionRepository positionRepository, AccountService accountService,
-                        StockPriceService stockPriceService) {
+                        PositionRepositoryImpl positionRepositoryImpl, AccountService accountService,
+                        StockPriceService stockPriceService, PositionRepository positionRepository) {
         this.orderHistoryRepository = orderHistoryRepository;
-        this.positionRepository = positionRepository;
+        this.positionRepositoryImpl = positionRepositoryImpl;
         this.accountService = accountService;
         this.stockPriceService = stockPriceService;
+        this.positionRepository = positionRepository;
     }
 
     public Integer buy(Integer aid, String ticker, Integer qty) {
@@ -49,7 +52,7 @@ public class OrderService {
                 .build();
 
         if (accountService.withdraw(aid, (long) order.getQty() * order.getPrice())) {
-            Optional<Position> position = positionRepository.getPositionByTicker(aid, ticker);
+            Optional<Position> position = positionRepository.findByAidAndTicker(aid, ticker);
             if (position.isPresent()) {
                 Position p = position.get();
                 BigDecimal newAvgEntryPrice = p.getAvgEntryPrice().multiply(BigDecimal.valueOf(p.getQty()))
@@ -57,14 +60,14 @@ public class OrderService {
                         .divide(BigDecimal.valueOf(order.getQty() + p.getQty()), 2, RoundingMode.HALF_UP);
                 p.setQty(p.getQty() + order.getQty());
                 p.setAvgEntryPrice(newAvgEntryPrice);
-                positionRepository.updatePosition(p);
+                positionRepositoryImpl.updatePosition(p);
             } else {
-                Position p = new Position()
-                        .setAid(aid)
-                        .setQty(order.getQty())
-                        .setTicker(order.getTicker())
-                        .setAvgEntryPrice(BigDecimal.valueOf(order.getPrice()));
-                positionRepository.createPosition(p);
+                Position p = new Position().toBuilder()
+                        .aid(aid)
+                        .qty(order.getQty())
+                        .ticker(order.getTicker())
+                        .avgEntryPrice(BigDecimal.valueOf(order.getPrice())).build();
+                positionRepository.save(p);
             }
 
             oid = orderHistoryRepository.createOrderHistory(order);
@@ -91,7 +94,7 @@ public class OrderService {
                 .build();
 
         if (accountService.withdraw(aid, (long) order.getQty() * order.getPrice())) {
-            Optional<Position> position = positionRepository.getPositionByTicker(aid, ticker);
+            Optional<Position> position = positionRepository.findByAidAndTicker(aid, ticker);
             if (position.isPresent()) {
                 Position p = position.get();
                 BigDecimal newAvgEntryPrice = p.getAvgEntryPrice().multiply(BigDecimal.valueOf(p.getQty()))
@@ -99,14 +102,14 @@ public class OrderService {
                         .divide(BigDecimal.valueOf(order.getQty() + p.getQty()), 2, RoundingMode.HALF_UP);
                 p.setQty(p.getQty() + order.getQty());
                 p.setAvgEntryPrice(newAvgEntryPrice);
-                positionRepository.updatePosition(p);
+                positionRepositoryImpl.updatePosition(p);
             } else {
-                Position p = new Position()
-                        .setAid(aid)
-                        .setQty(order.getQty())
-                        .setTicker(order.getTicker())
-                        .setAvgEntryPrice(BigDecimal.valueOf(order.getPrice()));
-                positionRepository.createPosition(p);
+                Position p = new Position().toBuilder()
+                        .aid(aid)
+                        .qty(order.getQty())
+                        .ticker(order.getTicker())
+                        .avgEntryPrice(BigDecimal.valueOf(order.getPrice())).build();
+                positionRepository.save(p);
             }
 
             oid = orderHistoryRepository.createOrderHistory(order);
@@ -120,7 +123,7 @@ public class OrderService {
 
         //check if position quantity is enough to sell
         Bar currentPrice = stockPriceService.getCurrentPrice(ticker);
-        Optional<Position> optionalPosition = positionRepository.getPositionByTicker(aid, ticker);
+        Optional<Position> optionalPosition = positionRepository.findByAidAndTicker(aid, ticker);
         if (optionalPosition.isPresent()) {
             Position position = optionalPosition.get();
             if (position.getQty() >= qty) {
@@ -135,10 +138,10 @@ public class OrderService {
                         .build();
                 int remainingQty = position.getQty() - qty;
                 if (remainingQty == 0) {
-                    positionRepository.deletePosition(aid, ticker);
+                    positionRepository.deleteByAidAndTicker(aid, ticker);
                 } else {
                     position.setQty(remainingQty);
-                    positionRepository.updatePosition(position);
+                    positionRepositoryImpl.updatePosition(position);
                 }
                 Long profit = BigInteger.valueOf(currentPrice.getClose())
                         .multiply(BigInteger.valueOf(qty))
@@ -155,7 +158,7 @@ public class OrderService {
         Integer oid = null;
 
         //check if position quantity is enough to sell
-        Optional<Position> optionalPosition = positionRepository.getPositionByTicker(aid, ticker);
+        Optional<Position> optionalPosition = positionRepository.findByAidAndTicker(aid, ticker);
         if (optionalPosition.isPresent()) {
             Position position = optionalPosition.get();
             if (position.getQty() >= qty) {
@@ -170,10 +173,10 @@ public class OrderService {
                         .build();
                 int remainingQty = position.getQty() - qty;
                 if (remainingQty == 0) {
-                    positionRepository.deletePosition(aid, ticker);
+                    positionRepository.deleteByAidAndTicker(aid, ticker);
                 } else {
                     position.setQty(remainingQty);
-                    positionRepository.updatePosition(position);
+                    positionRepositoryImpl.updatePosition(position);
                 }
                 Long profit = BigInteger.valueOf(stockPriceService.getPrice(ticker, date).getClose())
                         .multiply(BigInteger.valueOf(qty))
@@ -220,13 +223,13 @@ public class OrderService {
         return orders;
     }
     public List<Position> getPositions(Integer aid) {
-        List<Position> positions = positionRepository.getAllPositions(aid);
+        List<Position> positions = positionRepository.findByAid(aid);
         log.debug(String.format("[OrderService] getPositions(aid: %d) -> positions: %s", aid, positions));
         return positions;
     }
 
     public Optional<Position> getPosition(Integer aid, String ticker) {
-        Optional<Position> position = positionRepository.getPositionByTicker(aid, ticker);
+        Optional<Position> position = positionRepository.findByAidAndTicker(aid, ticker);
         log.debug(String.format("[OrderService] getPosition(aid: %d, ticker: %s) -> positions: %s", aid, ticker, position));
         return position;
     }
