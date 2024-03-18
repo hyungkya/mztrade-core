@@ -5,6 +5,7 @@ import com.mztrade.hki.entity.Order;
 import com.mztrade.hki.entity.OrderType;
 import com.mztrade.hki.entity.Position;
 import com.mztrade.hki.repository.OrderHistoryRepository;
+import com.mztrade.hki.repository.OrderHistoryRepositoryImpl;
 import com.mztrade.hki.repository.PositionRepository;
 import com.mztrade.hki.repository.PositionRepositoryImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -21,21 +22,23 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class OrderService {
-    private final OrderHistoryRepository orderHistoryRepository;
+    private final OrderHistoryRepositoryImpl orderHistoryRepositoryImpl;
     private final PositionRepositoryImpl positionRepositoryImpl;
     private final AccountService accountService;
     private final StockPriceService stockPriceService;
     private final PositionRepository positionRepository;
+    private final OrderHistoryRepository orderHistoryRepository;
 
     @Autowired
-    public OrderService(OrderHistoryRepository orderHistoryRepository,
+    public OrderService(OrderHistoryRepositoryImpl orderHistoryRepositoryImpl,
                         PositionRepositoryImpl positionRepositoryImpl, AccountService accountService,
-                        StockPriceService stockPriceService, PositionRepository positionRepository) {
-        this.orderHistoryRepository = orderHistoryRepository;
+                        StockPriceService stockPriceService, PositionRepository positionRepository, OrderHistoryRepository orderHistoryRepository) {
+        this.orderHistoryRepositoryImpl = orderHistoryRepositoryImpl;
         this.positionRepositoryImpl = positionRepositoryImpl;
         this.accountService = accountService;
         this.stockPriceService = stockPriceService;
         this.positionRepository = positionRepository;
+        this.orderHistoryRepository = orderHistoryRepository;
     }
 
     public Integer buy(Integer aid, String ticker, Integer qty) {
@@ -70,7 +73,7 @@ public class OrderService {
                 positionRepository.save(p);
             }
 
-            oid = orderHistoryRepository.createOrderHistory(order);
+            oid = orderHistoryRepository.save(order).getOid();
         }
 
         log.debug(String.format("[OrderService] buy(aid: %d, ticker: %s, qty: %d) -> oid: %s", aid, ticker, qty, oid));
@@ -112,7 +115,7 @@ public class OrderService {
                 positionRepository.save(p);
             }
 
-            oid = orderHistoryRepository.createOrderHistory(order);
+            oid = orderHistoryRepository.save(order).getOid();
         }
         log.debug(String.format("[OrderService] buy(aid: %d, ticker: %s, date: %s, qty: %d) -> oid: %s", aid, ticker, date, qty, oid));
         return oid;
@@ -147,7 +150,7 @@ public class OrderService {
                         .multiply(BigInteger.valueOf(qty))
                         .longValue();
                 accountService.deposit(aid, profit);
-                oid = orderHistoryRepository.createOrderHistory(order);
+                oid = orderHistoryRepository.save(order).getOid();
             }
         }
         log.debug(String.format("[OrderService] sell(aid: %d, ticker: %s, qty: %d) -> oid: %s", aid, ticker, qty, oid));
@@ -182,7 +185,7 @@ public class OrderService {
                         .multiply(BigInteger.valueOf(qty))
                         .longValue();
                 accountService.deposit(aid, profit);
-                oid = orderHistoryRepository.createOrderHistory(order);
+                oid = orderHistoryRepository.save(order).getOid();
             }
         }
         log.debug(String.format("[OrderService] sell(aid: %d, ticker: %s, date: %s, qty: %d) -> oid: %s", aid, ticker, date, qty, oid));
@@ -190,35 +193,35 @@ public class OrderService {
     }
 
     public List<Order> getOrderHistory(Integer aid) {
-        List<Order> orders = orderHistoryRepository.get(aid);
+        List<Order> orders = orderHistoryRepository.findByAid(aid);
         log.debug(String.format("[OrderService] getOrderHistory(aid: %d) -> orders: %s", aid, orders));
         return orders;
     }
 
     public List<Order> getOrderHistory(Integer aid, String ticker) {
-        List<Order> orders = orderHistoryRepository.get(aid, ticker);
+        List<Order> orders = orderHistoryRepository.findByAidAndTicker(aid, ticker);
         log.debug(String.format("[OrderService] getOrderHistory(aid: %d, ticker: %s) -> orders: %s", aid, ticker, orders));
         return orders;
     }
     public List<Order> getBuyOrderHistory(Integer aid) {
-        List<Order> orders = orderHistoryRepository.get(aid, OrderType.BUY.id());
+        List<Order> orders = orderHistoryRepository.findByAidAndOtid(aid, OrderType.BUY.id());
         log.debug(String.format("[OrderService] getBuyOrderHistory(aid: %d) -> orders: %s", aid, orders));
         return orders;
     }
 
     public List<Order> getBuyOrderHistory(Integer aid, String ticker) {
-        List<Order> orders = orderHistoryRepository.get(aid, ticker, OrderType.BUY.id());
+        List<Order> orders = orderHistoryRepository.findByAidAndTickerAndOtid(aid, ticker, OrderType.BUY.id());
         log.debug(String.format("[OrderService] getBuyOrderHistory(aid: %d, ticker: %s) -> orders: %s", aid, ticker, orders));
         return orders;
     }
     public List<Order> getSellOrderHistory(Integer aid) {
-        List<Order> orders = orderHistoryRepository.get(aid, OrderType.SELL.id());
+        List<Order> orders = orderHistoryRepository.findByAidAndOtid(aid, OrderType.SELL.id());
         log.debug(String.format("[OrderService] getSellOrderHistory(aid: %d) -> orders: %s", aid, orders));
         return orders;
     }
 
     public List<Order> getSellOrderHistory(Integer aid, String ticker) {
-        List<Order> orders = orderHistoryRepository.get(aid, ticker, OrderType.SELL.id());
+        List<Order> orders = orderHistoryRepository.findByAidAndTickerAndOtid(aid, ticker, OrderType.SELL.id());
         log.debug(String.format("[OrderService] getSellOrderHistory(aid: %d, ticker: %s) -> orders: %s", aid, ticker, orders));
         return orders;
     }
