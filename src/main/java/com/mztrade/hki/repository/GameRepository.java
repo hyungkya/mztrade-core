@@ -92,10 +92,10 @@ public class GameRepository {
         );
     }
 
-    public GameHistory getUnFinishedGameHistory(int aid) {
+    public List<GameHistory> getUnFinishedGameHistory(int aid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER);
-        return this.template.queryForObject(
+        return this.template.query(
                 "SELECT * FROM hkidb.game_history WHERE aid = :aid AND finished = false",
                 src,
                 (rs, rowNum) -> GameHistory.builder()

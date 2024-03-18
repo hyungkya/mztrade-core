@@ -70,10 +70,10 @@ public class GameService {
         return gameHistories;
     }
 
-    public GameHistory getUnFinishedGameHistory(int aid) {
-        GameHistory gameHistory = gameRepository.getUnFinishedGameHistory(aid);
-        log.debug(String.format("getUnFinishedGameHistory(gid: %d) -> gameHistory: %s", aid, gameHistory));
-        return gameHistory;
+    public List<GameHistory> getUnFinishedGameHistory(int aid) {
+        List<GameHistory> gameHistories = gameRepository.getUnFinishedGameHistory(aid);
+        log.debug(String.format("getUnFinishedGameHistory(gid: %d) -> gameHistories: %s", aid, gameHistories));
+        return gameHistories;
     }
 
     public Boolean sell(Integer gid, Integer aid, String ticker, LocalDateTime date, Integer qty) {

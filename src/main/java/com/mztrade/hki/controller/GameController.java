@@ -59,12 +59,12 @@ public class GameController {
     }
 
     @GetMapping("/game/un-finished")
-    public GameHistory getUnFinishedGameHistory(
+    public List<GameHistory> getUnFinishedGameHistory(
             @RequestParam Integer aid
     ) {
-        GameHistory gameHistory = gameService.getUnFinishedGameHistory(aid);
+        List<GameHistory> gameHistories = gameService.getUnFinishedGameHistory(aid);
         log.info(String.format("[GET] /game/un-finished?aid=%s", aid));
-        return gameHistory;
+        return gameHistories;
     }
 
     @PostMapping("/game/order/buy")
