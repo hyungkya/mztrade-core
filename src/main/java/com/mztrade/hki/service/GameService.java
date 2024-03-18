@@ -102,10 +102,16 @@ public class GameService {
         return orders;
     }
 
-    public void increaseTurns(Integer gid) {
+    public boolean increaseTurns(Integer gid) {
         GameHistory gameHistory = gameRepository.getGameHistoryByGameId(gid).getFirst();
-        gameRepository.updateGame(gid, gameHistory.getTurns() + 1, gameHistory.getMaxTurn(), gameHistory.getFinalBalance(), false);
-        log.debug(String.format("increaseGameTurns(gid: %d)", gid));
+        if(gameHistory.getTurns() < gameHistory.getMaxTurn()) {
+            gameRepository.updateGame(gid, gameHistory.getTurns() + 1, gameHistory.getMaxTurn(), gameHistory.getFinalBalance(), false);
+            log.debug(String.format("increaseGameTurns(gid: %d)", gid));
+            return false;
+        } else {
+            log.debug(String.format("increaseGameTurns(gid: %d)", gid));
+            return true;
+        }
     }
 
     public void updateMaxTurn(Integer gid, Integer extraTurns) {
