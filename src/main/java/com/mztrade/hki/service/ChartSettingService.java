@@ -1,8 +1,6 @@
 package com.mztrade.hki.service;
 
 import com.mztrade.hki.entity.ChartSetting;
-import com.mztrade.hki.entity.backtest.BacktestHistory;
-import com.mztrade.hki.repository.BacktestHistoryRepository;
 import com.mztrade.hki.repository.ChartSettingRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

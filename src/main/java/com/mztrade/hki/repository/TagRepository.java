@@ -12,4 +12,5 @@ import java.util.Optional;
 @Repository
 public interface TagRepository extends JpaRepository<Tag, Integer> {
     Tag save(Tag tag);
+    List<Tag> findByUidAndCategory(Integer uid, Integer category);
 }

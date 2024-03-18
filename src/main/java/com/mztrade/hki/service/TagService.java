@@ -29,14 +29,14 @@ public class TagService {
     }
 
     public List<Tag> getStockInfoTag(int uid) {
-        List<Tag> tags = tagRepositoryImpl.findByCategory(uid, TagCategory.STOCK_INFO);
+        List<Tag> tags = tagRepository.findByUidAndCategory(uid, TagCategory.STOCK_INFO.id());
 
         log.debug(String.format("getStockInfoTag(uid: %s) -> %s",uid, tags));
         return tags;
     }
 
     public List<Tag> getBacktestHistoryTag(int uid) {
-        List<Tag> tags = tagRepositoryImpl.findByCategory(uid, TagCategory.BACKTEST_HISTORY);
+        List<Tag> tags = tagRepository.findByUidAndCategory(uid, TagCategory.BACKTEST_HISTORY.id());
 
         log.debug(String.format("getBacktestHistoryTag(uid: %s) -> %s",uid, tags));
         return tags;

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.entity.StockInfo;
 import com.mztrade.hki.entity.Tag;
 import com.mztrade.hki.entity.TagCategory;
+import com.mztrade.hki.entity.backtest.BacktestHistory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -71,42 +72,6 @@ public class TagRepositoryImpl {
         );
     }
 
-    public List<Tag> findByAid(int uid, int aid) {
-        MapSqlParameterSource src = new MapSqlParameterSource()
-                .addValue("uid", uid, Types.INTEGER)
-                .addValue("aid", aid, Types.INTEGER);
-        return this.template.query(
-                "SELECT t.uid, t.tid, t.tname, t.tcolor, t.category FROM hkidb.tag t JOIN hkidb.backtest_history_tag bht ON t.tid = bht.tid WHERE t.uid = :uid AND bht.aid = :aid",
-                src,
-                (rs, rowNum) ->
-                        Tag.builder()
-                                .uid(rs.getInt("t.uid"))
-                                .tid(rs.getInt("t.tid"))
-                                .tname(rs.getString("t.tname"))
-                                .tcolor(rs.getString("t.tcolor"))
-                                .category(rs.getInt("t.category"))
-                                .build()
-        );
-    }
-
-    public List<Tag> findByTicker(Integer uid, String ticker) {
-        MapSqlParameterSource src = new MapSqlParameterSource()
-                .addValue("uid", uid, Types.INTEGER)
-                .addValue("ticker", ticker, Types.VARCHAR);
-        return this.template.query(
-                "SELECT t.uid, t.tid, t.tname, t.tcolor, t.category FROM hkidb.tag t JOIN hkidb.stock_info_tag sit ON t.tid = sit.tid WHERE t.uid = :uid AND sit.ticker LIKE :ticker",
-                src,
-                (rs, rowNum) ->
-                        Tag.builder()
-                                .uid(rs.getInt("t.uid"))
-                                .tid(rs.getInt("t.tid"))
-                                .tname(rs.getString("t.tname"))
-                                .tcolor(rs.getString("t.tcolor"))
-                                .category(rs.getInt("t.category"))
-                                .build()
-        );
-    }
-
     public boolean deleteById(int tid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("tid", tid, Types.INTEGER);
@@ -159,6 +124,41 @@ public class TagRepositoryImpl {
                 src);
         return affectedRows == 1 ? true : false;
     }
+    public List<Tag> findByAid(int uid, int aid) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER)
+                .addValue("aid", aid, Types.INTEGER);
+        return this.template.query(
+                "SELECT t.uid, t.tid, t.tname, t.tcolor, t.category FROM hkidb.tag t JOIN hkidb.backtest_history_tag bht ON t.tid = bht.tid WHERE t.uid = :uid AND bht.aid = :aid",
+                src,
+                (rs, rowNum) ->
+                        Tag.builder()
+                                .uid(rs.getInt("t.uid"))
+                                .tid(rs.getInt("t.tid"))
+                                .tname(rs.getString("t.tname"))
+                                .tcolor(rs.getString("t.tcolor"))
+                                .category(rs.getInt("t.category"))
+                                .build()
+        );
+    }
+
+    public List<Tag> findByTicker(Integer uid, String ticker) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER)
+                .addValue("ticker", ticker, Types.VARCHAR);
+        return this.template.query(
+                "SELECT t.uid, t.tid, t.tname, t.tcolor, t.category FROM hkidb.tag t JOIN hkidb.stock_info_tag sit ON t.tid = sit.tid WHERE t.uid = :uid AND sit.ticker LIKE :ticker",
+                src,
+                (rs, rowNum) ->
+                        Tag.builder()
+                                .uid(rs.getInt("t.uid"))
+                                .tid(rs.getInt("t.tid"))
+                                .tname(rs.getString("t.tname"))
+                                .tcolor(rs.getString("t.tcolor"))
+                                .category(rs.getInt("t.category"))
+                                .build()
+        );
+    }
 
     public List<StockInfo> findStockInfoByNameAndTags(int uid, String name, List<Integer> tids) {
         MapSqlParameterSource src = new MapSqlParameterSource()
@@ -187,5 +187,29 @@ public class TagRepositoryImpl {
         );
     }
 
-
+    public List<BacktestHistory> findBacktestHistoryByTitleAndTags(int uid, String title, List<Integer> tids) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER)
+                .addValue("title", "%" + title + "%", Types.VARCHAR)
+                .addValue("tids", tids)
+                .addValue("tid_length", tids.size(), Types.INTEGER);
+        return this.template.query(
+                "SELECT b.* " +
+                        "FROM hkidb.backtest_history b " +
+                        "WHERE JSON_EXTRACT(b.param, '$.title') LIKE :title AND b.aid IN ( " +
+                        "    SELECT bit.aid " +
+                        "    FROM hkidb.backtest_history_tag bit " +
+                        "    JOIN hkidb.tag t ON bit.tid = t.tid AND bit.tid IN (:tids) " +
+                        "    WHERE t.uid = :uid " +
+                        "    GROUP BY bit.aid " +
+                        "    HAVING COUNT(DISTINCT bit.tid) = :tid_length);",
+                src,
+                (rs, rowNum) -> BacktestHistory.builder()
+                        .uid(rs.getInt("uid"))
+                        .aid(rs.getInt("aid"))
+                        .param(rs.getString("param"))
+                        .plratio(rs.getDouble("plratio"))
+                        .build()
+        );
+    }
 }

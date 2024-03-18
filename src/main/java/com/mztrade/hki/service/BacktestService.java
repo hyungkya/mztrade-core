@@ -6,6 +6,8 @@ import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.entity.backtest.Condition;
 import com.mztrade.hki.repository.BacktestHistoryRepository;
+import com.mztrade.hki.repository.BacktestHistoryRepositoryImpl;
+import com.mztrade.hki.repository.TagRepositoryImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -18,19 +20,23 @@ import java.util.*;
 @Service
 @Slf4j
 public class BacktestService {
+    private final TagRepositoryImpl tagRepositoryImpl;
+    private final BacktestHistoryRepository backtestHistoryRepository;
     private AccountService accountService;
     private StockPriceService stockPriceService;
     private OrderService orderService;
-    private BacktestHistoryRepository backtestHistoryRepository;
+    private BacktestHistoryRepositoryImpl backtestHistoryRepositoryImpl;
 
     @Autowired
     public BacktestService(AccountService accountService,
                            StockPriceService stockPriceService,
                            OrderService orderService,
-                           BacktestHistoryRepository backtestHistoryRepository) {
+                           BacktestHistoryRepositoryImpl backtestHistoryRepositoryImpl, TagRepositoryImpl tagRepositoryImpl, BacktestHistoryRepository backtestHistoryRepository) {
         this.accountService = accountService;
         this.stockPriceService = stockPriceService;
         this.orderService = orderService;
+        this.backtestHistoryRepositoryImpl = backtestHistoryRepositoryImpl;
+        this.tagRepositoryImpl = tagRepositoryImpl;
         this.backtestHistoryRepository = backtestHistoryRepository;
     }
 
@@ -198,29 +204,29 @@ public class BacktestService {
     }
 
     public boolean create(BacktestHistory backtestHistory) {
-        boolean isSuccess = backtestHistoryRepository.create(backtestHistory);;
-        log.debug(String.format("[BacktestService] create(backtestHistory: %s) -> isSuccess: %b", backtestHistory, isSuccess));
-        return isSuccess;
+        backtestHistoryRepository.save(backtestHistory);
+        log.debug(String.format("[BacktestService] create(backtestHistory: %s) -> isSuccess: %b", backtestHistory, true));
+        return true;
     }
 
     public BacktestHistory get(int aid) {
-        BacktestHistory backtestHistory = backtestHistoryRepository.get(aid);
+        BacktestHistory backtestHistory = backtestHistoryRepositoryImpl.get(aid);
         log.debug(String.format("[BacktestService] get(int: %d) -> backtestHistory: %s", aid, backtestHistory));
         return backtestHistory;
     }
     public List<BacktestHistory> getBacktestTop5(int uid) {
-        List<BacktestHistory> backtestHistories = backtestHistoryRepository.getBacktestTop5(uid);
+        List<BacktestHistory> backtestHistories = backtestHistoryRepositoryImpl.getBacktestTop5(uid);
         log.debug(String.format("[BacktestService] getBacktestTop5(uid: %s) -> backtestHistories: %s", uid, backtestHistories));
         return backtestHistories;
     }
     public List<BacktestHistory> getRanking() {
-        List<BacktestHistory> backtestHistories = backtestHistoryRepository.getRanking();
+        List<BacktestHistory> backtestHistories = backtestHistoryRepositoryImpl.getRanking();
         log.debug(String.format("[BacktestService] getRanking() -> backtestHistories: %s", backtestHistories));
         return backtestHistories;
     }
 
     public BacktestRequest getBacktestRequest(int aid) throws NoSuchElementException {
-        BacktestRequest backtestRequest = backtestHistoryRepository.getBacktestRequest(aid).orElseThrow();
+        BacktestRequest backtestRequest = backtestHistoryRepositoryImpl.getBacktestRequest(aid).orElseThrow();
         log.debug(String.format("[BacktestService] getBacktestRequest(aid: %d) -> backtestRequest: %s", aid, backtestRequest));
         return backtestRequest;
     }
@@ -231,19 +237,19 @@ public class BacktestService {
     }
 
     public List<BacktestHistory> searchByTitle(int uid, String title) {
-        List<BacktestHistory> backtestHistories = backtestHistoryRepository.searchByTitle(uid, title);
+        List<BacktestHistory> backtestHistories = backtestHistoryRepositoryImpl.searchByTitle(uid, title);
         log.debug(String.format("[BacktestService] searchByTitle(uid: %d, title: %s) -> backtestHistories: %s", uid, title, backtestHistories));
         return backtestHistories;
     }
 
     public List<BacktestHistory> searchBacktestHistoryByTags(int uid, String title, List<Integer> tids) {
-        List<BacktestHistory> backtestHistories = backtestHistoryRepository.findBacktestHistoryByTitleAndTags(uid, title, tids);
+        List<BacktestHistory> backtestHistories = tagRepositoryImpl.findBacktestHistoryByTitleAndTags(uid, title, tids);
         log.debug(String.format("[BacktestService] searchBacktestHistoryByTags(uid: %d, title: %s, tids: %s) -> backtestHistories: %s", uid, title, tids, backtestHistories));
         return backtestHistories;
     }
 
     public Integer getNumberOfHistoryByUid(int uid) {
-        int num = backtestHistoryRepository.getNumberOfHistoryByUid(uid);
+        int num = backtestHistoryRepositoryImpl.getNumberOfHistoryByUid(uid);
         log.debug(String.format("[BacktestService] getNumberOfHistoryByUid(uid: %d) -> num: %d", uid, num));
         return num;
     }
@@ -252,7 +258,7 @@ public class BacktestService {
         double highestProfitLossRatio = -1;
         Optional<Integer> highestAid = Optional.empty();
         for (int aid : accountService.getAllBacktestAccountIds(uid)) {
-            double currentProfitLossRatio = backtestHistoryRepository.get(aid).getPlratio();
+            double currentProfitLossRatio = backtestHistoryRepositoryImpl.get(aid).getPlratio();
             if (currentProfitLossRatio > highestProfitLossRatio) {
                 highestProfitLossRatio = currentProfitLossRatio;
                 highestAid = Optional.of(aid);

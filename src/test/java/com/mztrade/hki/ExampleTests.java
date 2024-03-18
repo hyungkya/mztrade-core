@@ -1,8 +1,7 @@
 package com.mztrade.hki;
 
-import com.mztrade.hki.entity.TagCategory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
-import com.mztrade.hki.repository.BacktestHistoryRepository;
+import com.mztrade.hki.repository.BacktestHistoryRepositoryImpl;
 import com.mztrade.hki.repository.TagRepositoryImpl;
 import com.mztrade.hki.service.OrderService;
 import com.mztrade.hki.service.StatisticService;
@@ -20,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ExampleTests {
     @Autowired
-    private BacktestHistoryRepository backtestHistoryRepository;
+    private BacktestHistoryRepositoryImpl backtestHistoryRepositoryImpl;
     @Autowired
     private OrderService orderService;
     @Autowired
@@ -32,7 +31,7 @@ public class ExampleTests {
 
     @Test
     void getBacktestRequestTest() {
-        BacktestRequest br = backtestHistoryRepository.getBacktestRequest(1).get();
+        BacktestRequest br = backtestHistoryRepositoryImpl.getBacktestRequest(1).get();
         assertThat(br.getTickers())
                 .isEqualTo(List.of("000270", "000660", "003670", "005380", "005490"));
     }
@@ -72,21 +71,6 @@ public class ExampleTests {
         assertThat(
                 statisticService.getTickerProfit(1, "005380")
         ).isCloseTo(0.0547521, Offset.offset(0.0000001));
-    }
-
-    @Test
-    void simpleTagTest() {
-        tagRepositoryImpl.createTag(1, "매매법1", "0xFFFFFFFF", TagCategory.STOCK_INFO);
-        tagRepositoryImpl.createTag(1, "매매법2", "0xFFFFFFFF", TagCategory.STOCK_INFO);
-        tagRepositoryImpl.createTag(1, "종목분류1", "0xFFFFFFFF", TagCategory.STOCK_INFO);
-        tagRepositoryImpl.createTag(1, "종목분류2", "0xFFFFFFFF", TagCategory.STOCK_INFO);
-
-        tagRepositoryImpl.findByCategory(1, TagCategory.STOCK_INFO);
-
-        tagRepositoryImpl.deleteById(0);
-        tagRepositoryImpl.deleteById(1);
-
-        tagRepositoryImpl.findByCategory(1, TagCategory.STOCK_INFO);
     }
 
 }
