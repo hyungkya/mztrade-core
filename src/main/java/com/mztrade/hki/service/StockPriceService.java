@@ -6,6 +6,7 @@ import com.mztrade.hki.entity.StockInfo;
 import com.mztrade.hki.repository.StockInfoRepository;
 import com.mztrade.hki.repository.StockInfoRepositoryImpl;
 import com.mztrade.hki.repository.StockPriceRepository;
+import com.mztrade.hki.repository.StockPriceRepositoryImpl;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
@@ -21,16 +22,18 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class StockPriceService {
-    private final StockPriceRepository stockPriceRepository;
+    private final StockPriceRepositoryImpl stockPriceRepositoryImpl;
     private final StockInfoRepositoryImpl stockInfoRepositoryImpl;
     private final StockInfoRepository stockInfoRepository;
+    private final StockPriceRepository stockPriceRepository;
 
     @Autowired
-    public StockPriceService(StockPriceRepository stockPriceRepository,
-                             StockInfoRepositoryImpl stockInfoRepositoryImpl, StockInfoRepository stockInfoRepository) {
-        this.stockPriceRepository = stockPriceRepository;
+    public StockPriceService(StockPriceRepositoryImpl stockPriceRepositoryImpl,
+                             StockInfoRepositoryImpl stockInfoRepositoryImpl, StockInfoRepository stockInfoRepository, StockPriceRepository stockPriceRepository) {
+        this.stockPriceRepositoryImpl = stockPriceRepositoryImpl;
         this.stockInfoRepositoryImpl = stockInfoRepositoryImpl;
         this.stockInfoRepository = stockInfoRepository;
+        this.stockPriceRepository = stockPriceRepository;
     }
 
     public List<Bar> getPrices(String ticker) {
@@ -44,7 +47,7 @@ public class StockPriceService {
     }
 
     public List<Bar> getPrices(String ticker, LocalDateTime startDate, LocalDateTime endDate) {
-        List<Bar> bar = stockPriceRepository.findByDate(ticker, startDate, endDate);
+        List<Bar> bar = stockPriceRepository.findByTickerAndDateBetween(ticker, startDate, endDate);
         log.debug(String.format("[StockPriceService] getPrices(ticker: %s, startDate: %s, endDate: %s) -> List<Bar>:%s", ticker,startDate, endDate,bar));
         // return requested date range's ticker data
         return bar;
@@ -52,7 +55,7 @@ public class StockPriceService {
 
     public Bar getPrice(String ticker, LocalDateTime date) {
         // return requested date's ticker data
-        Bar bar = stockPriceRepository.findByDate(ticker, date);
+        Bar bar = stockPriceRepository.findByTickerAndDate(ticker, date).get();
         log.debug(String.format("[StockPriceService] getPrice(ticker: %s, date: %s) -> Bar:%s", ticker,date, bar));
         return bar;
     }
@@ -61,7 +64,7 @@ public class StockPriceService {
         Optional<Bar> bar = Optional.empty();
         while (date.isAfter(LocalDateTime.parse(Util.formatDate("20100101")))) {
             try {
-                bar = Optional.of(stockPriceRepository.findByDate(ticker, date));
+                bar = stockPriceRepository.findByTickerAndDate(ticker, date);
                 break;
             } catch (EmptyResultDataAccessException ignored) {
                 date = date.minus(1, ChronoUnit.DAYS);
@@ -76,7 +79,7 @@ public class StockPriceService {
         Optional<Bar> bar = Optional.empty();
         while (date.isBefore(LocalDateTime.now())) {
             try {
-                bar = Optional.of(stockPriceRepository.findByDate(ticker, date));
+                bar = stockPriceRepository.findByTickerAndDate(ticker, date);
                 break;
             } catch (EmptyResultDataAccessException ignored) {
                 date = date.plus(1, ChronoUnit.DAYS);
@@ -91,7 +94,7 @@ public class StockPriceService {
         Optional<Bar> bar = Optional.empty();
         for (; maxRange > 0; maxRange--) {
             try {
-                bar = Optional.of(stockPriceRepository.findByDate(ticker, date));
+                bar = stockPriceRepository.findByTickerAndDate(ticker, date);
                 break;
             } catch (EmptyResultDataAccessException ignored) {
                 date = date.minus(1, ChronoUnit.DAYS);
@@ -106,7 +109,7 @@ public class StockPriceService {
         Optional<Bar> bar = Optional.empty();
         for (; maxRange > 0; maxRange--) {
             try {
-                bar = Optional.of(stockPriceRepository.findByDate(ticker, date));
+                bar = stockPriceRepository.findByTickerAndDate(ticker, date);
                 break;
             } catch (EmptyResultDataAccessException ignored) {
                 date = date.plus(1, ChronoUnit.DAYS);
