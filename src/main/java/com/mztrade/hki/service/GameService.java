@@ -15,7 +15,6 @@ import java.util.Random;
 @Service
 @Slf4j
 public class GameService {
-    private final GameRepositoryImpl gameRepositoryImpl;
     private final GameRepository gameRepository;
     private final GameOrderRepository gameOrderRepository;
     private final AccountService accountService;
@@ -23,24 +22,24 @@ public class GameService {
     private final OrderService orderService;
     private final StockPriceRepository stockPriceRepository;
     private final StockInfoRepository stockInfoRepository;
+    private final OrderHistoryRepository orderHistoryRepository;
 
     @Autowired
     public GameService(
             GameRepository gameRepository,
             GameOrderRepository gameOrderRepository,
-            GameRepositoryImpl gameRepositoryImpl,
             AccountService accountService,
             OrderService orderService,
             StockPriceService stockPriceService,
-            StockPriceRepository stockPriceRepository, StockInfoRepository stockInfoRepository) {
+            StockPriceRepository stockPriceRepository, StockInfoRepository stockInfoRepository, OrderHistoryRepository orderHistoryRepository) {
         this.gameRepository = gameRepository;
         this.gameOrderRepository = gameOrderRepository;
-        this.gameRepositoryImpl = gameRepositoryImpl;
         this.accountService = accountService;
         this.orderService = orderService;
         this.stockPriceService = stockPriceService;
         this.stockPriceRepository = stockPriceRepository;
         this.stockInfoRepository = stockInfoRepository;
+        this.orderHistoryRepository = orderHistoryRepository;
     }
 
     public int createGame(int aid) {
@@ -97,8 +96,8 @@ public class GameService {
         if (oid != null) {
             GameOrderHistory gameOrderHistory = gameOrderRepository.save(
                     GameOrderHistory.builder()
-                            .gid(gid)
-                            .oid(oid).build());
+                            .gameHistory(gameRepository.getReferenceById(gid))
+                            .order(orderHistoryRepository.getReferenceById(oid)).build());
 
             if (gameOrderHistory != null) {
                 isProcessed = true;
@@ -114,8 +113,8 @@ public class GameService {
         if (oid != null) {
             GameOrderHistory gameOrderHistory = gameOrderRepository.save(
                     GameOrderHistory.builder()
-                            .gid(gid)
-                            .oid(oid).build());
+                            .gameHistory(gameRepository.getReferenceById(gid))
+                            .order(orderHistoryRepository.getReferenceById(oid)).build());
 
             if (gameOrderHistory != null) {
                 isProcessed = true;
@@ -126,9 +125,9 @@ public class GameService {
     }
 
     public List<OrderResponse> getGameOrderHistories(Integer gid) {
-        List<OrderResponse> orderResponses = gameRepositoryImpl.getGameOrderHistories(gid)
+        List<OrderResponse> orderResponses = gameOrderRepository.findByGameHistoryGid(gid)
                 .stream()
-                .map((o) -> OrderResponse.from(o))
+                .map((go) -> OrderResponse.from(go.getOrder()))
                 .toList();
         log.debug(String.format("getGameOrderHistories(gid: %d) -> orders: %s", gid, orderResponses));
         return orderResponses;

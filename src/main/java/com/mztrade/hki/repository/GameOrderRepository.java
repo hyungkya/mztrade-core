@@ -11,6 +11,5 @@ import java.util.List;
 @Repository
 public interface GameOrderRepository extends JpaRepository<GameOrderHistory, GameOrderHistoryId> {
     GameOrderHistory save(GameOrderHistory gameOrderHistory);
-
-
+    List<GameOrderHistory> findByGameHistoryGid(Integer gid);
 }
