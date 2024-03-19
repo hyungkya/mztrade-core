@@ -1,9 +1,9 @@
 package com.mztrade.hki.service;
 
 import com.mztrade.hki.Util;
-import com.mztrade.hki.entity.Bar;
-import com.mztrade.hki.entity.StockInfo;
-import com.mztrade.hki.entity.backtest.Indicator;
+import com.mztrade.hki.dto.StockInfoResponse;
+import com.mztrade.hki.dto.StockPriceResponse;
+import com.mztrade.hki.entity.StockPrice;
 import com.mztrade.hki.repository.StockInfoRepository;
 import com.mztrade.hki.repository.StockPriceRepository;
 import java.time.temporal.ChronoUnit;
@@ -15,55 +15,56 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class StockPriceService {
-    private final StockPriceRepository stockPriceRepository;
     private final StockInfoRepository stockInfoRepository;
+    private final StockPriceRepository stockPriceRepository;
 
     @Autowired
-    public StockPriceService(StockPriceRepository stockPriceRepository,
-                             StockInfoRepository stockInfoRepository) {
-        this.stockPriceRepository = stockPriceRepository;
+    public StockPriceService(StockInfoRepository stockInfoRepository, StockPriceRepository stockPriceRepository) {
         this.stockInfoRepository = stockInfoRepository;
+        this.stockPriceRepository = stockPriceRepository;
     }
 
-    public List<Bar> getPrices(String ticker) {
-        List<Bar> bar = stockPriceRepository.findByTicker(ticker)
+    public List<StockPriceResponse> getPrices(String ticker) {
+        List<StockPriceResponse> stockPriceResponses = stockPriceRepository.findByStockInfoTicker(ticker)
                 .stream()
-                .sorted(Bar.COMPARE_BY_DATE).collect(Collectors.toList());
+                .sorted(StockPrice.COMPARE_BY_DATE).map((s) -> StockPriceResponse.from(s))
+                .collect(Collectors.toList());
 
-        log.debug(String.format("[StockPriceService] getPrices(ticker: %s) -> List<bar>:%s", ticker,bar));
+        log.debug(String.format("[StockPriceService] getPrices(ticker: %s) -> List<bar>:%s", ticker, stockPriceResponses));
         // return all ticker data
-        return bar;
+        return stockPriceResponses;
     }
 
-    public List<Bar> getPrices(String ticker, LocalDateTime startDate, LocalDateTime endDate) {
-        List<Bar> bar = stockPriceRepository.findByDate(ticker, startDate, endDate);
-        log.debug(String.format("[StockPriceService] getPrices(ticker: %s, startDate: %s, endDate: %s) -> List<Bar>:%s", ticker,startDate, endDate,bar));
+    public List<StockPrice> getPrices(String ticker, LocalDateTime startDate, LocalDateTime endDate) {
+        List<StockPrice> stockPrice = stockPriceRepository.findByStockInfoTickerAndDateBetween(ticker, startDate, endDate);
+        log.debug(String.format("[StockPriceService] getPrices(ticker: %s, startDate: %s, endDate: %s) -> List<Bar>:%s", ticker,startDate, endDate, stockPrice));
         // return requested date range's ticker data
-        return bar;
+        return stockPrice;
     }
 
-    public Bar getPrice(String ticker, LocalDateTime date) {
+    public StockPrice getPrice(String ticker, LocalDateTime date) {
         // return requested date's ticker data
-        Bar bar = stockPriceRepository.findByDate(ticker, date);
-        log.debug(String.format("[StockPriceService] getPrice(ticker: %s, date: %s) -> Bar:%s", ticker,date, bar));
-        return bar;
+        Optional<StockPrice> bar = stockPriceRepository.findByStockInfoTickerAndDate(ticker, date);
+        if (bar.isEmpty()) {
+            throw new EmptyResultDataAccessException(1);
+        }
+        log.debug(String.format("[StockPriceService] getPrice(ticker: %s, date: %s) -> Bar:%s", ticker,date, bar.get()));
+        return bar.get();
     }
 
-    public Optional<Bar> getAvailablePriceBefore(String ticker, LocalDateTime date) {
-        Optional<Bar> bar = Optional.empty();
+    public Optional<StockPrice> getAvailablePriceBefore(String ticker, LocalDateTime date) {
+        Optional<StockPrice> bar = Optional.empty();
         while (date.isAfter(LocalDateTime.parse(Util.formatDate("20100101")))) {
-            try {
-                bar = Optional.of(stockPriceRepository.findByDate(ticker, date));
+            bar = stockPriceRepository.findByStockInfoTickerAndDate(ticker, date);
+            if (bar.isPresent()) {
                 break;
-            } catch (EmptyResultDataAccessException ignored) {
+            } else {
                 date = date.minus(1, ChronoUnit.DAYS);
             }
         }
@@ -72,13 +73,13 @@ public class StockPriceService {
         return bar;
     }
 
-    public Optional<Bar> getAvailablePriceAfter(String ticker, LocalDateTime date) {
-        Optional<Bar> bar = Optional.empty();
+    public Optional<StockPrice> getAvailablePriceAfter(String ticker, LocalDateTime date) {
+        Optional<StockPrice> bar = Optional.empty();
         while (date.isBefore(LocalDateTime.now())) {
-            try {
-                bar = Optional.of(stockPriceRepository.findByDate(ticker, date));
+            bar = stockPriceRepository.findByStockInfoTickerAndDate(ticker, date);
+            if (bar.isPresent()) {
                 break;
-            } catch (EmptyResultDataAccessException ignored) {
+            } else {
                 date = date.plus(1, ChronoUnit.DAYS);
             }
         }
@@ -87,13 +88,13 @@ public class StockPriceService {
         return bar;
     }
 
-    public Optional<Bar> getAvailablePriceBefore(String ticker, LocalDateTime date, Integer maxRange) {
-        Optional<Bar> bar = Optional.empty();
+    public Optional<StockPrice> getAvailablePriceBefore(String ticker, LocalDateTime date, Integer maxRange) {
+        Optional<StockPrice> bar = Optional.empty();
         for (; maxRange > 0; maxRange--) {
-            try {
-                bar = Optional.of(stockPriceRepository.findByDate(ticker, date));
+            bar = stockPriceRepository.findByStockInfoTickerAndDate(ticker, date);
+            if (bar.isPresent()) {
                 break;
-            } catch (EmptyResultDataAccessException ignored) {
+            } else {
                 date = date.minus(1, ChronoUnit.DAYS);
             }
         }
@@ -102,13 +103,13 @@ public class StockPriceService {
         return bar;
     }
 
-    public Optional<Bar> getAvailablePriceAfter(String ticker, LocalDateTime date, Integer maxRange) {
-        Optional<Bar> bar = Optional.empty();
+    public Optional<StockPrice> getAvailablePriceAfter(String ticker, LocalDateTime date, Integer maxRange) {
+        Optional<StockPrice> bar = Optional.empty();
         for (; maxRange > 0; maxRange--) {
-            try {
-                bar = Optional.of(stockPriceRepository.findByDate(ticker, date));
+            bar = stockPriceRepository.findByStockInfoTickerAndDate(ticker, date);
+            if (bar.isPresent()) {
                 break;
-            } catch (EmptyResultDataAccessException ignored) {
+            } else {
                 date = date.plus(1, ChronoUnit.DAYS);
             }
         }
@@ -116,29 +117,32 @@ public class StockPriceService {
         return bar;
     }
 
-    public Bar getCurrentPrice(String ticker) {
+    public StockPrice getCurrentPrice(String ticker) {
         // return the most recent ticker data
-        List<Bar> bars = getPrices(ticker);
-        Bar bar = bars.get(bars.size() - 1);
-        log.debug(String.format("[StockPriceService] getCurrentPrice(ticker: %s) -> Bar:%s", ticker,bar));
-        return bar;
+        List<StockPrice> stockPrices = stockPriceRepository.findByStockInfoTicker(ticker);
+        StockPrice stockPrice = stockPrices.get(stockPrices.size() - 1);
+        log.debug(String.format("[StockPriceService] getCurrentPrice(ticker: %s) -> Bar:%s", ticker, stockPrice));
+        return stockPrice;
     }
 
-    public List<StockInfo> getAllStockInfo() {
-        List<StockInfo> stockInfos = stockInfoRepository.getAll();
-        log.debug(String.format("[StockPriceService] getAllStockInfo() -> StockInfo:%s", stockInfos));
-        return stockInfos;
+    public List<StockInfoResponse> getAllStockInfo() {
+        List<StockInfoResponse> stockInfoResponses = stockInfoRepository.findAll().stream().map((s) -> StockInfoResponse.from(s)).toList();
+        log.debug(String.format("[StockPriceService] getAllStockInfo() -> StockInfo:%s", stockInfoResponses));
+        return stockInfoResponses;
     }
 
-    public List<StockInfo> searchStockInfoByName(String name) {
-        List<StockInfo> stockInfos = stockInfoRepository.findByName(name);
-        log.debug(String.format("[StockPriceService] searchStockInfoByName(name: %s) -> StockInfo:%s", name, stockInfos));
-        return stockInfos;
+    public List<StockInfoResponse> searchStockInfoByName(String name) {
+        List<StockInfoResponse> stockInfoResponses = stockInfoRepository.findAllByNameContainsIgnoreCase(name)
+                .stream()
+                .map((s) -> StockInfoResponse.from(s))
+                .toList();
+        log.debug(String.format("[StockPriceService] searchStockInfoByName(name: %s) -> StockInfo:%s", name, stockInfoResponses));
+        return stockInfoResponses;
     }
 
-    public StockInfo findStockInfoByTicker(String ticker) {
-        StockInfo stockInfos = stockInfoRepository.findByTicker(ticker);
-        log.debug(String.format("[StockPriceService] findStockInfoByTicker(ticker: %s) -> StockInfo:%s", ticker, stockInfos));
-        return stockInfos;
+    public StockInfoResponse findStockInfoByTicker(String ticker) {
+        StockInfoResponse stockInfoResponse = StockInfoResponse.from(stockInfoRepository.findByTicker(ticker).get());
+        log.debug(String.format("[StockPriceService] findStockInfoByTicker(ticker: %s) -> StockInfo:%s", ticker, stockInfoResponse));
+        return stockInfoResponse;
     }
 }

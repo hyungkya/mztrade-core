@@ -1,6 +1,6 @@
 package com.mztrade.hki.service;
 
-import com.mztrade.hki.entity.Bar;
+import com.mztrade.hki.entity.StockPrice;
 import com.mztrade.hki.entity.backtest.Indicator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +30,11 @@ public class IndicatorService {
                 maxRange += value.intValue();
             }
         }
-        List<Bar> bars = new ArrayList<>();
+        List<StockPrice> stockPrices = new ArrayList<>();
         int maxFail = 10;
-        while (bars.size() < maxRange && maxFail > 0) {
+        while (stockPrices.size() < maxRange && maxFail > 0) {
             try {
-                bars.add(stockPriceService.getPrice(ticker, date));
+                stockPrices.add(stockPriceService.getPrice(ticker, date));
                 maxFail = 10;
             } catch (DataAccessException e) {
                 maxFail--;
@@ -42,12 +42,12 @@ public class IndicatorService {
             date = date.minus(1, ChronoUnit.DAYS);
         }
         Indicator indicator = new Indicator(type, params);
-        double result = indicator.calculate(bars);
+        double result = indicator.calculate(stockPrices);
 
         log.debug(String.format("[IndicatorService] getIndicator(ticker: %s, date: %s, type: %s, params: %s) -> indicator:%s",
                 ticker, date, type, params, result)
         );
-        return indicator.calculate(bars);
+        return indicator.calculate(stockPrices);
     }
 
 /*    public Map<LocalDateTime, Double> getIndicators(String ticker, LocalDateTime startDate, LocalDateTime endDate, String type, List<Float> params) {
@@ -97,18 +97,18 @@ public class IndicatorService {
         if (!(params.get(0) > 0)) throw new IllegalArgumentException("Period parameter should be bigger than 0");
         int period = params.get(0).intValue();
 
-        List<Bar> bars = stockPriceService.getPrices(ticker, startDate, endDate);
+        List<StockPrice> stockPrices = stockPriceService.getPrices(ticker, startDate, endDate);
         Map<LocalDateTime, Double> result = new HashMap<>();
 
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < period) {
-                result.put(bars.get(i).getDate(), Double.NaN);
+                result.put(stockPrices.get(i).getDate(), Double.NaN);
             } else {
-                result.put(bars.get(i).getDate(), bars.subList(i - period, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble());
+                result.put(stockPrices.get(i).getDate(), stockPrices.subList(i - period, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble());
             }
         }
 
-        assert result.size() == bars.size();
+        assert result.size() == stockPrices.size();
         return result;
     }
 
@@ -117,24 +117,24 @@ public class IndicatorService {
         if (!(params.get(0) > 0)) throw new IllegalArgumentException("Period parameter should be bigger than 0");
         int period = params.get(0).intValue();
 
-        List<Bar> bars = stockPriceService.getPrices(ticker, startDate, endDate);
+        List<StockPrice> stockPrices = stockPriceService.getPrices(ticker, startDate, endDate);
         Map<LocalDateTime, Double> result = new HashMap<>();
 
         double previousEMA = Double.NaN;
         double smoothingConstant = 1 - (2.0 / (period + 1));
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < period) {
-                result.put(bars.get(i).getDate(), Double.NaN);
+                result.put(stockPrices.get(i).getDate(), Double.NaN);
             } else if (i == period) {
-                previousEMA = bars.subList(i - period, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble();
-                result.put(bars.get(i).getDate(), previousEMA);
+                previousEMA = stockPrices.subList(i - period, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble();
+                result.put(stockPrices.get(i).getDate(), previousEMA);
             } else {
-                previousEMA = (smoothingConstant * (bars.get(i).getClose() - previousEMA)) + previousEMA;
-                result.put(bars.get(i).getDate(), previousEMA);
+                previousEMA = (smoothingConstant * (stockPrices.get(i).getClose() - previousEMA)) + previousEMA;
+                result.put(stockPrices.get(i).getDate(), previousEMA);
             }
         }
 
-        assert result.size() == bars.size();
+        assert result.size() == stockPrices.size();
         return result;
     }
 
@@ -146,20 +146,20 @@ public class IndicatorService {
         int shortPeriod = params.get(0).intValue();
         int longPeriod = params.get(1).intValue();
 
-        List<Bar> bars = stockPriceService.getPrices(ticker, startDate, endDate);
+        List<StockPrice> stockPrices = stockPriceService.getPrices(ticker, startDate, endDate);
         Map<LocalDateTime, Double> result = new HashMap<>();
 
         List<Double> shortEMA = new ArrayList<>();
         double previousEMA = Double.NaN;
         double smoothingConstant = 1 - (2.0 / (shortPeriod + 1));
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < shortPeriod) {
                 shortEMA.add(Double.NaN);
             } else if (i == shortPeriod) {
-                previousEMA = bars.subList(i - shortPeriod, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble();
+                previousEMA = stockPrices.subList(i - shortPeriod, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble();
                 shortEMA.add(previousEMA);
             } else {
-                previousEMA = (smoothingConstant * (bars.get(i).getClose() - previousEMA)) + previousEMA;
+                previousEMA = (smoothingConstant * (stockPrices.get(i).getClose() - previousEMA)) + previousEMA;
                 shortEMA.add(previousEMA);
             }
         }
@@ -167,26 +167,26 @@ public class IndicatorService {
         List<Double> longEMA = new ArrayList<>();
         previousEMA = Double.NaN;
         smoothingConstant = 1 - (2.0 / (longPeriod + 1));
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < longPeriod) {
                 longEMA.add(Double.NaN);
             } else if (i == longPeriod) {
-                previousEMA = bars.subList(i - longPeriod, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble();
+                previousEMA = stockPrices.subList(i - longPeriod, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble();
                 longEMA.add(previousEMA);
             } else {
-                previousEMA = (smoothingConstant * (bars.get(i).getClose() - previousEMA)) + previousEMA;
+                previousEMA = (smoothingConstant * (stockPrices.get(i).getClose() - previousEMA)) + previousEMA;
                 longEMA.add(previousEMA);
             }
         }
 
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < longPeriod) {
-                result.put(bars.get(i).getDate(), Double.NaN);
+                result.put(stockPrices.get(i).getDate(), Double.NaN);
             } else {
-                result.put(bars.get(i).getDate(), longEMA.get(i) - shortEMA.get(i));
+                result.put(stockPrices.get(i).getDate(), longEMA.get(i) - shortEMA.get(i));
             }
         }
-        assert result.size() == bars.size();
+        assert result.size() == stockPrices.size();
         return result;
     }
 
@@ -198,20 +198,20 @@ public class IndicatorService {
         int shortPeriod = params.get(0).intValue();
         int longPeriod = params.get(1).intValue();
 
-        List<Bar> bars = stockPriceService.getPrices(ticker, startDate, endDate);
+        List<StockPrice> stockPrices = stockPriceService.getPrices(ticker, startDate, endDate);
         Map<LocalDateTime, Double> result = new HashMap<>();
 
         List<Double> shortEMA = new ArrayList<>();
         double previousEMA = Double.NaN;
         double smoothingConstant = 1 - (2.0 / (shortPeriod + 1));
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < shortPeriod) {
                 shortEMA.add(Double.NaN);
             } else if (i == shortPeriod) {
-                previousEMA = bars.subList(i - shortPeriod, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble();
+                previousEMA = stockPrices.subList(i - shortPeriod, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble();
                 shortEMA.add(previousEMA);
             } else {
-                previousEMA = (smoothingConstant * (bars.get(i).getClose() - previousEMA)) + previousEMA;
+                previousEMA = (smoothingConstant * (stockPrices.get(i).getClose() - previousEMA)) + previousEMA;
                 shortEMA.add(previousEMA);
             }
         }
@@ -219,20 +219,20 @@ public class IndicatorService {
         List<Double> longEMA = new ArrayList<>();
         previousEMA = Double.NaN;
         smoothingConstant = 1 - (2.0 / (longPeriod + 1));
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < longPeriod) {
                 longEMA.add(Double.NaN);
             } else if (i == longPeriod) {
-                previousEMA = bars.subList(i - longPeriod, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble();
+                previousEMA = stockPrices.subList(i - longPeriod, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble();
                 longEMA.add(previousEMA);
             } else {
-                previousEMA = (smoothingConstant * (bars.get(i).getClose() - previousEMA)) + previousEMA;
+                previousEMA = (smoothingConstant * (stockPrices.get(i).getClose() - previousEMA)) + previousEMA;
                 longEMA.add(previousEMA);
             }
         }
 
         List<Double> MACDs = new ArrayList<>();
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < longPeriod) {
                 MACDs.add(Double.NaN);
             } else {
@@ -241,11 +241,11 @@ public class IndicatorService {
         }
 
         double k = 2 / (params.get(2) + 1);
-        for (int i = 1; i < bars.size(); i++) {
-            result.put(bars.get(i).getDate(), ((1 - k) * MACDs.get(i - 1)) + (k * MACDs.get(i)));
+        for (int i = 1; i < stockPrices.size(); i++) {
+            result.put(stockPrices.get(i).getDate(), ((1 - k) * MACDs.get(i - 1)) + (k * MACDs.get(i)));
         }
 
-        assert result.size() == bars.size();
+        assert result.size() == stockPrices.size();
         return result;
     }
 
@@ -254,24 +254,24 @@ public class IndicatorService {
         if (!(params.get(0) > 0)) throw new IllegalArgumentException("Period parameter should be bigger than 0");
         int period = params.get(0).intValue();
 
-        List<Bar> bars = stockPriceService.getPrices(ticker, startDate, endDate);
+        List<StockPrice> stockPrices = stockPriceService.getPrices(ticker, startDate, endDate);
         Map<LocalDateTime, Double> result = new HashMap<>();
 
         List<Integer> diffs = new ArrayList<>();
-        for (int i = 1; i < bars.size(); i++) {
-            diffs.add(bars.get(i).getClose() - bars.get(i - 1).getClose());
+        for (int i = 1; i < stockPrices.size(); i++) {
+            diffs.add(stockPrices.get(i).getClose() - stockPrices.get(i - 1).getClose());
         }
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < period) {
-                result.put(bars.get(i).getDate(), Double.NaN);
+                result.put(stockPrices.get(i).getDate(), Double.NaN);
             } else {
                 double au = diffs.subList(i - period, i).stream().filter(e -> e > 0).mapToInt(Math::abs).average().orElse(0);
                 double ad = diffs.subList(i - period, i).stream().filter(e -> e < 0).mapToInt(Math::abs).average().orElse(100);
-                result.put(bars.get(i).getDate(), (au / (ad + au)) * 100);
+                result.put(stockPrices.get(i).getDate(), (au / (ad + au)) * 100);
             }
         }
 
-        assert result.size() == bars.size();
+        assert result.size() == stockPrices.size();
         return result;
     }
 
@@ -284,30 +284,30 @@ public class IndicatorService {
         int m = params.get(1).intValue();
         assert n > m;
 
-        List<Bar> bars = stockPriceService.getPrices(ticker, startDate, endDate);
+        List<StockPrice> stockPrices = stockPriceService.getPrices(ticker, startDate, endDate);
         Map<LocalDateTime, Double> result = new HashMap<>();
 
 
         List<Double> percentKs = new ArrayList<>();
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < n) {
                 percentKs.add(Double.NaN);
             } else {
-                int highestPrice = bars.subList(i + 1 - n, i + 1).stream().reduce((acc, c) -> acc.getHigh() > c.getHigh() ? acc : c).orElseThrow().getHigh();
-                int lowestPrice = bars.subList(i + 1 - n, i + 1).stream().reduce((acc, c) -> acc.getLow() < c.getLow() ? acc : c).orElseThrow().getLow();
-                double percentK = ((double) (bars.get(i).getClose() - lowestPrice) / (highestPrice - lowestPrice)) * 100;
+                int highestPrice = stockPrices.subList(i + 1 - n, i + 1).stream().reduce((acc, c) -> acc.getHigh() > c.getHigh() ? acc : c).orElseThrow().getHigh();
+                int lowestPrice = stockPrices.subList(i + 1 - n, i + 1).stream().reduce((acc, c) -> acc.getLow() < c.getLow() ? acc : c).orElseThrow().getLow();
+                double percentK = ((double) (stockPrices.get(i).getClose() - lowestPrice) / (highestPrice - lowestPrice)) * 100;
                 percentKs.add(percentK);
             }
         }
 
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < n + m) {
-                result.put(bars.get(i).getDate(), Double.NaN);
+                result.put(stockPrices.get(i).getDate(), Double.NaN);
             } else {
-                result.put(bars.get(i).getDate(), percentKs.subList(i + 1 - m, i + 1).stream().mapToDouble(e -> e).average().orElse(Double.NaN));
+                result.put(stockPrices.get(i).getDate(), percentKs.subList(i + 1 - m, i + 1).stream().mapToDouble(e -> e).average().orElse(Double.NaN));
             }
         }
-        assert bars.size() == result.size();
+        assert stockPrices.size() == result.size();
         return result;
     }
 
@@ -322,22 +322,22 @@ public class IndicatorService {
         assert n > m;
         assert m >= t;
 
-        List<Bar> bars = stockPriceService.getPrices(ticker, startDate, endDate);
+        List<StockPrice> stockPrices = stockPriceService.getPrices(ticker, startDate, endDate);
         Map<LocalDateTime, Double> result = new HashMap<>();
 
         List<Double> percentKs = new ArrayList<>();
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < n) {
                 percentKs.add(Double.NaN);
             } else {
-                int highestPrice = bars.subList(i + 1 - n, i + 1).stream().reduce((acc, c) -> acc.getHigh() > c.getHigh() ? acc : c).orElseThrow().getHigh();
-                int lowestPrice = bars.subList(i + 1 - n, i + 1).stream().reduce((acc, c) -> acc.getLow() < c.getLow() ? acc : c).orElseThrow().getLow();
-                double percentK = ((double) (bars.get(i).getClose() - lowestPrice) / (highestPrice - lowestPrice)) * 100;
+                int highestPrice = stockPrices.subList(i + 1 - n, i + 1).stream().reduce((acc, c) -> acc.getHigh() > c.getHigh() ? acc : c).orElseThrow().getHigh();
+                int lowestPrice = stockPrices.subList(i + 1 - n, i + 1).stream().reduce((acc, c) -> acc.getLow() < c.getLow() ? acc : c).orElseThrow().getLow();
+                double percentK = ((double) (stockPrices.get(i).getClose() - lowestPrice) / (highestPrice - lowestPrice)) * 100;
                 percentKs.add(percentK);
             }
         }
         List<Double> percentDs = new ArrayList<>();
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < n + m) {
                 percentDs.add(Double.NaN);
             } else {
@@ -345,14 +345,14 @@ public class IndicatorService {
             }
         }
 
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < n + m + t) {
-                result.put(bars.get(i).getDate(), Double.NaN);
+                result.put(stockPrices.get(i).getDate(), Double.NaN);
             } else {
-                result.put(bars.get(i).getDate(), percentDs.subList(i + 1 - t, i + 1).stream().mapToDouble(e -> e).average().orElse(Double.NaN));
+                result.put(stockPrices.get(i).getDate(), percentDs.subList(i + 1 - t, i + 1).stream().mapToDouble(e -> e).average().orElse(Double.NaN));
             }
         }
-        assert bars.size() == result.size();
+        assert stockPrices.size() == result.size();
         return result;
     }
 
@@ -364,13 +364,13 @@ public class IndicatorService {
             throw new IllegalArgumentException("Period parameter should be bigger than 0");
         int n = params.get(0).intValue();
 
-        List<Bar> bars = stockPriceService.getPrices(ticker, startDate, endDate);
+        List<StockPrice> stockPrices = stockPriceService.getPrices(ticker, startDate, endDate);
         List<Double> meanPrices = new ArrayList<>();
-        for (int i = 0; i < bars.size(); i++) {
-            meanPrices.add((bars.get(i).getHigh() + bars.get(i).getLow() + bars.get(i).getClose()) / 3.0);
+        for (int i = 0; i < stockPrices.size(); i++) {
+            meanPrices.add((stockPrices.get(i).getHigh() + stockPrices.get(i).getLow() + stockPrices.get(i).getClose()) / 3.0);
         }
         List<Double> meanPricesMovingAverage = new ArrayList<>();
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < n) {
                 meanPricesMovingAverage.add(Double.NaN);
             } else {
@@ -378,7 +378,7 @@ public class IndicatorService {
             }
         }
         List<Double> diffMovingAverage = new ArrayList<>();
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < n) {
                 diffMovingAverage.add(Double.NaN);
             } else {
@@ -390,14 +390,14 @@ public class IndicatorService {
             }
         }
         Map<LocalDateTime, Double> result = new HashMap<>();
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < n) {
-                result.put(bars.get(i).getDate(), Double.NaN);
+                result.put(stockPrices.get(i).getDate(), Double.NaN);
             } else {
-                result.put(bars.get(i).getDate(), (meanPrices.get(i) - meanPricesMovingAverage.get(i)) / (abs(diffMovingAverage.get(i)) * 0.015));
+                result.put(stockPrices.get(i).getDate(), (meanPrices.get(i) - meanPricesMovingAverage.get(i)) / (abs(diffMovingAverage.get(i)) * 0.015));
             }
         }
-        assert result.size() == bars.size();
+        assert result.size() == stockPrices.size();
         return result;
     }
 
@@ -408,28 +408,28 @@ public class IndicatorService {
         int period = params.get(0).intValue();
         int exp = params.get(1).intValue();
 
-        List<Bar> bars = stockPriceService.getPrices(ticker, startDate, endDate);
+        List<StockPrice> stockPrices = stockPriceService.getPrices(ticker, startDate, endDate);
         Map<LocalDateTime, Double> result = new HashMap<>();
 
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < period) {
-                result.put(bars.get(i).getDate(), Double.NaN);
+                result.put(stockPrices.get(i).getDate(), Double.NaN);
             } else {
-                double avg = bars.subList(i + 1 - period, i + 1)
+                double avg = stockPrices.subList(i + 1 - period, i + 1)
                         .stream()
-                        .mapToInt(Bar::getClose)
+                        .mapToInt(StockPrice::getClose)
                         .average()
                         .orElseThrow();
-                double squareSum = bars.subList(i + 1 - period, i + 1)
+                double squareSum = stockPrices.subList(i + 1 - period, i + 1)
                         .stream()
                         .mapToDouble(b -> Math.pow(Math.abs(b.getClose() - avg), 2))
                         .sum();
                 double std = Math.sqrt(squareSum / (period - 1));
-                result.put(bars.get(i).getDate(), avg - (std * exp));
+                result.put(stockPrices.get(i).getDate(), avg - (std * exp));
             }
         }
 
-        assert result.size() == bars.size();
+        assert result.size() == stockPrices.size();
         return result;
     }
 
@@ -440,28 +440,28 @@ public class IndicatorService {
         int period = params.get(0).intValue();
         int exp = params.get(1).intValue();
 
-        List<Bar> bars = stockPriceService.getPrices(ticker, startDate, endDate);
+        List<StockPrice> stockPrices = stockPriceService.getPrices(ticker, startDate, endDate);
         Map<LocalDateTime, Double> result = new HashMap<>();
 
-        for (int i = 0; i < bars.size(); i++) {
+        for (int i = 0; i < stockPrices.size(); i++) {
             if (i < period) {
-                result.put(bars.get(i).getDate(), Double.NaN);
+                result.put(stockPrices.get(i).getDate(), Double.NaN);
             } else {
-                double avg = bars.subList(i + 1 - period, i + 1)
+                double avg = stockPrices.subList(i + 1 - period, i + 1)
                         .stream()
-                        .mapToInt(Bar::getClose)
+                        .mapToInt(StockPrice::getClose)
                         .average()
                         .orElseThrow();
-                double squareSum = bars.subList(i + 1 - period, i + 1)
+                double squareSum = stockPrices.subList(i + 1 - period, i + 1)
                         .stream()
                         .mapToDouble(b -> Math.pow(Math.abs(b.getClose() - avg), 2))
                         .sum();
                 double std = Math.sqrt(squareSum / (period - 1));
-                result.put(bars.get(i).getDate(), avg + (std * exp));
+                result.put(stockPrices.get(i).getDate(), avg + (std * exp));
             }
         }
 
-        assert result.size() == bars.size();
+        assert result.size() == stockPrices.size();
         return result;
     }
 }

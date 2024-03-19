@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,4 +53,4 @@ public class UserRepositoryImpl {
                         )
         );
     }
-}
+}*/

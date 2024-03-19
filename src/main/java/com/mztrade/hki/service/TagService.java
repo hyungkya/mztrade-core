@@ -1,9 +1,9 @@
 package com.mztrade.hki.service;
 
-import com.mztrade.hki.entity.StockInfo;
-import com.mztrade.hki.entity.Tag;
-import com.mztrade.hki.entity.TagCategory;
-import com.mztrade.hki.repository.TagRepository;
+import com.mztrade.hki.dto.StockInfoResponse;
+import com.mztrade.hki.dto.TagResponse;
+import com.mztrade.hki.entity.*;
+import com.mztrade.hki.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,92 +14,145 @@ import java.util.List;
 @Slf4j
 public class TagService {
     @Autowired
+    private TagRepositoryImpl tagRepositoryImpl;
+    @Autowired
     private TagRepository tagRepository;
+    @Autowired
+    private StockInfoTagRepository stockInfoTagRepository;
+    @Autowired
+    private BacktestHistoryTagRepository backtestHistoryTagRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private StockInfoRepository stockInfoRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
-    public TagService(TagRepository tagRepository) {
-        this.tagRepository = tagRepository;
+    public TagService(TagRepositoryImpl tagRepositoryImpl) {
+        this.tagRepositoryImpl = tagRepositoryImpl;
     }
 
-    public List<Tag> getStockInfoTag(int uid) {
-        List<Tag> tags = tagRepository.findByCategory(uid, TagCategory.STOCK_INFO);
+    public List<TagResponse> getStockInfoTag(int uid) {
+        List<TagResponse> tagResponses = tagRepository.findByUserUidAndCategory(uid, TagCategory.STOCK_INFO.id())
+                .stream()
+                .map((t) -> TagResponse.from(t))
+                .toList();
 
-        log.debug(String.format("getStockInfoTag(uid: %s) -> %s",uid, tags));
-        return tags;
+        log.debug(String.format("getStockInfoTag(uid: %s) -> %s",uid, tagResponses));
+        return tagResponses;
     }
 
-    public List<Tag> getBacktestHistoryTag(int uid) {
-        List<Tag> tags = tagRepository.findByCategory(uid, TagCategory.BACKTEST_HISTORY);
+    public List<TagResponse> getBacktestHistoryTag(int uid) {
+        List<TagResponse> tagResponses = tagRepository.findByUserUidAndCategory(uid, TagCategory.BACKTEST_HISTORY.id())
+                .stream()
+                .map((t) -> TagResponse.from(t))
+                .toList();
 
-        log.debug(String.format("getBacktestHistoryTag(uid: %s) -> %s",uid, tags));
-        return tags;
+        log.debug(String.format("getBacktestHistoryTag(uid: %s) -> %s",uid, tagResponses));
+        return tagResponses;
     }
 
-    public List<Tag> getBacktestHistoryTagByAid(int uid, int aid) {
-        List<Tag> tags = tagRepository.findByAid(uid, aid);
+    public List<TagResponse> getBacktestHistoryTagByAid(int uid, int aid) {
+        List<TagResponse> tagResponses = backtestHistoryTagRepository.findByTagUserUidAndAccountAid(uid, aid)
+                .stream()
+                .map((t) -> TagResponse.from(t.getTag()))
+                .toList();
 
-        log.debug(String.format("getBacktestHistoryTagByAid(uid: %s,aid: %s) -> %s",uid, aid, tags));
-        return tags;
+        log.debug(String.format("getBacktestHistoryTagByAid(uid: %s,aid: %s) -> %s",uid, aid, tagResponses));
+        return tagResponses;
     }
 
-    public List<Tag> getStockInfoTagByTicker(Integer uid, String ticker) {
-        List<Tag> tags = tagRepository.findByTicker(uid, ticker);
+    public List<TagResponse> getStockInfoTagByTicker(Integer uid, String ticker) {
+        List<TagResponse> tagResponses = stockInfoTagRepository.findByTagUserUidAndStockInfoTicker(uid, ticker)
+                .stream()
+                .map((t) -> TagResponse.from(t.getTag()))
+                .toList();;
 
-        log.debug(String.format("getStockInfoTagByTicker(uid: %s,ticker: %s) -> %s",uid, ticker, tags));
-        return tags;
+        log.debug(String.format("getStockInfoTagByTicker(uid: %s,ticker: %s) -> %s",uid, ticker, tagResponses));
+        return tagResponses;
     }
 
     public int createTag(int uid,String name, String color, String category) {
-        int tid = tagRepository.createTag(uid,name,color, TagCategory.valueOf(category));
+        Tag tag = tagRepository.save(
+                Tag.builder()
+                        .user(userRepository.getReferenceById(uid))
+                        .tname(name)
+                        .tcolor(color)
+                        .category(TagCategory.valueOf(category).id())
+                        .build());
 
-        log.debug(String.format("createTag(uid: %s, color: %s, category: %s) -> tid:%s",uid,color,category,tid));
-        return tid;
+        log.debug(String.format("createTag(uid: %s, color: %s, category: %s) -> tid:%s",uid,color,category,tag.getTid()));
+        return tag.getTid();
     }
 
-    public boolean deleteTag(int tid) {
-        boolean delete = tagRepository.deleteById(tid);
-        log.debug(String.format("deleteTag(tid: %s) -> delete:%s",tid,delete));
-        return delete;
+    public void deleteTag(int tid) {
+        tagRepository.deleteById(tid);
+        log.debug(String.format("deleteTag(tid: %s)",tid));
     }
 
     public boolean updateTag(int tid,String name, String color) {
-        boolean update = tagRepository.updateTag(tid,name,color);
-        log.debug(String.format("updateTag(tid: %s, name: %s, color: %s) -> update:%s",tid,name,color,update));
-        return update;
+        Tag tag = tagRepository.getReferenceById(tid);
+        tag.setTname(name);
+        tag.setTcolor(color);
+        tagRepository.save(tag);
+        log.debug(String.format("updateTag(tid: %s, name: %s, color: %s) -> update:%s",tid,name,color, true));
+        return true;
     }
 
     public boolean createBacktestHistoryTagLink(int tid, int aid) {
-        boolean isProcessed = tagRepository.createBacktestHistoryTagLink(tid, aid);
+        backtestHistoryTagRepository.save(
+                BacktestHistoryTag.builder()
+                        .tag(tagRepository.getReferenceById(tid))
+                        .account(accountRepository.getReferenceById(aid))
+                        .build()
+        );
 
-        log.debug(String.format("createBacktestHistoryTagLink(tid: %d, aid: %d) -> isProcessed: %b", tid, aid, isProcessed));
-        return isProcessed;
+        log.debug(String.format("createBacktestHistoryTagLink(tid: %d, aid: %d) -> isProcessed: %b", tid, aid, true));
+        return true;
     }
 
-    public boolean deleteBacktestHistoryTagLink(int tid, int aid) {
-        boolean isProcessed = tagRepository.deleteBacktestHistoryTagLink(tid, aid);
+    public void deleteBacktestHistoryTagLink(int tid, int aid) {
+        backtestHistoryTagRepository.delete(
+                BacktestHistoryTag.builder()
+                        .tag(tagRepository.getReferenceById(tid))
+                        .account(accountRepository.getReferenceById(aid))
+                        .build()
+        );
 
-        log.debug(String.format("deleteBacktestHistoryTagLink(tid: %d, aid: %d) -> isProcessed: %b", tid, aid, isProcessed));
-        return isProcessed;
+        log.debug(String.format("deleteBacktestHistoryTagLink(tid: %d, aid: %d)", tid, aid));
     }
 
     public boolean createStockInfoTagLink(int tid, String ticker) {
-        boolean isProcessed = tagRepository.createStockInfoTagLink(tid, ticker);
+        stockInfoTagRepository.save(
+                StockInfoTag.builder()
+                .tag(tagRepository.getReferenceById(tid))
+                .stockInfo(stockInfoRepository.getByTicker(ticker))
+                .build()
+        );
 
-        log.debug(String.format("createStockInfoTagLink(tid: %d, ticker: %s) -> isProcessed: %b", tid, ticker, isProcessed));
-        return isProcessed;
+        log.debug(String.format("createStockInfoTagLink(tid: %d, ticker: %s) -> isProcessed: %b", tid, ticker, true));
+        return true;
     }
 
-    public boolean deleteStockInfoTagLink(int tid, String ticker) {
-        boolean isProcessed = tagRepository.deleteStockInfoTagLink(tid, ticker);
+    public void deleteStockInfoTagLink(int tid, String ticker) {
+        stockInfoTagRepository.delete(
+                StockInfoTag.builder()
+                        .tag(tagRepository.getReferenceById(tid))
+                        .stockInfo(stockInfoRepository.getByTicker(ticker))
+                        .build()
+        );
 
-        log.debug(String.format("deleteStockInfoTagLink(tid: %d, ticker: %s) -> isProcessed: %b", tid, ticker, isProcessed));
-        return isProcessed;
+        log.debug(String.format("deleteStockInfoTagLink(tid: %d, ticker: %s)", tid, ticker));
     }
 
-    public List<StockInfo> findStockInfoByNameAndTags(int uid, String name, List<Integer> tids) {
-        List<StockInfo> stockInfos = tagRepository.findStockInfoByNameAndTags(uid, name, tids);
+    public List<StockInfoResponse> findStockInfoByNameAndTags(int uid, String name, List<Integer> tids) {
+        List<StockInfoResponse> stockInfoResponses = tagRepositoryImpl.findStockInfoByNameAndTags(uid, name, tids)
+                .stream()
+                .map((s) -> StockInfoResponse.from(s))
+                .toList();
 
-        log.debug(String.format("findStockInfoByNameAndTags(uid: %d, name: %s, tids: %s) -> stockInfos: %b", uid, name, tids, stockInfos));
-        return stockInfos;
+        log.debug(String.format("findStockInfoByNameAndTags(uid: %d, name: %s, tids: %s) -> stockInfos: %b", uid, name, tids, stockInfoResponses));
+        return stockInfoResponses;
     }
 
 

@@ -1,7 +1,7 @@
 package com.mztrade.hki.outdated;
 
 import com.mztrade.hki.Util;
-import com.mztrade.hki.entity.Bar;
+import com.mztrade.hki.entity.StockPrice;
 import com.mztrade.hki.entity.backtest.Condition;
 import com.mztrade.hki.entity.backtest.Indicator;
 import com.mztrade.hki.service.StockPriceService;
@@ -32,13 +32,13 @@ public class ConditionTests {
                 .setBaseIndicator(new Indicator("RSI", List.of(10f)))
                 .setConstantBound(75f)
                 .setCompareType(">");
-        List<Bar> bars = stockPriceService.getPrices("000270",
+        List<StockPrice> stockPrices = stockPriceService.getPrices("000270",
                 LocalDateTime.parse(Util.formatDate("20220101")),
                 LocalDateTime.parse(Util.formatDate("20221231")));
 
         int mCount = 0;
         for (int i = 0; i < 200; i++) {
-            if (c.check(bars.subList(i, i+30))) mCount++;
+            if (c.check(stockPrices.subList(i, i+30))) mCount++;
         }
         Assertions.assertThat(mCount).isEqualTo(10);
     }
@@ -51,13 +51,13 @@ public class ConditionTests {
                 .setConstantBound(70f)
                 .setCompareType(">")
                 .setFrequency(List.of(10, 5));
-        List<Bar> bars = stockPriceService.getPrices("000270",
+        List<StockPrice> stockPrices = stockPriceService.getPrices("000270",
                 LocalDateTime.parse(Util.formatDate("20220101")),
                 LocalDateTime.parse(Util.formatDate("20221231")));
 
         int mCount = 0;
         for (int i = 0; i < 200; i++) {
-            if (c.check(bars.subList(i, i+30))) mCount++;}
+            if (c.check(stockPrices.subList(i, i+30))) mCount++;}
         Assertions.assertThat(mCount).isEqualTo(15);
     }
 
@@ -70,7 +70,7 @@ public class ConditionTests {
                 .setConstantBound(0f)
                 .setCompareType(">")
                 .setFrequency(List.of(7, 2));
-        List<Bar> bars = stockPriceService.getPrices("000270",
+        List<StockPrice> stockPrices = stockPriceService.getPrices("000270",
                 LocalDateTime.parse(Util.formatDate("20200101")),
                 LocalDateTime.parse(Util.formatDate("20221231")));
     }

@@ -2,14 +2,16 @@ package com.mztrade.hki.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
-@Getter
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder(toBuilder = true)
-@Entity
-@NoArgsConstructor
+@ToString @EqualsAndHashCode
+
 @Table(name = "tag")
-@ToString
-@AllArgsConstructor
+@Entity
 public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +26,7 @@ public class Tag {
     @Column(name = "category", nullable = false)
     private int category;
 
-    @JoinColumn(name="uid", referencedColumnName = "customers")
-    private int uid;
+    @ManyToOne
+    @JoinColumn(name = "uid")
+    private User user;
 }
