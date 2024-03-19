@@ -1,13 +1,9 @@
 package com.mztrade.hki.service;
 
-import com.mztrade.hki.entity.Bar;
-import com.mztrade.hki.entity.Order;
-import com.mztrade.hki.entity.OrderType;
-import com.mztrade.hki.entity.Position;
-import com.mztrade.hki.repository.OrderHistoryRepository;
-import com.mztrade.hki.repository.OrderHistoryRepositoryImpl;
-import com.mztrade.hki.repository.PositionRepository;
-import com.mztrade.hki.repository.PositionRepositoryImpl;
+import com.mztrade.hki.dto.OrderResponse;
+import com.mztrade.hki.dto.PositionResponse;
+import com.mztrade.hki.entity.*;
+import com.mztrade.hki.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,26 +24,31 @@ public class OrderService {
     private final StockPriceService stockPriceService;
     private final PositionRepository positionRepository;
     private final OrderHistoryRepository orderHistoryRepository;
+    private final AccountRepository accountRepository;
+    private final StockInfoRepository stockInfoRepository;
 
     @Autowired
     public OrderService(OrderHistoryRepositoryImpl orderHistoryRepositoryImpl,
                         PositionRepositoryImpl positionRepositoryImpl, AccountService accountService,
-                        StockPriceService stockPriceService, PositionRepository positionRepository, OrderHistoryRepository orderHistoryRepository) {
+                        StockPriceService stockPriceService, PositionRepository positionRepository, OrderHistoryRepository orderHistoryRepository, AccountRepository accountRepository, StockInfoRepository stockInfoRepository) {
         this.orderHistoryRepositoryImpl = orderHistoryRepositoryImpl;
         this.positionRepositoryImpl = positionRepositoryImpl;
         this.accountService = accountService;
         this.stockPriceService = stockPriceService;
         this.positionRepository = positionRepository;
         this.orderHistoryRepository = orderHistoryRepository;
+        this.accountRepository = accountRepository;
+        this.stockInfoRepository = stockInfoRepository;
     }
 
     public Integer buy(Integer aid, String ticker, Integer qty) {
         Integer oid = null;
-        Bar currentPrice = stockPriceService.getCurrentPrice(ticker);
-
+        StockPrice currentPrice = stockPriceService.getCurrentPrice(ticker);
+        StockInfo stockInfo = stockInfoRepository.getByTicker(ticker);
+        Account account = accountRepository.getReferenceById(aid);
         Order order = Order.builder()
-                .ticker(ticker)
-                .aid(aid)
+                .stockInfo(stockInfo)
+                .account(account)
                 .price(currentPrice.getClose())
                 .filledTime(currentPrice.getDate())
                 .qty(qty)
@@ -55,7 +56,7 @@ public class OrderService {
                 .build();
 
         if (accountService.withdraw(aid, (long) order.getQty() * order.getPrice())) {
-            Optional<Position> position = positionRepository.findByAidAndTicker(aid, ticker);
+            Optional<Position> position = positionRepository.findByAccountAidAndStockInfoTicker(aid, ticker);
             if (position.isPresent()) {
                 Position p = position.get();
                 BigDecimal newAvgEntryPrice = p.getAvgEntryPrice().multiply(BigDecimal.valueOf(p.getQty()))
@@ -66,9 +67,9 @@ public class OrderService {
                 positionRepository.save(p);
             } else {
                 Position p = new Position().toBuilder()
-                        .aid(aid)
+                        .account(accountRepository.getById(aid))
                         .qty(order.getQty())
-                        .ticker(order.getTicker())
+                        .stockInfo(order.getStockInfo())
                         .avgEntryPrice(BigDecimal.valueOf(order.getPrice())).build();
                 positionRepository.save(p);
             }
@@ -87,17 +88,19 @@ public class OrderService {
             throw new IllegalArgumentException("Buying quantity should be greater than 0.");
         }
         //TODO:: qty 가 0과 같거나 작을 때 에러 쓰로잉 필요
+        StockInfo stockInfo = stockInfoRepository.getByTicker(ticker);
+        Account account = accountRepository.getReferenceById(aid);
         Order order = Order.builder()
-                .ticker(ticker)
+                .stockInfo(stockInfo)
                 .filledTime(date)
-                .aid(aid)
+                .account(account)
                 .price(stockPriceService.getPrice(ticker, date).getClose())
                 .qty(qty)
                 .otid(OrderType.BUY.id())
                 .build();
 
         if (accountService.withdraw(aid, (long) order.getQty() * order.getPrice())) {
-            Optional<Position> position = positionRepository.findByAidAndTicker(aid, ticker);
+            Optional<Position> position = positionRepository.findByAccountAidAndStockInfoTicker(aid, ticker);
             if (position.isPresent()) {
                 Position p = position.get();
                 BigDecimal newAvgEntryPrice = p.getAvgEntryPrice().multiply(BigDecimal.valueOf(p.getQty()))
@@ -108,9 +111,9 @@ public class OrderService {
                 positionRepository.save(p);
             } else {
                 Position p = new Position().toBuilder()
-                        .aid(aid)
+                        .account(accountRepository.getById(aid))
                         .qty(order.getQty())
-                        .ticker(order.getTicker())
+                        .stockInfo(order.getStockInfo())
                         .avgEntryPrice(BigDecimal.valueOf(order.getPrice())).build();
                 positionRepository.save(p);
             }
@@ -125,15 +128,17 @@ public class OrderService {
         Integer oid = null;
 
         //check if position quantity is enough to sell
-        Bar currentPrice = stockPriceService.getCurrentPrice(ticker);
-        Optional<Position> optionalPosition = positionRepository.findByAidAndTicker(aid, ticker);
+        StockPrice currentPrice = stockPriceService.getCurrentPrice(ticker);
+        StockInfo stockInfo = stockInfoRepository.getByTicker(ticker);
+        Account account = accountRepository.getReferenceById(aid);
+        Optional<Position> optionalPosition = positionRepository.findByAccountAidAndStockInfoTicker(aid, ticker);
         if (optionalPosition.isPresent()) {
             Position position = optionalPosition.get();
             if (position.getQty() >= qty) {
                 Order order = Order.builder()
-                        .ticker(ticker)
+                        .stockInfo(stockInfo)
                         .filledTime(currentPrice.getDate())
-                        .aid(aid)
+                        .account(account)
                         .price(currentPrice.getClose())
                         .qty(qty)
                         .avgEntryPrice(position.getAvgEntryPrice())
@@ -141,7 +146,7 @@ public class OrderService {
                         .build();
                 int remainingQty = position.getQty() - qty;
                 if (remainingQty == 0) {
-                    positionRepository.deleteByAidAndTicker(aid, ticker);
+                    positionRepository.deleteByAccountAidAndStockInfoTicker(aid, ticker);
                 } else {
                     position.setQty(remainingQty);
                     positionRepository.save(position);
@@ -161,14 +166,16 @@ public class OrderService {
         Integer oid = null;
 
         //check if position quantity is enough to sell
-        Optional<Position> optionalPosition = positionRepository.findByAidAndTicker(aid, ticker);
+        Optional<Position> optionalPosition = positionRepository.findByAccountAidAndStockInfoTicker(aid, ticker);
+        StockInfo stockInfo = stockInfoRepository.getByTicker(ticker);
+        Account account = accountRepository.getReferenceById(aid);
         if (optionalPosition.isPresent()) {
             Position position = optionalPosition.get();
             if (position.getQty() >= qty) {
                 Order order = Order.builder()
-                        .ticker(ticker)
+                        .stockInfo(stockInfo)
                         .filledTime(date)
-                        .aid(aid)
+                        .account(account)
                         .price(stockPriceService.getPrice(ticker, date).getClose())
                         .qty(qty)
                         .avgEntryPrice(position.getAvgEntryPrice())
@@ -176,7 +183,7 @@ public class OrderService {
                         .build();
                 int remainingQty = position.getQty() - qty;
                 if (remainingQty == 0) {
-                    positionRepository.deleteByAidAndTicker(aid, ticker);
+                    positionRepository.deleteByAccountAidAndStockInfoTicker(aid, ticker);
                 } else {
                     position.setQty(remainingQty);
                     positionRepository.save(position);
@@ -192,47 +199,53 @@ public class OrderService {
         return oid;
     }
 
-    public List<Order> getOrderHistory(Integer aid) {
-        List<Order> orders = orderHistoryRepository.findByAid(aid);
-        log.debug(String.format("[OrderService] getOrderHistory(aid: %d) -> orders: %s", aid, orders));
-        return orders;
+    public List<OrderResponse> getOrderHistory(Integer aid) {
+        List<OrderResponse> orderResponses = orderHistoryRepository.findByAccountAid(aid)
+                .stream()
+                .map((o) -> OrderResponse.from(o))
+                .toList();
+        log.debug(String.format("[OrderService] getOrderHistory(aid: %d) -> orders: %s", aid, orderResponses));
+        return orderResponses;
     }
 
     public List<Order> getOrderHistory(Integer aid, String ticker) {
-        List<Order> orders = orderHistoryRepository.findByAidAndTicker(aid, ticker);
+        List<Order> orders = orderHistoryRepository.findByAccountAidAndStockInfoTicker(aid, ticker);
         log.debug(String.format("[OrderService] getOrderHistory(aid: %d, ticker: %s) -> orders: %s", aid, ticker, orders));
         return orders;
     }
     public List<Order> getBuyOrderHistory(Integer aid) {
-        List<Order> orders = orderHistoryRepository.findByAidAndOtid(aid, OrderType.BUY.id());
+        List<Order> orders = orderHistoryRepository.findByAccountAidAndOtid(aid, OrderType.BUY.id());
         log.debug(String.format("[OrderService] getBuyOrderHistory(aid: %d) -> orders: %s", aid, orders));
         return orders;
     }
 
     public List<Order> getBuyOrderHistory(Integer aid, String ticker) {
-        List<Order> orders = orderHistoryRepository.findByAidAndTickerAndOtid(aid, ticker, OrderType.BUY.id());
+        List<Order> orders = orderHistoryRepository.findByAccountAidAndStockInfoTickerAndOtid(aid, ticker, OrderType.BUY.id());
         log.debug(String.format("[OrderService] getBuyOrderHistory(aid: %d, ticker: %s) -> orders: %s", aid, ticker, orders));
         return orders;
     }
     public List<Order> getSellOrderHistory(Integer aid) {
-        List<Order> orders = orderHistoryRepository.findByAidAndOtid(aid, OrderType.SELL.id());
+        List<Order> orders = orderHistoryRepository.findByAccountAidAndOtid(aid, OrderType.SELL.id());
         log.debug(String.format("[OrderService] getSellOrderHistory(aid: %d) -> orders: %s", aid, orders));
         return orders;
     }
 
     public List<Order> getSellOrderHistory(Integer aid, String ticker) {
-        List<Order> orders = orderHistoryRepository.findByAidAndTickerAndOtid(aid, ticker, OrderType.SELL.id());
+        List<Order> orders = orderHistoryRepository.findByAccountAidAndStockInfoTickerAndOtid(aid, ticker, OrderType.SELL.id());
         log.debug(String.format("[OrderService] getSellOrderHistory(aid: %d, ticker: %s) -> orders: %s", aid, ticker, orders));
         return orders;
     }
-    public List<Position> getPositions(Integer aid) {
-        List<Position> positions = positionRepository.findByAid(aid);
-        log.debug(String.format("[OrderService] getPositions(aid: %d) -> positions: %s", aid, positions));
-        return positions;
+    public List<PositionResponse> getPositions(Integer aid) {
+        List<PositionResponse> positionResponses = positionRepository.findByAccountAid(aid)
+                .stream()
+                .map((p) -> PositionResponse.from(p))
+                .toList();
+        log.debug(String.format("[OrderService] getPositions(aid: %d) -> positions: %s", aid, positionResponses));
+        return positionResponses;
     }
 
     public Optional<Position> getPosition(Integer aid, String ticker) {
-        Optional<Position> position = positionRepository.findByAidAndTicker(aid, ticker);
+        Optional<Position> position = positionRepository.findByAccountAidAndStockInfoTicker(aid, ticker);
         log.debug(String.format("[OrderService] getPosition(aid: %d, ticker: %s) -> positions: %s", aid, ticker, position));
         return position;
     }

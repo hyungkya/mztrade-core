@@ -1,15 +1,13 @@
 package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mztrade.hki.entity.Bar;
+import com.mztrade.hki.entity.StockPrice;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.Types;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Component
 public class StockPriceRepositoryImpl {
@@ -22,15 +20,15 @@ public class StockPriceRepositoryImpl {
         this.objectMapper = objectMapper;
     }
 
-    public void add(Bar bar) {
+    public void add(StockPrice stockPrice) {
         MapSqlParameterSource src = new MapSqlParameterSource()
-                .addValue("ticker", bar.getTicker(), Types.VARCHAR)
-                .addValue("date", bar.getDate(), Types.TIMESTAMP)
-                .addValue("open", bar.getOpen(), Types.INTEGER)
-                .addValue("high", bar.getHigh(), Types.INTEGER)
-                .addValue("low", bar.getLow(), Types.INTEGER)
-                .addValue("close", bar.getClose(), Types.INTEGER)
-                .addValue("volume", bar.getVolume(), Types.BIGINT);
+                .addValue("ticker", stockPrice.getStockInfo().getTicker(), Types.VARCHAR)
+                .addValue("date", stockPrice.getDate(), Types.TIMESTAMP)
+                .addValue("open", stockPrice.getOpen(), Types.INTEGER)
+                .addValue("high", stockPrice.getHigh(), Types.INTEGER)
+                .addValue("low", stockPrice.getLow(), Types.INTEGER)
+                .addValue("close", stockPrice.getClose(), Types.INTEGER)
+                .addValue("volume", stockPrice.getVolume(), Types.BIGINT);
 
         this.template.update(
                 "INSERT INTO hkidb.stock_price (ticker, date, open, high, low, close, volume) "
@@ -38,7 +36,7 @@ public class StockPriceRepositoryImpl {
                         + "ON DUPLICATE KEY UPDATE open = :open, high = :high, low = :low, close = :close, volume = :volume",
                 src);
     }
-
+/*
     public Bar findByDate(String ticker, LocalDateTime date) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("ticker", ticker, Types.VARCHAR)
@@ -94,5 +92,5 @@ public class StockPriceRepositoryImpl {
                         .low(rs.getInt("low"))
                         .close(rs.getInt("close"))
                         .volume(rs.getLong("volume")).build());
-    }
+    }*/
 }

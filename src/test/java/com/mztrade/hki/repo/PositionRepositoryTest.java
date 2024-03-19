@@ -1,13 +1,7 @@
 package com.mztrade.hki.repo;
 
-import com.mztrade.hki.Util;
-import com.mztrade.hki.entity.Account;
-import com.mztrade.hki.entity.AccountHistory;
 import com.mztrade.hki.entity.Position;
-import com.mztrade.hki.repository.AccountHistoryRepository;
-import com.mztrade.hki.repository.AccountRepository;
 import com.mztrade.hki.repository.PositionRepository;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,13 +17,13 @@ public class PositionRepositoryTest {
 
     @Test
     void findByAidAndTicker() {
-        Optional<Position> position = positionRepository.findByAidAndTicker(6, "000660");
+        Optional<Position> position = positionRepository.findByAccountAidAndStockInfoTicker(6, "000660");
         System.out.println(position.get());
     }
 
     @Test
     void findByAid() {
-        List<Position> positions = positionRepository.findByAid(9);
+        List<Position> positions = positionRepository.findByAccountAid(9);
         System.out.println(positions);
     }
 
@@ -43,8 +37,8 @@ public class PositionRepositoryTest {
                 .ticker("005930")
                 .build()
         );
-        System.out.println(positionRepository.findByAid(6));
-        positionRepository.deleteByAidAndTicker(6, "005930");
-        System.out.println(positionRepository.findByAid(6));
+        System.out.println(positionRepository.findByAccountAid(6));
+        positionRepository.deleteByAccountAidAndStockInfoTicker(6, "005930");
+        System.out.println(positionRepository.findByAccountAid(6));
     }
 }

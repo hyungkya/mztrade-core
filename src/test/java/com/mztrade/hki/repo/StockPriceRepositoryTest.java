@@ -1,7 +1,7 @@
 package com.mztrade.hki.repo;
 
 import com.mztrade.hki.Util;
-import com.mztrade.hki.entity.Bar;
+import com.mztrade.hki.entity.StockPrice;
 import com.mztrade.hki.repository.StockPriceRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,16 +18,16 @@ public class StockPriceRepositoryTest {
     StockPriceRepository stockPriceRepository;
     @Test
     void findByTicker() {
-        List<Bar> bars = stockPriceRepository.findByTicker("000270");
-        System.out.println(bars.size());
-        bars.stream().forEach((e) -> System.out.println(e));
+        List<StockPrice> stockPrices = stockPriceRepository.findByStockInfoTicker("000270");
+        System.out.println(stockPrices.size());
+        stockPrices.stream().forEach((e) -> System.out.println(e));
     }
 
     @Test
     void findByTickerAndDateBetween() {
-        List<Bar> bars = stockPriceRepository.findByTickerAndDateBetween("000270", Util.stringToLocalDateTime("20220101"), Util.stringToLocalDateTime("20221231"));
-        System.out.println(bars.size());
-        bars.stream().forEach((e) -> System.out.println(e));
+        List<StockPrice> stockPrices = stockPriceRepository.findByStockInfoTickerAndDateBetween("000270", Util.stringToLocalDateTime("20220101"), Util.stringToLocalDateTime("20221231"));
+        System.out.println(stockPrices.size());
+        stockPrices.stream().forEach((e) -> System.out.println(e));
     }
 
     @Test
@@ -35,7 +35,7 @@ public class StockPriceRepositoryTest {
         for(LocalDateTime start = Util.stringToLocalDateTime("20220101");
             start.isBefore(Util.stringToLocalDateTime("20221231"));
             start = start.plus( 1, ChronoUnit.DAYS)) {
-            Optional<Bar> bar = stockPriceRepository.findByTickerAndDate("000270", start);
+            Optional<StockPrice> bar = stockPriceRepository.findByStockInfoTickerAndDate("000270", start);
             if (bar.isPresent()) {
                 System.out.println(bar.get());
             }

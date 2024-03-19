@@ -28,7 +28,7 @@ public class AccountRepositoryImpl {
         this.objectMapper = objectMapper;
     }
 
-    public Integer createBacktestAccount(Integer uid) {
+    /*public Integer createBacktestAccount(Integer uid) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("uid", uid, Types.INTEGER);
@@ -143,6 +143,6 @@ public class AccountRepositoryImpl {
                         .type(rs.getString("type"))
                         .build()
         );
-    }
+    }*/
 
 }

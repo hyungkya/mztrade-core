@@ -1,9 +1,9 @@
 package com.mztrade.hki.service;
 
+import com.mztrade.hki.dto.AccountResponse;
+import com.mztrade.hki.dto.OrderResponse;
 import com.mztrade.hki.entity.*;
-import com.mztrade.hki.repository.GameOrderRepository;
-import com.mztrade.hki.repository.GameRepository;
-import com.mztrade.hki.repository.GameRepositoryImpl;
+import com.mztrade.hki.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +21,8 @@ public class GameService {
     private final AccountService accountService;
     private final StockPriceService stockPriceService;
     private final OrderService orderService;
+    private final StockPriceRepository stockPriceRepository;
+    private final StockInfoRepository stockInfoRepository;
 
     @Autowired
     public GameService(
@@ -29,27 +31,29 @@ public class GameService {
             GameRepositoryImpl gameRepositoryImpl,
             AccountService accountService,
             OrderService orderService,
-            StockPriceService stockPriceService
-    ) {
+            StockPriceService stockPriceService,
+            StockPriceRepository stockPriceRepository, StockInfoRepository stockInfoRepository) {
         this.gameRepository = gameRepository;
         this.gameOrderRepository = gameOrderRepository;
         this.gameRepositoryImpl = gameRepositoryImpl;
         this.accountService = accountService;
         this.orderService = orderService;
         this.stockPriceService = stockPriceService;
+        this.stockPriceRepository = stockPriceRepository;
+        this.stockInfoRepository = stockInfoRepository;
     }
 
     public int createGame(int aid) {
-        List<StockInfo> stockInfoList = stockPriceService.getAllStockInfo();
+        List<StockInfo> stockInfoList = stockInfoRepository.getAll();
 
         Random random = new Random();
 
         String ticker = stockInfoList.get(random.nextInt(stockInfoList.size())).getTicker();
 
-        List<Bar> bars = stockPriceService.getPrices(ticker);
-        bars = bars.stream().skip(200).limit(bars.size() - 400).toList();
+        List<StockPrice> stockPrices = stockPriceRepository.findByStockInfoTicker(ticker);
+        stockPrices = stockPrices.stream().skip(200).limit(stockPrices.size() - 400).toList();
 
-        LocalDateTime startDate = bars.get(random.nextInt(bars.size())).getDate();
+        LocalDateTime startDate = stockPrices.get(random.nextInt(stockPrices.size())).getDate();
 
         long balance = accountService.getBalance(aid);
 
@@ -63,10 +67,10 @@ public class GameService {
         return gameHistory.getGid();
     }
 
-    public List<Account> getAccounts(int uid) {
-        List<Account> accounts = accountService.getGameAccount(uid);
-        log.debug(String.format("getAccounts(uid: %d) -> accounts: %s", uid, accounts));
-        return accounts;
+    public List<AccountResponse> getAccounts(int uid) {
+        List<AccountResponse> accountResponses = accountService.getGameAccount(uid);
+        log.debug(String.format("getAccounts(uid: %d) -> accounts: %s", uid, accountResponses));
+        return accountResponses;
     }
 
     public List<GameHistory> getGameHistoryByAccountId(int aid) {
@@ -121,10 +125,13 @@ public class GameService {
         return isProcessed;
     }
 
-    public List<Order> getGameOrderHistories(Integer gid) {
-        List<Order> orders = gameRepositoryImpl.getGameOrderHistories(gid);
-        log.debug(String.format("getGameOrderHistories(gid: %d) -> orders: %s", gid, orders));
-        return orders;
+    public List<OrderResponse> getGameOrderHistories(Integer gid) {
+        List<OrderResponse> orderResponses = gameRepositoryImpl.getGameOrderHistories(gid)
+                .stream()
+                .map((o) -> OrderResponse.from(o))
+                .toList();
+        log.debug(String.format("getGameOrderHistories(gid: %d) -> orders: %s", gid, orderResponses));
+        return orderResponses;
     }
 
     public boolean increaseTurns(Integer gid) {

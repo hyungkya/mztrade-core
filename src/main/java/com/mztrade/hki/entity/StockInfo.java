@@ -1,20 +1,21 @@
 package com.mztrade.hki.entity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
-@Getter
-@Builder
-@Entity
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder(toBuilder = true)
+@ToString @EqualsAndHashCode
+
 @Table(name = "stock_info")
-@ToString
-@AllArgsConstructor
-@NoArgsConstructor
+@Entity
 public class StockInfo {
     @Id
     @Column(name = "ticker", unique = true, length = 16)
@@ -25,4 +26,10 @@ public class StockInfo {
     private LocalDate listedDate;
     @Column(name = "market_capital")
     private Integer marketCapital;
+    //@OneToMany(mappedBy = "stockInfo")
+    //private Set<StockPrice> stockPrices = new HashSet<>();
+    //@OneToMany(mappedBy = "stockInfo")
+    //private Set<Position> positions = new HashSet<>();
+    //@OneToMany(mappedBy = "stockInfo")
+    //private Set<Order> orders = new HashSet<>();
 }

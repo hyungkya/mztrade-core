@@ -19,11 +19,15 @@ import java.util.Objects;
 public class GameRepositoryImpl {
     private final NamedParameterJdbcTemplate template;
     private final ObjectMapper objectMapper;
+    private final AccountRepository accountRepository;
+    private final StockInfoRepository stockInfoRepository;
 
     @Autowired
-    public GameRepositoryImpl(NamedParameterJdbcTemplate template, ObjectMapper objectMapper) {
+    public GameRepositoryImpl(NamedParameterJdbcTemplate template, ObjectMapper objectMapper, AccountRepository accountRepository, StockInfoRepository stockInfoRepository) {
         this.template = template;
         this.objectMapper = objectMapper;
+        this.accountRepository = accountRepository;
+        this.stockInfoRepository = stockInfoRepository;
     }
 
     public Integer createGame(Integer aid, String ticker, LocalDateTime startDate, Long balance) {
@@ -129,10 +133,10 @@ public class GameRepositoryImpl {
                 "SELECT * FROM hkidb.game_order_history go INNER JOIN hkidb.order_history o ON go.oid = o.oid WHERE go.gid = :gid",
                 src,
                 (rs, rowNum) -> Order.builder()
-                        .aid(rs.getInt("aid"))
+                        .account(accountRepository.getById(rs.getInt("aid")))
                         .avgEntryPrice(rs.getBigDecimal("avg_entry_price"))
                         .filledTime(rs.getTimestamp("filled_time").toLocalDateTime())
-                        .ticker(rs.getString("ticker"))
+                        .stockInfo(stockInfoRepository.getByTicker(rs.getString("ticker")))
                         .qty(rs.getInt("qty"))
                         .price(rs.getInt("price"))
                         .oid(rs.getInt("oid"))

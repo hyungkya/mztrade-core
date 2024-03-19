@@ -1,5 +1,7 @@
 package com.mztrade.hki.controller;
 
+import com.mztrade.hki.dto.AccountResponse;
+import com.mztrade.hki.dto.OrderResponse;
 import com.mztrade.hki.entity.Account;
 import com.mztrade.hki.entity.GameHistory;
 import com.mztrade.hki.entity.Order;
@@ -33,12 +35,12 @@ public class GameController {
     }
 
     @GetMapping("/game/account")
-    public List<Account> getGameAccount(
+    public List<AccountResponse> getGameAccount(
             @RequestParam Integer uid
     ) {
-        List<Account> accounts = gameService.getAccounts(uid);
+        List<AccountResponse> accountResponses = gameService.getAccounts(uid);
         log.info(String.format("[GET] /game/account/uid=%s", uid));
-        return accounts;
+        return accountResponses;
     }
 
     @GetMapping("/game")
@@ -91,7 +93,7 @@ public class GameController {
     }
 
     @GetMapping("/game/order")
-    public ResponseEntity<List<Order>> getGameOrderHistories(
+    public ResponseEntity<List<OrderResponse>> getGameOrderHistories(
             @RequestParam Integer gid
     ) {
         log.info(String.format("[GET] /game/order?gid=%d", gid));

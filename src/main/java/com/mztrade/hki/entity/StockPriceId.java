@@ -8,9 +8,9 @@ import java.time.LocalDateTime;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
-public class BarId implements Serializable {
+public class StockPriceId implements Serializable {
     @EqualsAndHashCode.Include
-    public String ticker;
+    public StockInfo stockInfo;
 
     @EqualsAndHashCode.Include
     public LocalDateTime date;

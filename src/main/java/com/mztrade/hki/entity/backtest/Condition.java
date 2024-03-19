@@ -1,9 +1,8 @@
 package com.mztrade.hki.entity.backtest;
-import com.mztrade.hki.entity.Bar;
+import com.mztrade.hki.entity.StockPrice;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class Condition {
@@ -45,21 +44,21 @@ public class Condition {
         return this;
     }
 
-    public boolean check(List<Bar> bars) {
-        String ticker = bars.getFirst().getTicker();
+    public boolean check(List<StockPrice> stockPrices) {
+        String ticker = stockPrices.getFirst().getStockInfo().getTicker();
         if (!recentMatches.containsKey(ticker)) {
             recentMatches.put(ticker, new ArrayList<>());
         }
-        log.trace("baseIndicator: " + baseIndicator.calculate(bars) + " targetIndicator: " + targetIndicator.calculate(bars));
+        log.trace("baseIndicator: " + baseIndicator.calculate(stockPrices) + " targetIndicator: " + targetIndicator.calculate(stockPrices));
         if (compareType.matches(">") || compareType.matches(">>")) {
-            if (baseIndicator.calculate(bars) > targetIndicator.calculate(bars) + constantBound) {
+            if (baseIndicator.calculate(stockPrices) > targetIndicator.calculate(stockPrices) + constantBound) {
                 recentMatches.get(ticker).add(true);
             } else {
                 recentMatches.get(ticker).add(false);
             }
         }
         if (compareType.matches("<") || compareType.matches("<<")) {
-            if (baseIndicator.calculate(bars) < targetIndicator.calculate(bars) + constantBound) {
+            if (baseIndicator.calculate(stockPrices) < targetIndicator.calculate(stockPrices) + constantBound) {
                 recentMatches.get(ticker).add(true);
             } else {
                 recentMatches.get(ticker).add(false);

@@ -5,22 +5,20 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
-import java.util.Objects;
 
-@Getter
-@Setter
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder(toBuilder = true)
-@ToString
-@EqualsAndHashCode
-@IdClass(BarId.class)
+@ToString @EqualsAndHashCode
+
+@IdClass(StockPriceId.class)
 @Table(name = "stock_price")
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
-public class Bar {
+public class StockPrice {
     @Id
-    @JoinColumn(table = "stock_info", referencedColumnName = "ticker")
-    private String ticker;
+    @ManyToOne
+    @JoinColumn(name = "ticker")
+    private StockInfo stockInfo;
     @Id
     @Column
     private LocalDateTime date;
@@ -35,9 +33,9 @@ public class Bar {
     @Column
     private Long volume;
 
-    public static Comparator<Bar> COMPARE_BY_DATE = new Comparator<Bar>() {
+    public static Comparator<StockPrice> COMPARE_BY_DATE = new Comparator<StockPrice>() {
         @Override
-        public int compare(Bar o1, Bar o2) {
+        public int compare(StockPrice o1, StockPrice o2) {
             return o1.getDate().compareTo(o2.getDate());
         }
     };

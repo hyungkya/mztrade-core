@@ -6,23 +6,23 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-@Getter
-@Setter
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder(toBuilder = true)
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
-@EqualsAndHashCode
+@ToString @EqualsAndHashCode
+
 @IdClass(PositionId.class)
 @Table(name = "position")
 @Entity
 public class Position {
     @Id
-    @JoinColumn(name = "account", referencedColumnName = "aid")
-    private Integer aid;
+    @ManyToOne
+    @JoinColumn(name = "aid")
+    private Account account;
     @Id
-    @JoinColumn(name = "stock_info", referencedColumnName = "ticker")
-    private String ticker;
+    @ManyToOne
+    @JoinColumn(name = "ticker")
+    private StockInfo stockInfo;
     @Column(nullable = false)
     private Integer qty;
     @Column(nullable = false)

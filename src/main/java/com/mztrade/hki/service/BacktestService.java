@@ -1,12 +1,13 @@
 package com.mztrade.hki.service;
 
-import com.mztrade.hki.entity.Bar;
+import com.mztrade.hki.entity.StockPrice;
 import com.mztrade.hki.entity.Position;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.entity.backtest.Condition;
 import com.mztrade.hki.repository.BacktestHistoryRepository;
 import com.mztrade.hki.repository.BacktestHistoryRepositoryImpl;
+import com.mztrade.hki.repository.PositionRepository;
 import com.mztrade.hki.repository.TagRepositoryImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import java.util.*;
 public class BacktestService {
     private final TagRepositoryImpl tagRepositoryImpl;
     private final BacktestHistoryRepository backtestHistoryRepository;
+    private final PositionRepository positionRepository;
     private AccountService accountService;
     private StockPriceService stockPriceService;
     private OrderService orderService;
@@ -31,13 +33,14 @@ public class BacktestService {
     public BacktestService(AccountService accountService,
                            StockPriceService stockPriceService,
                            OrderService orderService,
-                           BacktestHistoryRepositoryImpl backtestHistoryRepositoryImpl, TagRepositoryImpl tagRepositoryImpl, BacktestHistoryRepository backtestHistoryRepository) {
+                           BacktestHistoryRepositoryImpl backtestHistoryRepositoryImpl, TagRepositoryImpl tagRepositoryImpl, BacktestHistoryRepository backtestHistoryRepository, PositionRepository positionRepository) {
         this.accountService = accountService;
         this.stockPriceService = stockPriceService;
         this.orderService = orderService;
         this.backtestHistoryRepositoryImpl = backtestHistoryRepositoryImpl;
         this.tagRepositoryImpl = tagRepositoryImpl;
         this.backtestHistoryRepository = backtestHistoryRepository;
+        this.positionRepository = positionRepository;
     }
 
     public int execute(
@@ -66,7 +69,7 @@ public class BacktestService {
         Map<String, Integer> trailingStopStatus = new HashMap<>();
 
         // Get Bars
-        Map<String, List<Bar>> collectedBars = new HashMap<>();
+        Map<String, List<StockPrice>> collectedBars = new HashMap<>();
         boolean buyFlag = false;
         boolean sellFlag = false;
 
@@ -74,13 +77,11 @@ public class BacktestService {
             for (String ticker : targetTickers) {
                 // Stacking retrievable bar
                 try {
-                    Bar bar = stockPriceService.getPrice(ticker, startDate);
-                    System.out.println(startDate);
-                    System.out.println(bar);
+                    StockPrice stockPrice = stockPriceService.getPrice(ticker, startDate);
                     if (!collectedBars.containsKey(ticker)) {
                         collectedBars.put(ticker, new ArrayList<>());
                     }
-                    collectedBars.get(ticker).add(bar);
+                    collectedBars.get(ticker).add(stockPrice);
                 } catch (EmptyResultDataAccessException e) {
                     log.trace("[BacktestService] " + e);
                     continue;
@@ -134,19 +135,19 @@ public class BacktestService {
                 }
                 Optional<Position> position = orderService.getPosition(aid, ticker);
                 if (position.isPresent()) {
-                    int currentPrice = collectedBars.get(position.get().getTicker()).getLast().getClose();
+                    int currentPrice = collectedBars.get(position.get().getStockInfo().getTicker()).getLast().getClose();
                     for (List<Condition> sellConditionGroup : sellConditions) {
                         sellFlag = true;
                         for (Condition sellCondition : sellConditionGroup) {
-                            if (!sellCondition.check(collectedBars.get(position.get().getTicker()))) {
+                            if (!sellCondition.check(collectedBars.get(position.get().getStockInfo().getTicker()))) {
                                 sellFlag = false;
                             }
                         }
                         if (sellFlag) {
-                            orderService.sell(aid, position.get().getTicker(), startDate, position.get().getQty());
-                            dcaStatus.replace(position.get().getTicker(), 0);
+                            orderService.sell(aid, position.get().getStockInfo().getTicker(), startDate, position.get().getQty());
+                            dcaStatus.replace(position.get().getStockInfo().getTicker(), 0);
                             // 매도 후 트레일링 스탑 감시 해제 (있다면)
-                            trailingStopStatus.remove(position.get().getTicker());
+                            trailingStopStatus.remove(position.get().getStockInfo().getTicker());
                             break;
                         }
                     }
@@ -156,30 +157,30 @@ public class BacktestService {
                         if (stopProfit != null && position.get().getAvgEntryPrice().doubleValue() * stopProfit < currentPrice) {
                             // 트레일링 스탑 사용 중이라면 감시 시작
                             if (trailingStop != null) {
-                                if (!trailingStopStatus.containsKey(position.get().getTicker())) {
-                                    trailingStopStatus.put(position.get().getTicker(), currentPrice);
+                                if (!trailingStopStatus.containsKey(position.get().getStockInfo().getTicker())) {
+                                    trailingStopStatus.put(position.get().getStockInfo().getTicker(), currentPrice);
                                 }
                             }
                             // 아니라면 전량 매도
                             else {
-                                orderService.sell(aid, position.get().getTicker(), startDate, position.get().getQty());
-                                dcaStatus.replace(position.get().getTicker(), 0);
+                                orderService.sell(aid, position.get().getStockInfo().getTicker(), startDate, position.get().getQty());
+                                dcaStatus.replace(position.get().getStockInfo().getTicker(), 0);
                                 // 매도 후 트레일링 스탑 감시 해제 (있다면)
-                                trailingStopStatus.remove(position.get().getTicker());
+                                trailingStopStatus.remove(position.get().getStockInfo().getTicker());
                             }
                         }
                         // 트레일링 스탑 감시 중이라면
-                        if (trailingStop != null && trailingStopStatus.containsKey(position.get().getTicker())) {
+                        if (trailingStop != null && trailingStopStatus.containsKey(position.get().getStockInfo().getTicker())) {
                             // 현재가가 최고가 보다 높다면 최고가 갱신
-                            if (trailingStopStatus.get(position.get().getTicker()) < currentPrice) {
-                                trailingStopStatus.replace(position.get().getTicker(), currentPrice);
+                            if (trailingStopStatus.get(position.get().getStockInfo().getTicker()) < currentPrice) {
+                                trailingStopStatus.replace(position.get().getStockInfo().getTicker(), currentPrice);
                             }
                             // 현재가가 트레일링 스탑 제한보다 낮아졌다면 전량 매도
-                            else if (trailingStopStatus.get(position.get().getTicker()) * (1 - trailingStop) > currentPrice){
-                                orderService.sell(aid, position.get().getTicker(), startDate, position.get().getQty());
-                                dcaStatus.replace(position.get().getTicker(), 0);
+                            else if (trailingStopStatus.get(position.get().getStockInfo().getTicker()) * (1 - trailingStop) > currentPrice){
+                                orderService.sell(aid, position.get().getStockInfo().getTicker(), startDate, position.get().getQty());
+                                dcaStatus.replace(position.get().getStockInfo().getTicker(), 0);
                                 // 매도 후 트레일링 스탑 감시 해제
-                                trailingStopStatus.remove(position.get().getTicker());
+                                trailingStopStatus.remove(position.get().getStockInfo().getTicker());
                             }
                         }
                     }
@@ -189,9 +190,9 @@ public class BacktestService {
             //계좌잔액기록
             long balance = accountService.getBalance(aid);
 
-            for(Position p : orderService.getPositions(aid)){
-                Bar bar = stockPriceService.getAvailablePriceBefore(p.getTicker(),startDate).orElseThrow();
-                balance += (long) bar.getClose() * p.getQty();
+            for(Position p : positionRepository.findByAccountAid(aid)){
+                StockPrice stockPrice = stockPriceService.getAvailablePriceBefore(p.getStockInfo().getTicker(),startDate).orElseThrow();
+                balance += (long) stockPrice.getClose() * p.getQty();
             };
 
             accountService.createAccountHistory(aid,startDate,balance);
@@ -270,9 +271,9 @@ public class BacktestService {
 
     public Double calculateFinalProfitLossRatio(long initialBalance, int aid, LocalDateTime backtestEndDate) {
         long finalBalance = accountService.getBalance(aid);
-        List<Position> positions = orderService.getPositions(aid);
+        List<Position> positions = positionRepository.findByAccountAid(aid);
         for (Position position : positions) {
-            Integer finalClosePrice = stockPriceService.getAvailablePriceBefore(position.getTicker(), backtestEndDate, 10).orElseThrow().getClose();
+            Integer finalClosePrice = stockPriceService.getAvailablePriceBefore(position.getStockInfo().getTicker(), backtestEndDate, 10).orElseThrow().getClose();
             finalBalance += (long) position.getQty() * finalClosePrice;
         }
         double plratio = (finalBalance / (double) initialBalance) - 1;

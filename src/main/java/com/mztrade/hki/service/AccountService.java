@@ -1,10 +1,13 @@
 package com.mztrade.hki.service;
 
+import com.mztrade.hki.dto.AccountResponse;
 import com.mztrade.hki.entity.Account;
 import com.mztrade.hki.entity.AccountHistory;
+import com.mztrade.hki.entity.User;
 import com.mztrade.hki.repository.AccountHistoryRepository;
 import com.mztrade.hki.repository.AccountRepository;
 import com.mztrade.hki.repository.AccountRepositoryImpl;
+import com.mztrade.hki.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,16 +23,19 @@ public class AccountService {
     private final AccountRepositoryImpl accountRepositoryImpl;
     private final AccountRepository accountRepository;
     private final AccountHistoryRepository accountHistoryRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public AccountService(AccountRepositoryImpl accountRepositoryImpl, AccountRepository accountRepository, AccountHistoryRepository accountHistoryRepository) {
+    public AccountService(AccountRepositoryImpl accountRepositoryImpl, AccountRepository accountRepository, AccountHistoryRepository accountHistoryRepository, UserRepository userRepository) {
         this.accountRepositoryImpl = accountRepositoryImpl;
         this.accountRepository = accountRepository;
         this.accountHistoryRepository = accountHistoryRepository;
+        this.userRepository = userRepository;
     }
 
     public int createAccount(int uid) {
-        Account account = accountRepository.save(Account.builder().uid(uid).build());
+        User user = userRepository.getReferenceById(uid);
+        Account account = accountRepository.save(Account.builder().user(user).build());
         log.debug(String.format("[AccountService] createAccount(uid: %d) -> aid: %d", uid, account.getAid()));
         return account.getAid();
     }
@@ -39,7 +45,7 @@ public class AccountService {
     }
 
     public List<Integer> getAllBacktestAccountIds(int uid) {
-        List<Integer> accountIds = accountRepository.findByUidAndType(uid, "BACKTEST").stream()
+        List<Integer> accountIds = accountRepository.findByUserUidAndType(uid, "BACKTEST").stream()
                 .map((a) -> a.getAid()).toList();
         log.debug(String.format("[AccountService] getAll(uid: %d) -> accounts: %s", uid, accountIds));
         return accountIds;
@@ -93,9 +99,12 @@ public class AccountService {
         return resultMap;
     }
 
-    public List<Account> getGameAccount(int uid) {
-        List<Account> accounts = accountRepository.findByUidAndType(uid, "GAME");
-        log.debug(String.format("[AccountService] getGameAccount(uid: %d) -> accounts: %s", uid, accounts));
-        return accounts;
+    public List<AccountResponse> getGameAccount(int uid) {
+        List<AccountResponse> accountResponses = accountRepository.findByUserUidAndType(uid, "GAME")
+                .stream()
+                .map((a) -> AccountResponse.from(a))
+                .toList();
+        log.debug(String.format("[AccountService] getGameAccount(uid: %d) -> accounts: %s", uid, accountResponses));
+        return accountResponses;
     }
 }

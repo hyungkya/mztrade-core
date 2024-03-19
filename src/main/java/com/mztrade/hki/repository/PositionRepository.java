@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface PositionRepository extends JpaRepository<Position, PositionId> {
     Position save(Position position);
     @Transactional
-    void deleteByAidAndTicker(Integer aid, String ticker);
-    Optional<Position> findByAidAndTicker(Integer aid, String ticker);
-    List<Position> findByAid(Integer aid);
+    void deleteByAccountAidAndStockInfoTicker(Integer aid, String ticker);
+    Optional<Position> findByAccountAidAndStockInfoTicker(Integer aid, String ticker);
+    List<Position> findByAccountAid(Integer aid);
 }

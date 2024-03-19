@@ -3,6 +3,7 @@ package com.mztrade.hki.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.Util;
+import com.mztrade.hki.dto.*;
 import com.mztrade.hki.entity.*;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
@@ -268,22 +269,22 @@ public class BacktestController {
     }
 
     @GetMapping("/stock_info/tag")
-    public ResponseEntity<List<Tag>> getStockInfoTag(
+    public ResponseEntity<List<TagResponse>> getStockInfoTag(
             @RequestParam Integer uid
     ) {
-        List<Tag> tags = tagService.getStockInfoTag(uid);
+        List<TagResponse> tagResponses = tagService.getStockInfoTag(uid);
         log.info(String.format("[GET] /stock_info/tag/uid=%s", uid));
-        return new ResponseEntity<>(tags, HttpStatus.OK);
+        return new ResponseEntity<>(tagResponses, HttpStatus.OK);
     }
 
     @GetMapping("/stock_info/tag-by-ticker")
-    public ResponseEntity<List<Tag>> getStockInfoTagByTicker(
+    public ResponseEntity<List<TagResponse>> getStockInfoTagByTicker(
             @RequestParam Integer uid,
             @RequestParam String ticker
     ) {
-        List<Tag> tags = tagService.getStockInfoTagByTicker(uid, ticker);
+        List<TagResponse> tagResponses = tagService.getStockInfoTagByTicker(uid, ticker);
         log.info(String.format("[GET] /stock_info/tag/uid=%s&ticker=%s", uid, ticker));
-        return new ResponseEntity<>(tags, HttpStatus.OK);
+        return new ResponseEntity<>(tagResponses, HttpStatus.OK);
     }
 
     @PostMapping("/stock_info/tag-link")
@@ -307,22 +308,22 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/tag")
-    public List<Tag> getBacktestHistoryTag(
+    public List<TagResponse> getBacktestHistoryTag(
             @RequestParam Integer uid
     ) {
-        List<Tag> tags = tagService.getBacktestHistoryTag(uid);
+        List<TagResponse> tagResponses = tagService.getBacktestHistoryTag(uid);
         log.info(String.format("[GET] /backtest/tag/uid=%s", uid));
-        return tags;
+        return tagResponses;
     }
 
     @GetMapping("/backtest/tag-by-aid")
-    public List<Tag> getBacktestHistoryTag(
+    public List<TagResponse> getBacktestHistoryTag(
             @RequestParam Integer uid,
             @RequestParam Integer aid
     ) {
-        List<Tag> tags = tagService.getBacktestHistoryTagByAid(uid, aid);
+        List<TagResponse> tagResponses = tagService.getBacktestHistoryTagByAid(uid, aid);
         log.info(String.format("[GET] /backtest/tag/uid=%s&aid=%s", uid, aid));
-        return tags;
+        return tagResponses;
     }
 
     @PostMapping("/backtest/tag-link")
@@ -395,7 +396,7 @@ public class BacktestController {
     }
 
     @GetMapping("/positions")
-    public ResponseEntity<List<Position>> getPositions(
+    public ResponseEntity<List<PositionResponse>> getPositions(
             @RequestParam Integer aid
     ) {
         log.info(String.format("[GET] /positions?aid=%s", aid));
@@ -411,7 +412,7 @@ public class BacktestController {
     }
 
     @GetMapping("/order_history")
-    public ResponseEntity<List<Order>> getOrderHistory(
+    public ResponseEntity<List<OrderResponse>> getOrderHistory(
             @RequestParam Integer aid
     ) {
         log.info(String.format("[GET] /order_history?aid=%s", aid));
@@ -419,7 +420,7 @@ public class BacktestController {
     }
 
     @GetMapping("/stock_price")
-    public ResponseEntity<List<Bar>> getPricesByTicker(
+    public ResponseEntity<List<StockPriceResponse>> getPricesByTicker(
             @RequestParam String ticker
     ) {
         log.info(String.format("[GET] /stock_price/ticker=%s", ticker));
@@ -427,22 +428,22 @@ public class BacktestController {
     }
 
     @GetMapping("/stock_info")
-    public ResponseEntity<StockInfo> getStockInfoByTicker(
+    public ResponseEntity<StockInfoResponse> getStockInfoByTicker(
             @RequestParam String ticker
     ) {
-        StockInfo stockInfo = stockPriceService.findStockInfoByTicker(ticker);
+        StockInfoResponse stockInfoResponse = stockPriceService.findStockInfoByTicker(ticker);
         log.info(String.format("[GET] /stock_info?ticker=%s", ticker));
-        return new ResponseEntity<>(stockInfo, HttpStatus.OK);
+        return new ResponseEntity<>(stockInfoResponse, HttpStatus.OK);
     }
 
     @GetMapping("/stock")
-    public ResponseEntity<List<StockInfo>> getAllStockInfo() {
+    public ResponseEntity<List<StockInfoResponse>> getAllStockInfo() {
         log.info("[GET] /stock");
         return new ResponseEntity<>(stockPriceService.getAllStockInfo(), HttpStatus.OK);
     }
 
     @GetMapping("/stock/search")
-    public ResponseEntity<List<StockInfo>> searchStockInfoByName(
+    public ResponseEntity<List<StockInfoResponse>> searchStockInfoByName(
             @RequestParam String name
     ) {
         log.info("[GET] /stock/search?name=%s", name);
@@ -450,7 +451,7 @@ public class BacktestController {
     }
 
     @GetMapping("/stock/search-tags")
-    public ResponseEntity<List<StockInfo>> searchStockInfoByNameAndTags(
+    public ResponseEntity<List<StockInfoResponse>> searchStockInfoByNameAndTags(
             @RequestParam int uid,
             @RequestParam String name,
             @RequestParam List<Integer> tids

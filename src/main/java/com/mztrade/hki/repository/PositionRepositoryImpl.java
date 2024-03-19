@@ -23,7 +23,7 @@ public class PositionRepositoryImpl {
         this.template = template;
         this.objectMapper = objectMapper;
     }
-
+/*
     public Optional<Position> getPositionByTicker(Integer aid, String ticker) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER)
@@ -97,5 +97,5 @@ public class PositionRepositoryImpl {
                         + "qty = :qty, avg_entry_price = :avg_entry_price "
                         + "WHERE (aid = :aid) AND (ticker = :ticker)",
                 src);
-    }
+    }*/
 }

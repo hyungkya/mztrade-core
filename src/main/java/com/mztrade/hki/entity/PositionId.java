@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class PositionId implements Serializable {
     @EqualsAndHashCode.Include
-    public int aid;
+    public Account account;
 
     @EqualsAndHashCode.Include
-    public String ticker;
+    public StockInfo stockInfo;
 }

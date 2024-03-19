@@ -20,11 +20,13 @@ import java.util.Objects;
 public class TagRepositoryImpl {
     private final NamedParameterJdbcTemplate template;
     private final ObjectMapper objectMapper;
+    private final UserRepository userRepository;
 
     @Autowired
-    public TagRepositoryImpl(NamedParameterJdbcTemplate template, ObjectMapper objectMapper) {
+    public TagRepositoryImpl(NamedParameterJdbcTemplate template, ObjectMapper objectMapper, UserRepository userRepository) {
         this.template = template;
         this.objectMapper = objectMapper;
+        this.userRepository = userRepository;
     }
 
     public int createTag(int uid, String name, String color, TagCategory category) {
@@ -52,7 +54,7 @@ public class TagRepositoryImpl {
         return updateRow == 1;
     }
 
-
+/*
 
     public List<Tag> findByCategory(int uid, TagCategory category) {
         MapSqlParameterSource src = new MapSqlParameterSource()
@@ -70,7 +72,7 @@ public class TagRepositoryImpl {
                                 .category(rs.getInt("t.category"))
                                 .build()
         );
-    }
+    }*/
 
     public boolean deleteById(int tid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
@@ -133,7 +135,7 @@ public class TagRepositoryImpl {
                 src,
                 (rs, rowNum) ->
                         Tag.builder()
-                                .uid(rs.getInt("t.uid"))
+                                .user(userRepository.getReferenceById(rs.getInt("t.uid")))
                                 .tid(rs.getInt("t.tid"))
                                 .tname(rs.getString("t.tname"))
                                 .tcolor(rs.getString("t.tcolor"))
@@ -151,7 +153,7 @@ public class TagRepositoryImpl {
                 src,
                 (rs, rowNum) ->
                         Tag.builder()
-                                .uid(rs.getInt("t.uid"))
+                                .user(userRepository.getReferenceById(rs.getInt("t.uid")))
                                 .tid(rs.getInt("t.tid"))
                                 .tname(rs.getString("t.tname"))
                                 .tcolor(rs.getString("t.tcolor"))

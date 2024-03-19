@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface StockInfoRepository extends JpaRepository<StockInfo, Integer> {
     List<StockInfo> getAll();
+    StockInfo getByTicker(String ticker);
     Optional<StockInfo> findByTicker(String ticker);
     List<StockInfo> findAllByNameContainsIgnoreCase(String name);
 }

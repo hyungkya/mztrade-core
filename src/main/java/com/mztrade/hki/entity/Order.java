@@ -6,11 +6,10 @@ import java.time.LocalDateTime;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Getter
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder(toBuilder = true)
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
+@ToString @EqualsAndHashCode
 
 @Table(name = "order_history")
 @Entity
@@ -18,14 +17,16 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer oid;
-    @JoinColumn(name = "account", referencedColumnName = "aid")
-    private Integer aid;
+    @ManyToOne
+    @JoinColumn(name = "aid")
+    private Account account;
     @Column(nullable = false)
     private LocalDateTime filledTime;
     @JoinColumn(name = "order_type", referencedColumnName = "otid")
     private Integer otid;
-    @JoinColumn(name = "stock_info", referencedColumnName = "ticker")
-    private String ticker;
+    @ManyToOne
+    @JoinColumn(name = "ticker")
+    private StockInfo stockInfo;
     @Column(nullable = false)
     private Integer qty;
     @Column(nullable = false)

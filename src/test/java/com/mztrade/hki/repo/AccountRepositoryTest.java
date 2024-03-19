@@ -3,7 +3,6 @@ package com.mztrade.hki.repo;
 import com.mztrade.hki.Util;
 import com.mztrade.hki.entity.Account;
 import com.mztrade.hki.entity.AccountHistory;
-import com.mztrade.hki.entity.StockInfo;
 import com.mztrade.hki.repository.AccountHistoryRepository;
 import com.mztrade.hki.repository.AccountRepository;
 import org.junit.jupiter.api.Test;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
-import java.util.Optional;
 
 @SpringBootTest
 public class AccountRepositoryTest {
@@ -35,7 +33,7 @@ public class AccountRepositoryTest {
 
     @Test
     void findByUid() {
-        List<Account> accounts = accountRepository.findByUid(1);
+        List<Account> accounts = accountRepository.findByUserUid(1);
         System.out.println(accounts);
     }
 
