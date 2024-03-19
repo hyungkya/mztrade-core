@@ -21,12 +21,14 @@ public class TagRepositoryImpl {
     private final NamedParameterJdbcTemplate template;
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
 
     @Autowired
-    public TagRepositoryImpl(NamedParameterJdbcTemplate template, ObjectMapper objectMapper, UserRepository userRepository) {
+    public TagRepositoryImpl(NamedParameterJdbcTemplate template, ObjectMapper objectMapper, UserRepository userRepository, AccountRepository accountRepository) {
         this.template = template;
         this.objectMapper = objectMapper;
         this.userRepository = userRepository;
+        this.accountRepository = accountRepository;
     }
 
     public int createTag(int uid, String name, String color, TagCategory category) {
@@ -207,8 +209,8 @@ public class TagRepositoryImpl {
                         "    HAVING COUNT(DISTINCT bit.tid) = :tid_length);",
                 src,
                 (rs, rowNum) -> BacktestHistory.builder()
-                        .uid(rs.getInt("uid"))
-                        .aid(rs.getInt("aid"))
+                        .user(userRepository.getReferenceById(rs.getInt("b.uid")))
+                        .account(accountRepository.getReferenceById(rs.getInt("b.aid")))
                         .param(rs.getString("param"))
                         .plratio(rs.getDouble("plratio"))
                         .build()

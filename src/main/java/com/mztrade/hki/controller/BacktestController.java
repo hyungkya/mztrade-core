@@ -9,6 +9,8 @@ import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.entity.backtest.Condition;
 import com.mztrade.hki.entity.backtest.Indicator;
+import com.mztrade.hki.repository.AccountRepository;
+import com.mztrade.hki.repository.UserRepository;
 import com.mztrade.hki.service.*;
 
 import java.util.*;
@@ -25,6 +27,8 @@ import java.time.LocalDateTime;
 @Slf4j
 public class BacktestController {
 
+    private final AccountRepository accountRepository;
+    private final UserRepository userRepository;
     private BacktestService backtestService;
 
     private StockPriceService stockPriceService;
@@ -45,7 +49,7 @@ public class BacktestController {
                               TagService tagService,
                               ChartSettingService chartSettingService,
                               IndicatorService indicatorService,
-                              ObjectMapper objectMapper) {
+                              ObjectMapper objectMapper, AccountRepository accountRepository, UserRepository userRepository) {
         this.backtestService = backtestService;
         this.stockPriceService = stockPriceService;
         this.orderService = orderService;
@@ -55,7 +59,8 @@ public class BacktestController {
         this.chartSettingService = chartSettingService;
         this.indicatorService = indicatorService;
         this.objectMapper = objectMapper;
-
+        this.accountRepository = accountRepository;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/execute")
@@ -92,10 +97,11 @@ public class BacktestController {
                 startDate,
                 endDate
         );
-
+        Account account = accountRepository.getReferenceById(aid);
+        User user = userRepository.getReferenceById(uid);
         backtestService.create(BacktestHistory.builder()
-                .aid(aid)
-                .uid(uid)
+                .account(account)
+                .user(user)
                 .param(objectMapper.writeValueAsString(backtestRequest))
                 .plratio(backtestService.calculateFinalProfitLossRatio(initialBalance, aid, endDate))
                 .build()
@@ -105,10 +111,10 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/{aid}")
-    public ResponseEntity<BacktestHistory> getBacktestHistory(
+    public ResponseEntity<BacktestHistoryResponse> getBacktestHistory(
             @PathVariable Integer aid
     ) {
-        BacktestHistory backtestHistory = backtestService.get(aid);
+        BacktestHistoryResponse backtestHistory = backtestService.get(aid);
 
         log.info(String.format("[GET] /backtest/aid=%s", aid));
 
@@ -144,42 +150,42 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/all")
-    public ResponseEntity<List<BacktestHistory>> getAllBacktestHistory(
+    public ResponseEntity<List<BacktestHistoryResponse>> getAllBacktestHistory(
             @RequestParam Integer uid
     ) {
-        List<BacktestHistory> backtestHistories = new ArrayList<>();
+        List<BacktestHistoryResponse> backtestHistoryResponses = new ArrayList<>();
         for (Integer aid : accountService.getAllBacktestAccountIds(uid)) {
-            BacktestHistory queryResult = backtestService.get(aid);
+            BacktestHistoryResponse queryResult = backtestService.get(aid);
             if (queryResult != null) {
-                backtestHistories.add(queryResult);
+                backtestHistoryResponses.add(queryResult);
             }
         }
 
         log.info(String.format("[GET] /backtest/all/uid=%s", uid));
 
-        return new ResponseEntity<>(backtestHistories, HttpStatus.OK);
+        return new ResponseEntity<>(backtestHistoryResponses, HttpStatus.OK);
     }
 
     @GetMapping("/backtest/top5")
-    public ResponseEntity<List<BacktestHistory>> getBacktestTop5(
+    public ResponseEntity<List<BacktestHistoryResponse>> getBacktestTop5(
             @RequestParam Integer uid
     ) {
-        List<BacktestHistory> backtestHistories = backtestService.getBacktestTop5(uid);
+        List<BacktestHistoryResponse> backtestHistories = backtestService.getBacktestTop5(uid);
         return new ResponseEntity<>(backtestHistories, HttpStatus.OK);
     }
 
     @GetMapping("/backtest/ranking")
-    public ResponseEntity<List<BacktestHistory>> getBacktestRanking() {
-        List<BacktestHistory> backtestHistories = backtestService.getRanking();
+    public ResponseEntity<List<BacktestHistoryResponse>> getBacktestRanking() {
+        List<BacktestHistoryResponse> backtestHistories = backtestService.getRanking();
         return new ResponseEntity<>(backtestHistories, HttpStatus.OK);
     }
 
     @GetMapping("/backtest/search")
-    public ResponseEntity<List<BacktestHistory>> searchBacktestHistory(
+    public ResponseEntity<List<BacktestHistoryResponse>> searchBacktestHistory(
             @RequestParam Integer uid,
             @RequestParam String title
     ) {
-        List<BacktestHistory> queryResult = backtestService.searchByTitle(uid, title);
+        List<BacktestHistoryResponse> queryResult = backtestService.searchByTitle(uid, title);
 
         log.info(String.format("[GET] /backtest/search/uid=%s&title=%s", uid, title));
 
@@ -187,12 +193,12 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/search-by-tags")
-    public ResponseEntity<List<BacktestHistory>> searchBacktestHistoryWithTags(
+    public ResponseEntity<List<BacktestHistoryResponse>> searchBacktestHistoryWithTags(
             @RequestParam Integer uid,
             @RequestParam String title,
             @RequestParam List<Integer> tids
     ) {
-        List<BacktestHistory> queryResult = backtestService.searchBacktestHistoryByTags(uid, title, tids);
+        List<BacktestHistoryResponse> queryResult = backtestService.searchBacktestHistoryByTags(uid, title, tids);
 
         log.info(String.format("[GET] /backtest/search-by-tags/uid=%s&title=%s&tids=%s", uid, title, tids));
 
@@ -209,7 +215,7 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/top-plratio")
-    public ResponseEntity<BacktestHistory> getHighestProfitLossRatio(
+    public ResponseEntity<BacktestHistoryResponse> getHighestProfitLossRatio(
             @RequestParam Integer uid
     ) {
         Optional<Integer> highestProfitLossRatioAid = backtestService.getHighestProfitLossRatio(uid);

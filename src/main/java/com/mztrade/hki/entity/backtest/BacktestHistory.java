@@ -1,24 +1,27 @@
 package com.mztrade.hki.entity.backtest;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
+import com.mztrade.hki.entity.Account;
+import com.mztrade.hki.entity.User;
+import jakarta.persistence.*;
 import lombok.*;
 
-@Getter
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Builder(toBuilder = true)
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
+@ToString @EqualsAndHashCode
 
+@Table(name = "backtest_history")
 @Entity
 public class BacktestHistory {
-    @JoinColumn(name = "customers", nullable = false)
-    private int uid;
     @Id
-    @JoinColumn(name = "account", nullable = false)
-    private int aid;
+    @Column(name = "aid", nullable = false)
+    private Integer aid;
+    @ManyToOne @MapsId
+    @JoinColumn(name = "aid", nullable = false)
+    private Account account;
+    @ManyToOne
+    @JoinColumn(name = "uid", nullable = false)
+    private User user;
     @Column
     private String param;
     @Column

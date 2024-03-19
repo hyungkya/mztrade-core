@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class GameOrderHistoryId implements Serializable {
     @EqualsAndHashCode.Include
-    public int gid;
+    public GameHistory gameHistory;
 
     @EqualsAndHashCode.Include
-    public int oid;
+    public Order order;
 }

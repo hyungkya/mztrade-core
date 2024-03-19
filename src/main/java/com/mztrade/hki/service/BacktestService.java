@@ -1,5 +1,8 @@
 package com.mztrade.hki.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mztrade.hki.dto.BacktestHistoryResponse;
 import com.mztrade.hki.entity.StockPrice;
 import com.mztrade.hki.entity.Position;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
@@ -24,6 +27,7 @@ public class BacktestService {
     private final TagRepositoryImpl tagRepositoryImpl;
     private final BacktestHistoryRepository backtestHistoryRepository;
     private final PositionRepository positionRepository;
+    private final ObjectMapper objectMapper;
     private AccountService accountService;
     private StockPriceService stockPriceService;
     private OrderService orderService;
@@ -33,7 +37,7 @@ public class BacktestService {
     public BacktestService(AccountService accountService,
                            StockPriceService stockPriceService,
                            OrderService orderService,
-                           BacktestHistoryRepositoryImpl backtestHistoryRepositoryImpl, TagRepositoryImpl tagRepositoryImpl, BacktestHistoryRepository backtestHistoryRepository, PositionRepository positionRepository) {
+                           BacktestHistoryRepositoryImpl backtestHistoryRepositoryImpl, TagRepositoryImpl tagRepositoryImpl, BacktestHistoryRepository backtestHistoryRepository, PositionRepository positionRepository, ObjectMapper objectMapper) {
         this.accountService = accountService;
         this.stockPriceService = stockPriceService;
         this.orderService = orderService;
@@ -41,6 +45,7 @@ public class BacktestService {
         this.tagRepositoryImpl = tagRepositoryImpl;
         this.backtestHistoryRepository = backtestHistoryRepository;
         this.positionRepository = positionRepository;
+        this.objectMapper = objectMapper;
     }
 
     public int execute(
@@ -205,31 +210,44 @@ public class BacktestService {
     }
 
     public boolean create(BacktestHistory backtestHistory) {
+
         backtestHistoryRepository.save(backtestHistory);
         log.debug(String.format("[BacktestService] create(backtestHistory: %s) -> isSuccess: %b", backtestHistory, true));
         return true;
     }
 
-    public BacktestHistory get(int aid) {
-        BacktestHistory backtestHistory = backtestHistoryRepositoryImpl.get(aid);
-        log.debug(String.format("[BacktestService] get(int: %d) -> backtestHistory: %s", aid, backtestHistory));
-        return backtestHistory;
+    public BacktestHistoryResponse get(int aid) {
+        BacktestHistoryResponse backtestHistoryResponse = BacktestHistoryResponse.from(backtestHistoryRepository.getReferenceById(aid));
+        log.debug(String.format("[BacktestService] get(int: %d) -> backtestHistory: %s", aid, backtestHistoryResponse));
+        return backtestHistoryResponse;
     }
-    public List<BacktestHistory> getBacktestTop5(int uid) {
-        List<BacktestHistory> backtestHistories = backtestHistoryRepositoryImpl.getBacktestTop5(uid);
-        log.debug(String.format("[BacktestService] getBacktestTop5(uid: %s) -> backtestHistories: %s", uid, backtestHistories));
-        return backtestHistories;
+    public List<BacktestHistoryResponse> getBacktestTop5(int uid) {
+        List<BacktestHistoryResponse> backtestHistoryResponse = backtestHistoryRepository.findTop5ByUserUidOrderByPlratioDesc(uid)
+                .stream()
+                .map((b) -> BacktestHistoryResponse.from(b))
+                .toList();
+        log.debug(String.format("[BacktestService] getBacktestTop5(uid: %s) -> backtestHistories: %s", uid, backtestHistoryResponse));
+        return backtestHistoryResponse;
     }
-    public List<BacktestHistory> getRanking() {
-        List<BacktestHistory> backtestHistories = backtestHistoryRepositoryImpl.getRanking();
-        log.debug(String.format("[BacktestService] getRanking() -> backtestHistories: %s", backtestHistories));
-        return backtestHistories;
+    public List<BacktestHistoryResponse> getRanking() {
+        List<BacktestHistoryResponse> backtestHistoryResponse = backtestHistoryRepository.findTop5ByOrderByPlratioDesc()
+                .stream()
+                .map((b) -> BacktestHistoryResponse.from(b))
+                .toList();
+        log.debug(String.format("[BacktestService] getRanking() -> backtestHistories: %s", backtestHistoryResponse));
+        return backtestHistoryResponse;
     }
 
     public BacktestRequest getBacktestRequest(int aid) throws NoSuchElementException {
-        BacktestRequest backtestRequest = backtestHistoryRepositoryImpl.getBacktestRequest(aid).orElseThrow();
-        log.debug(String.format("[BacktestService] getBacktestRequest(aid: %d) -> backtestRequest: %s", aid, backtestRequest));
-        return backtestRequest;
+        BacktestRequest backtestRequest;
+        BacktestHistory backtestHistory = backtestHistoryRepository.findById(aid).orElseThrow();
+        try {
+            backtestRequest = objectMapper.readValue(backtestHistory.getParam(), BacktestRequest.class);
+            log.debug(String.format("[BacktestService] getBacktestRequest(aid: %d) -> backtestRequest: %s", aid, backtestRequest));
+            return backtestRequest;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
     public List<String> getTradedTickers(int aid) {
         List<String> tickers = getBacktestRequest(aid).getTickers();
@@ -237,20 +255,26 @@ public class BacktestService {
         return tickers;
     }
 
-    public List<BacktestHistory> searchByTitle(int uid, String title) {
-        List<BacktestHistory> backtestHistories = backtestHistoryRepositoryImpl.searchByTitle(uid, title);
-        log.debug(String.format("[BacktestService] searchByTitle(uid: %d, title: %s) -> backtestHistories: %s", uid, title, backtestHistories));
-        return backtestHistories;
+    public List<BacktestHistoryResponse> searchByTitle(int uid, String title) {
+        List<BacktestHistoryResponse> backtestHistoryResponses = backtestHistoryRepository.searchByTitle(uid, title)
+                .stream()
+                .map((b) -> BacktestHistoryResponse.from(b))
+                .toList();
+        log.debug(String.format("[BacktestService] searchByTitle(uid: %d, title: %s) -> backtestHistories: %s", uid, title, backtestHistoryResponses));
+        return backtestHistoryResponses;
     }
 
-    public List<BacktestHistory> searchBacktestHistoryByTags(int uid, String title, List<Integer> tids) {
-        List<BacktestHistory> backtestHistories = tagRepositoryImpl.findBacktestHistoryByTitleAndTags(uid, title, tids);
+    public List<BacktestHistoryResponse> searchBacktestHistoryByTags(int uid, String title, List<Integer> tids) {
+        List<BacktestHistoryResponse> backtestHistories = tagRepositoryImpl.findBacktestHistoryByTitleAndTags(uid, title, tids)
+                .stream()
+                .map((b) -> BacktestHistoryResponse.from(b))
+                .toList();
         log.debug(String.format("[BacktestService] searchBacktestHistoryByTags(uid: %d, title: %s, tids: %s) -> backtestHistories: %s", uid, title, tids, backtestHistories));
         return backtestHistories;
     }
 
     public Integer getNumberOfHistoryByUid(int uid) {
-        int num = backtestHistoryRepositoryImpl.getNumberOfHistoryByUid(uid);
+        int num = backtestHistoryRepository.countByUserUid(uid);
         log.debug(String.format("[BacktestService] getNumberOfHistoryByUid(uid: %d) -> num: %d", uid, num));
         return num;
     }
@@ -259,7 +283,7 @@ public class BacktestService {
         double highestProfitLossRatio = -1;
         Optional<Integer> highestAid = Optional.empty();
         for (int aid : accountService.getAllBacktestAccountIds(uid)) {
-            double currentProfitLossRatio = backtestHistoryRepositoryImpl.get(aid).getPlratio();
+            double currentProfitLossRatio = backtestHistoryRepository.getReferenceById(aid).getPlratio();
             if (currentProfitLossRatio > highestProfitLossRatio) {
                 highestProfitLossRatio = currentProfitLossRatio;
                 highestAid = Optional.of(aid);

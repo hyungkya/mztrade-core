@@ -30,13 +30,6 @@ public class ExampleTests {
 
 
     @Test
-    void getBacktestRequestTest() {
-        BacktestRequest br = backtestHistoryRepositoryImpl.getBacktestRequest(1).get();
-        assertThat(br.getTickers())
-                .isEqualTo(List.of("000270", "000660", "003670", "005380", "005490"));
-    }
-
-    @Test
     void getAllBuyOrderHistoryTest() {
         assertThat(orderService.getBuyOrderHistory(1).size())
                 .isEqualTo(526);

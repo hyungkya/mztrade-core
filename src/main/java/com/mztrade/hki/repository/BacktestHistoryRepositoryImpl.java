@@ -18,14 +18,18 @@ import java.util.Optional;
 public class BacktestHistoryRepositoryImpl {
     private final NamedParameterJdbcTemplate template;
     private final ObjectMapper objectMapper;
+    private final UserRepository userRepository;
+    private final AccountRepository accountRepository;
 
     @Autowired
-    public BacktestHistoryRepositoryImpl(NamedParameterJdbcTemplate template, ObjectMapper objectMapper) {
+    public BacktestHistoryRepositoryImpl(NamedParameterJdbcTemplate template, ObjectMapper objectMapper, UserRepository userRepository, AccountRepository accountRepository) {
         this.template = template;
         this.objectMapper = objectMapper;
+        this.userRepository = userRepository;
+        this.accountRepository = accountRepository;
     }
 
-    public boolean create(BacktestHistory backtestHistory) {
+    /*public boolean create(BacktestHistory backtestHistory) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("uid", backtestHistory.getUid(), Types.INTEGER)
                 .addValue("aid", backtestHistory.getAid(), Types.INTEGER)
@@ -39,9 +43,9 @@ public class BacktestHistoryRepositoryImpl {
             return false;
         }
         return true;
-    }
+    }*/
 
-    public BacktestHistory get(int aid) {
+/*    public BacktestHistory get(int aid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER);
         try {
@@ -58,8 +62,8 @@ public class BacktestHistoryRepositoryImpl {
         } catch (DataAccessException e) {
             return null;
         }
-    }
-    public List<BacktestHistory> getBacktestTop5(int uid) {
+    }*/
+    /*public List<BacktestHistory> getBacktestTop5(int uid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("uid", uid, Types.INTEGER);
         try {
@@ -76,8 +80,8 @@ public class BacktestHistoryRepositoryImpl {
         } catch (DataAccessException e) {
             return null;
         }
-    }
-    public List<BacktestHistory> getRanking() {
+    }*/
+    /*public List<BacktestHistory> getRanking() {
         MapSqlParameterSource src = new MapSqlParameterSource();
         try {
             return this.template.query(
@@ -93,8 +97,8 @@ public class BacktestHistoryRepositoryImpl {
         } catch (DataAccessException e) {
             return null;
         }
-    }
-
+    }*/
+/*
     public Optional<BacktestRequest> getBacktestRequest(int aid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER);
@@ -127,8 +131,8 @@ public class BacktestHistoryRepositoryImpl {
                             "WHERE b.uid = :uid AND JSON_EXTRACT(b.param, '$.title') LIKE :title",
                     src,
                     (rs, rowNum) -> BacktestHistory.builder()
-                            .uid(rs.getInt("b.uid"))
-                            .aid(rs.getInt("b.aid"))
+                            .user(userRepository.getReferenceById(rs.getInt("b.uid")))
+                            .account(accountRepository.getReferenceById(rs.getInt("b.aid")))
                             .param(rs.getString("b.param"))
                             .plratio(rs.getDouble("b.plratio"))
                             .build()
@@ -157,5 +161,5 @@ public class BacktestHistoryRepositoryImpl {
         return this.template.update(
                 "DELETE FROM hkidb.backtest_history WHERE aid = :aid",
                 src);
-    }
+    }*/
 }
