@@ -9,7 +9,6 @@ import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.entity.backtest.Condition;
 import com.mztrade.hki.repository.BacktestHistoryRepository;
-import com.mztrade.hki.repository.BacktestHistoryRepositoryImpl;
 import com.mztrade.hki.repository.PositionRepository;
 import com.mztrade.hki.repository.TagRepositoryImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -31,17 +30,15 @@ public class BacktestService {
     private AccountService accountService;
     private StockPriceService stockPriceService;
     private OrderService orderService;
-    private BacktestHistoryRepositoryImpl backtestHistoryRepositoryImpl;
 
     @Autowired
     public BacktestService(AccountService accountService,
                            StockPriceService stockPriceService,
                            OrderService orderService,
-                           BacktestHistoryRepositoryImpl backtestHistoryRepositoryImpl, TagRepositoryImpl tagRepositoryImpl, BacktestHistoryRepository backtestHistoryRepository, PositionRepository positionRepository, ObjectMapper objectMapper) {
+                           TagRepositoryImpl tagRepositoryImpl, BacktestHistoryRepository backtestHistoryRepository, PositionRepository positionRepository, ObjectMapper objectMapper) {
         this.accountService = accountService;
         this.stockPriceService = stockPriceService;
         this.orderService = orderService;
-        this.backtestHistoryRepositoryImpl = backtestHistoryRepositoryImpl;
         this.tagRepositoryImpl = tagRepositoryImpl;
         this.backtestHistoryRepository = backtestHistoryRepository;
         this.positionRepository = positionRepository;

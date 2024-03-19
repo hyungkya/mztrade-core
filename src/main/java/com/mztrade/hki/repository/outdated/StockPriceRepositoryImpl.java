@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +37,7 @@ public class StockPriceRepositoryImpl {
                         + "ON DUPLICATE KEY UPDATE open = :open, high = :high, low = :low, close = :close, volume = :volume",
                 src);
     }
-/*
+
     public Bar findByDate(String ticker, LocalDateTime date) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("ticker", ticker, Types.VARCHAR)
@@ -92,5 +93,6 @@ public class StockPriceRepositoryImpl {
                         .low(rs.getInt("low"))
                         .close(rs.getInt("close"))
                         .volume(rs.getLong("volume")).build());
-    }*/
+    }
 }
+*/

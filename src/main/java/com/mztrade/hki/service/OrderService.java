@@ -18,8 +18,6 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class OrderService {
-    private final OrderHistoryRepositoryImpl orderHistoryRepositoryImpl;
-    private final PositionRepositoryImpl positionRepositoryImpl;
     private final AccountService accountService;
     private final StockPriceService stockPriceService;
     private final PositionRepository positionRepository;
@@ -28,11 +26,7 @@ public class OrderService {
     private final StockInfoRepository stockInfoRepository;
 
     @Autowired
-    public OrderService(OrderHistoryRepositoryImpl orderHistoryRepositoryImpl,
-                        PositionRepositoryImpl positionRepositoryImpl, AccountService accountService,
-                        StockPriceService stockPriceService, PositionRepository positionRepository, OrderHistoryRepository orderHistoryRepository, AccountRepository accountRepository, StockInfoRepository stockInfoRepository) {
-        this.orderHistoryRepositoryImpl = orderHistoryRepositoryImpl;
-        this.positionRepositoryImpl = positionRepositoryImpl;
+    public OrderService(AccountService accountService, StockPriceService stockPriceService, PositionRepository positionRepository, OrderHistoryRepository orderHistoryRepository, AccountRepository accountRepository, StockInfoRepository stockInfoRepository) {
         this.accountService = accountService;
         this.stockPriceService = stockPriceService;
         this.positionRepository = positionRepository;

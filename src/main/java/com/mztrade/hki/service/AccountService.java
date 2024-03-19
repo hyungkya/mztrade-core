@@ -6,7 +6,6 @@ import com.mztrade.hki.entity.AccountHistory;
 import com.mztrade.hki.entity.User;
 import com.mztrade.hki.repository.AccountHistoryRepository;
 import com.mztrade.hki.repository.AccountRepository;
-import com.mztrade.hki.repository.AccountRepositoryImpl;
 import com.mztrade.hki.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +19,12 @@ import java.util.Map;
 @Service
 @Slf4j
 public class AccountService {
-    private final AccountRepositoryImpl accountRepositoryImpl;
     private final AccountRepository accountRepository;
     private final AccountHistoryRepository accountHistoryRepository;
     private final UserRepository userRepository;
 
     @Autowired
-    public AccountService(AccountRepositoryImpl accountRepositoryImpl, AccountRepository accountRepository, AccountHistoryRepository accountHistoryRepository, UserRepository userRepository) {
-        this.accountRepositoryImpl = accountRepositoryImpl;
+    public AccountService(AccountRepository accountRepository, AccountHistoryRepository accountHistoryRepository, UserRepository userRepository) {
         this.accountRepository = accountRepository;
         this.accountHistoryRepository = accountHistoryRepository;
         this.userRepository = userRepository;

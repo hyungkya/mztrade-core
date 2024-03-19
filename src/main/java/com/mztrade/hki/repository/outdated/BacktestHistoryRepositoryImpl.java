@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-public class BacktestHistoryRepositoryImpl {
+public class  BacktestHistoryRepositoryImpl {
     private final NamedParameterJdbcTemplate template;
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
@@ -29,7 +30,7 @@ public class BacktestHistoryRepositoryImpl {
         this.accountRepository = accountRepository;
     }
 
-    /*public boolean create(BacktestHistory backtestHistory) {
+    public boolean create(BacktestHistory backtestHistory) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("uid", backtestHistory.getUid(), Types.INTEGER)
                 .addValue("aid", backtestHistory.getAid(), Types.INTEGER)
@@ -43,9 +44,9 @@ public class BacktestHistoryRepositoryImpl {
             return false;
         }
         return true;
-    }*/
+    }
 
-/*    public BacktestHistory get(int aid) {
+    public BacktestHistory get(int aid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER);
         try {
@@ -62,8 +63,8 @@ public class BacktestHistoryRepositoryImpl {
         } catch (DataAccessException e) {
             return null;
         }
-    }*/
-    /*public List<BacktestHistory> getBacktestTop5(int uid) {
+    }
+    public List<BacktestHistory> getBacktestTop5(int uid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("uid", uid, Types.INTEGER);
         try {
@@ -80,8 +81,8 @@ public class BacktestHistoryRepositoryImpl {
         } catch (DataAccessException e) {
             return null;
         }
-    }*/
-    /*public List<BacktestHistory> getRanking() {
+    }
+    public List<BacktestHistory> getRanking() {
         MapSqlParameterSource src = new MapSqlParameterSource();
         try {
             return this.template.query(
@@ -97,8 +98,8 @@ public class BacktestHistoryRepositoryImpl {
         } catch (DataAccessException e) {
             return null;
         }
-    }*/
-/*
+    }
+
     public Optional<BacktestRequest> getBacktestRequest(int aid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER);
@@ -161,5 +162,6 @@ public class BacktestHistoryRepositoryImpl {
         return this.template.update(
                 "DELETE FROM hkidb.backtest_history WHERE aid = :aid",
                 src);
-    }*/
+    }
 }
+*/

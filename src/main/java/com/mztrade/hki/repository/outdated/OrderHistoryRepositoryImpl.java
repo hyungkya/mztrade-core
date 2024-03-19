@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +25,7 @@ public class OrderHistoryRepositoryImpl {
         this.template = template;
         this.objectMapper = objectMapper;
     }
-/*
+
     public Integer createOrderHistory(Order order) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource src = new MapSqlParameterSource()
@@ -138,5 +139,6 @@ public class OrderHistoryRepositoryImpl {
                         .oid(rs.getInt("oid"))
                         .otid(rs.getInt("otid"))
                         .build());
-    }*/
+    }
 }
+*/

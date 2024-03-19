@@ -4,11 +4,8 @@ import com.mztrade.hki.Util;
 import com.mztrade.hki.dto.StockInfoResponse;
 import com.mztrade.hki.dto.StockPriceResponse;
 import com.mztrade.hki.entity.StockPrice;
-import com.mztrade.hki.entity.StockInfo;
 import com.mztrade.hki.repository.StockInfoRepository;
-import com.mztrade.hki.repository.StockInfoRepositoryImpl;
 import com.mztrade.hki.repository.StockPriceRepository;
-import com.mztrade.hki.repository.StockPriceRepositoryImpl;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
@@ -24,16 +21,11 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class StockPriceService {
-    private final StockPriceRepositoryImpl stockPriceRepositoryImpl;
-    private final StockInfoRepositoryImpl stockInfoRepositoryImpl;
     private final StockInfoRepository stockInfoRepository;
     private final StockPriceRepository stockPriceRepository;
 
     @Autowired
-    public StockPriceService(StockPriceRepositoryImpl stockPriceRepositoryImpl,
-                             StockInfoRepositoryImpl stockInfoRepositoryImpl, StockInfoRepository stockInfoRepository, StockPriceRepository stockPriceRepository) {
-        this.stockPriceRepositoryImpl = stockPriceRepositoryImpl;
-        this.stockInfoRepositoryImpl = stockInfoRepositoryImpl;
+    public StockPriceService(StockInfoRepository stockInfoRepository, StockPriceRepository stockPriceRepository) {
         this.stockInfoRepository = stockInfoRepository;
         this.stockPriceRepository = stockPriceRepository;
     }
