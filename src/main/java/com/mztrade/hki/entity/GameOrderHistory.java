@@ -16,12 +16,10 @@ import java.time.LocalDateTime;
 @IdClass(GameOrderHistoryId.class)
 @Entity
 public class GameOrderHistory {
-    @Id
-    @Column(nullable = false)
-    @JoinColumn(name = "game_history", referencedColumnName = "gid")
-    private int gid;
-    @Id
-    @Column(nullable = false)
-    @JoinColumn(name = "order_history", referencedColumnName = "oid")
-    private int oid;
+    @Id @ManyToOne
+    @JoinColumn(name = "gid")
+    private GameHistory gameHistory;
+    @Id @OneToOne
+    @JoinColumn(name = "oid")
+    private Order order;
 }
