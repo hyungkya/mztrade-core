@@ -9,8 +9,8 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class BacktestHistoryTagId implements Serializable {
     @EqualsAndHashCode.Include
-    public int tid;
+    public Tag tag;
 
     @EqualsAndHashCode.Include
-    public int aid;
+    public Account account;
 }

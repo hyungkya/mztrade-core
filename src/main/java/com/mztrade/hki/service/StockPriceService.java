@@ -126,7 +126,7 @@ public class StockPriceService {
     }
 
     public List<StockInfoResponse> getAllStockInfo() {
-        List<StockInfoResponse> stockInfoResponses = stockInfoRepository.getAll().stream().map((s) -> StockInfoResponse.from(s)).toList();
+        List<StockInfoResponse> stockInfoResponses = stockInfoRepository.findAll().stream().map((s) -> StockInfoResponse.from(s)).toList();
         log.debug(String.format("[StockPriceService] getAllStockInfo() -> StockInfo:%s", stockInfoResponses));
         return stockInfoResponses;
     }

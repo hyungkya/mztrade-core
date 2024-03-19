@@ -30,7 +30,59 @@ public class TagRepositoryImpl {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
     }
+    public List<StockInfo> findStockInfoByNameAndTags(int uid, String name, List<Integer> tids) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER)
+                .addValue("name", name + "%", Types.VARCHAR)
+                .addValue("tids", tids)
+                .addValue("tid_length", tids.size(), Types.INTEGER);
+        return this.template.query(
+                "SELECT si.* " +
+                        "FROM hkidb.stock_info si " +
+                        "WHERE si.name LIKE :name AND si.ticker IN ( " +
+                        "    SELECT sit.ticker " +
+                        "    FROM hkidb.stock_info_tag sit " +
+                        "    JOIN hkidb.tag t ON sit.tid = t.tid AND sit.tid IN (:tids) " +
+                        "    WHERE t.uid = :uid " +
+                        "    GROUP BY sit.ticker " +
+                        "    HAVING COUNT(DISTINCT sit.tid) = :tid_length);",
+                src,
+                (rs, rowNum) ->
+                        StockInfo.builder()
+                                .ticker(rs.getString("ticker"))
+                                .name(rs.getString("name"))
+                                .listedDate(rs.getDate("listed_date").toLocalDate())
+                                .marketCapital(rs.getInt("market_capital"))
+                                .build()
+        );
+    }
 
+    public List<BacktestHistory> findBacktestHistoryByTitleAndTags(int uid, String title, List<Integer> tids) {
+        MapSqlParameterSource src = new MapSqlParameterSource()
+                .addValue("uid", uid, Types.INTEGER)
+                .addValue("title", "%" + title + "%", Types.VARCHAR)
+                .addValue("tids", tids)
+                .addValue("tid_length", tids.size(), Types.INTEGER);
+        return this.template.query(
+                "SELECT b.* " +
+                        "FROM hkidb.backtest_history b " +
+                        "WHERE JSON_EXTRACT(b.param, '$.title') LIKE :title AND b.aid IN ( " +
+                        "    SELECT bit.aid " +
+                        "    FROM hkidb.backtest_history_tag bit " +
+                        "    JOIN hkidb.tag t ON bit.tid = t.tid AND bit.tid IN (:tids) " +
+                        "    WHERE t.uid = :uid " +
+                        "    GROUP BY bit.aid " +
+                        "    HAVING COUNT(DISTINCT bit.tid) = :tid_length);",
+                src,
+                (rs, rowNum) -> BacktestHistory.builder()
+                        .user(userRepository.getReferenceById(rs.getInt("b.uid")))
+                        .account(accountRepository.getReferenceById(rs.getInt("b.aid")))
+                        .param(rs.getString("param"))
+                        .plratio(rs.getDouble("plratio"))
+                        .build()
+        );
+    }
+    /*
     public int createTag(int uid, String name, String color, TagCategory category) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         MapSqlParameterSource src = new MapSqlParameterSource()
@@ -56,7 +108,6 @@ public class TagRepositoryImpl {
         return updateRow == 1;
     }
 
-/*
 
     public List<Tag> findByCategory(int uid, TagCategory category) {
         MapSqlParameterSource src = new MapSqlParameterSource()
@@ -74,7 +125,7 @@ public class TagRepositoryImpl {
                                 .category(rs.getInt("t.category"))
                                 .build()
         );
-    }*/
+    }
 
     public boolean deleteById(int tid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
@@ -162,58 +213,5 @@ public class TagRepositoryImpl {
                                 .category(rs.getInt("t.category"))
                                 .build()
         );
-    }
-
-    public List<StockInfo> findStockInfoByNameAndTags(int uid, String name, List<Integer> tids) {
-        MapSqlParameterSource src = new MapSqlParameterSource()
-                .addValue("uid", uid, Types.INTEGER)
-                .addValue("name", name + "%", Types.VARCHAR)
-                .addValue("tids", tids)
-                .addValue("tid_length", tids.size(), Types.INTEGER);
-        return this.template.query(
-                "SELECT si.* " +
-                        "FROM hkidb.stock_info si " +
-                        "WHERE si.name LIKE :name AND si.ticker IN ( " +
-                        "    SELECT sit.ticker " +
-                        "    FROM hkidb.stock_info_tag sit " +
-                        "    JOIN hkidb.tag t ON sit.tid = t.tid AND sit.tid IN (:tids) " +
-                        "    WHERE t.uid = :uid " +
-                        "    GROUP BY sit.ticker " +
-                        "    HAVING COUNT(DISTINCT sit.tid) = :tid_length);",
-                src,
-                (rs, rowNum) ->
-                        StockInfo.builder()
-                                .ticker(rs.getString("ticker"))
-                                .name(rs.getString("name"))
-                                .listedDate(rs.getDate("listed_date").toLocalDate())
-                                .marketCapital(rs.getInt("market_capital"))
-                                .build()
-        );
-    }
-
-    public List<BacktestHistory> findBacktestHistoryByTitleAndTags(int uid, String title, List<Integer> tids) {
-        MapSqlParameterSource src = new MapSqlParameterSource()
-                .addValue("uid", uid, Types.INTEGER)
-                .addValue("title", "%" + title + "%", Types.VARCHAR)
-                .addValue("tids", tids)
-                .addValue("tid_length", tids.size(), Types.INTEGER);
-        return this.template.query(
-                "SELECT b.* " +
-                        "FROM hkidb.backtest_history b " +
-                        "WHERE JSON_EXTRACT(b.param, '$.title') LIKE :title AND b.aid IN ( " +
-                        "    SELECT bit.aid " +
-                        "    FROM hkidb.backtest_history_tag bit " +
-                        "    JOIN hkidb.tag t ON bit.tid = t.tid AND bit.tid IN (:tids) " +
-                        "    WHERE t.uid = :uid " +
-                        "    GROUP BY bit.aid " +
-                        "    HAVING COUNT(DISTINCT bit.tid) = :tid_length);",
-                src,
-                (rs, rowNum) -> BacktestHistory.builder()
-                        .user(userRepository.getReferenceById(rs.getInt("b.uid")))
-                        .account(accountRepository.getReferenceById(rs.getInt("b.aid")))
-                        .param(rs.getString("param"))
-                        .plratio(rs.getDouble("plratio"))
-                        .build()
-        );
-    }
+    }*/
 }

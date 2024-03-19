@@ -13,10 +13,10 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 public class BacktestHistoryTag {
-    @Id
-    @JoinColumn(name = "tag")
-    private int tid;
-    @Id
-    @JoinColumn(name = "account")
-    private int aid;
+    @Id @ManyToOne
+    @JoinColumn(name = "tid")
+    private Tag tag;
+    @Id @ManyToOne
+    @JoinColumn(name = "aid")
+    private Account account;
 }

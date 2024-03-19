@@ -23,6 +23,10 @@ public class TagService {
     private BacktestHistoryTagRepository backtestHistoryTagRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private StockInfoRepository stockInfoRepository;
+    @Autowired
+    private AccountRepository accountRepository;
 
     public TagService(TagRepositoryImpl tagRepositoryImpl) {
         this.tagRepositoryImpl = tagRepositoryImpl;
@@ -49,9 +53,9 @@ public class TagService {
     }
 
     public List<TagResponse> getBacktestHistoryTagByAid(int uid, int aid) {
-        List<TagResponse> tagResponses = tagRepositoryImpl.findByAid(uid, aid)
+        List<TagResponse> tagResponses = backtestHistoryTagRepository.findByTagUserUidAndAccountAid(uid, aid)
                 .stream()
-                .map((t) -> TagResponse.from(t))
+                .map((t) -> TagResponse.from(t.getTag()))
                 .toList();
 
         log.debug(String.format("getBacktestHistoryTagByAid(uid: %s,aid: %s) -> %s",uid, aid, tagResponses));
@@ -59,9 +63,9 @@ public class TagService {
     }
 
     public List<TagResponse> getStockInfoTagByTicker(Integer uid, String ticker) {
-        List<TagResponse> tagResponses = tagRepositoryImpl.findByTicker(uid, ticker)
+        List<TagResponse> tagResponses = stockInfoTagRepository.findByTagUserUidAndStockInfoTicker(uid, ticker)
                 .stream()
-                .map((t) -> TagResponse.from(t))
+                .map((t) -> TagResponse.from(t.getTag()))
                 .toList();;
 
         log.debug(String.format("getStockInfoTagByTicker(uid: %s,ticker: %s) -> %s",uid, ticker, tagResponses));
@@ -96,27 +100,47 @@ public class TagService {
     }
 
     public boolean createBacktestHistoryTagLink(int tid, int aid) {
-        backtestHistoryTagRepository.save(BacktestHistoryTag.builder().tid(tid).aid(aid).build());
+        backtestHistoryTagRepository.save(
+                BacktestHistoryTag.builder()
+                        .tag(tagRepository.getReferenceById(tid))
+                        .account(accountRepository.getReferenceById(aid))
+                        .build()
+        );
 
         log.debug(String.format("createBacktestHistoryTagLink(tid: %d, aid: %d) -> isProcessed: %b", tid, aid, true));
         return true;
     }
 
     public void deleteBacktestHistoryTagLink(int tid, int aid) {
-        backtestHistoryTagRepository.delete(BacktestHistoryTag.builder().tid(tid).aid(aid).build());
+        backtestHistoryTagRepository.delete(
+                BacktestHistoryTag.builder()
+                        .tag(tagRepository.getReferenceById(tid))
+                        .account(accountRepository.getReferenceById(aid))
+                        .build()
+        );
 
         log.debug(String.format("deleteBacktestHistoryTagLink(tid: %d, aid: %d)", tid, aid));
     }
 
     public boolean createStockInfoTagLink(int tid, String ticker) {
-        stockInfoTagRepository.save(StockInfoTag.builder().tid(tid).ticker(ticker).build());
+        stockInfoTagRepository.save(
+                StockInfoTag.builder()
+                .tag(tagRepository.getReferenceById(tid))
+                .stockInfo(stockInfoRepository.getByTicker(ticker))
+                .build()
+        );
 
         log.debug(String.format("createStockInfoTagLink(tid: %d, ticker: %s) -> isProcessed: %b", tid, ticker, true));
         return true;
     }
 
     public void deleteStockInfoTagLink(int tid, String ticker) {
-        stockInfoTagRepository.delete(StockInfoTag.builder().tid(tid).ticker(ticker).build());
+        stockInfoTagRepository.delete(
+                StockInfoTag.builder()
+                        .tag(tagRepository.getReferenceById(tid))
+                        .stockInfo(stockInfoRepository.getByTicker(ticker))
+                        .build()
+        );
 
         log.debug(String.format("deleteStockInfoTagLink(tid: %d, ticker: %s)", tid, ticker));
     }

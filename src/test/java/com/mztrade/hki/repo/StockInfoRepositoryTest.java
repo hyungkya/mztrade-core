@@ -1,7 +1,6 @@
 package com.mztrade.hki.repo;
 
 import com.mztrade.hki.entity.StockInfo;
-import com.mztrade.hki.entity.backtest.BacktestRequest;
 import com.mztrade.hki.repository.StockInfoRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +31,7 @@ public class StockInfoRepositoryTest {
 
     @Test
     void getAll() {
-        List<StockInfo> stockInfos = stockInfoRepository.getAll();
+        List<StockInfo> stockInfos = stockInfoRepository.findAll();
         System.out.println(stockInfos.size());
         stockInfos.forEach((e) -> System.out.println(e));
     }

@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class StockInfoTagId implements Serializable {
     @EqualsAndHashCode.Include
-    public int tid;
+    public Tag tag;
 
     @EqualsAndHashCode.Include
-    public String ticker;
+    public StockInfo stockInfo;
 }

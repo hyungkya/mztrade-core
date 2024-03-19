@@ -16,34 +16,33 @@ import java.util.Random;
 @Slf4j
 public class GameService {
     private final GameRepository gameRepository;
-    private final GameOrderRepository gameOrderRepository;
     private final AccountService accountService;
     private final StockPriceService stockPriceService;
     private final OrderService orderService;
     private final StockPriceRepository stockPriceRepository;
     private final StockInfoRepository stockInfoRepository;
     private final OrderHistoryRepository orderHistoryRepository;
+    private final GameOrderRepository gameOrderRepository;
 
     @Autowired
     public GameService(
             GameRepository gameRepository,
-            GameOrderRepository gameOrderRepository,
             AccountService accountService,
             OrderService orderService,
             StockPriceService stockPriceService,
-            StockPriceRepository stockPriceRepository, StockInfoRepository stockInfoRepository, OrderHistoryRepository orderHistoryRepository) {
+            StockPriceRepository stockPriceRepository, StockInfoRepository stockInfoRepository, OrderHistoryRepository orderHistoryRepository, GameOrderRepository gameOrderRepository) {
         this.gameRepository = gameRepository;
-        this.gameOrderRepository = gameOrderRepository;
         this.accountService = accountService;
         this.orderService = orderService;
         this.stockPriceService = stockPriceService;
         this.stockPriceRepository = stockPriceRepository;
         this.stockInfoRepository = stockInfoRepository;
         this.orderHistoryRepository = orderHistoryRepository;
+        this.gameOrderRepository = gameOrderRepository;
     }
 
     public int createGame(int aid) {
-        List<StockInfo> stockInfoList = stockInfoRepository.getAll();
+        List<StockInfo> stockInfoList = stockInfoRepository.findAll();
 
         Random random = new Random();
 

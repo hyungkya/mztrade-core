@@ -13,10 +13,10 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 public class StockInfoTag {
-    @Id
-    @JoinColumn(name = "tag")
-    private int tid;
-    @Id
-    @JoinColumn(name = "stock_info")
-    private String ticker;
+    @Id @ManyToOne
+    @JoinColumn(name = "tid")
+    private Tag tag;
+    @Id @ManyToOne
+    @JoinColumn(name = "ticker")
+    private StockInfo stockInfo;
 }
