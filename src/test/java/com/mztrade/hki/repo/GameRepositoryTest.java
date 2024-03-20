@@ -1,11 +1,6 @@
 package com.mztrade.hki.repo;
 
-import com.mztrade.hki.Util;
-import com.mztrade.hki.entity.Account;
-import com.mztrade.hki.entity.AccountHistory;
 import com.mztrade.hki.entity.GameHistory;
-import com.mztrade.hki.repository.AccountHistoryRepository;
-import com.mztrade.hki.repository.AccountRepository;
 import com.mztrade.hki.repository.GameRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +20,7 @@ public class GameRepositoryTest {
 
     @Test
     void findByAidAndFinishedTrue() {
-        List<GameHistory> gameHistories = gameRepository.findByAidAndFinished(1,true);
+        List<GameHistory> gameHistories = gameRepository.findByAccountAidAndFinished(1,true);
         for(GameHistory gameHistory : gameHistories) {
             System.out.println(gameHistory);
         }
@@ -33,7 +28,7 @@ public class GameRepositoryTest {
 
     @Test
     void findByAidAndFinishedFalse() {
-        List<GameHistory> gameHistories = gameRepository.findByAidAndFinished(1,false);
+        List<GameHistory> gameHistories = gameRepository.findByAccountAidAndFinished(1,false);
         for(GameHistory gameHistory : gameHistories) {
             System.out.println(gameHistory);
         }

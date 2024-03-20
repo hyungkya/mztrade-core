@@ -15,14 +15,16 @@ import java.time.LocalDateTime;
 @Table(name = "game_history")
 @Entity
 public class GameHistory {
-    @JoinColumn(name = "account", referencedColumnName = "aid")
-    private int aid;
+    @ManyToOne
+    @JoinColumn(name = "aid")
+    private Account account;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private int gid;
-    @JoinColumn(name = "stock_info", referencedColumnName = "ticker")
-    private String ticker;
+    @ManyToOne
+    @JoinColumn(name = "ticker")
+    private StockInfo stockInfo;
     @Column(nullable = false)
     private LocalDateTime startDate;
     @Column(nullable = false,columnDefinition = "0")

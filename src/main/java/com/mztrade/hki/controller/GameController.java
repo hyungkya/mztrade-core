@@ -1,6 +1,7 @@
 package com.mztrade.hki.controller;
 
 import com.mztrade.hki.dto.AccountResponse;
+import com.mztrade.hki.dto.GameHistoryResponse;
 import com.mztrade.hki.dto.OrderResponse;
 import com.mztrade.hki.entity.Account;
 import com.mztrade.hki.entity.GameHistory;
@@ -29,9 +30,14 @@ public class GameController {
     public ResponseEntity<Integer> createGame(
             @RequestParam Integer aid
     ) {
-        int gid = gameService.createGame(aid);
         log.info(String.format("[POST] /game/aid=%s", aid));
-        return new ResponseEntity<>(gid, HttpStatus.OK);
+        List<GameHistoryResponse> gameHistoryResponses = gameService.getUnFinishedGameHistory(aid);
+        if (gameHistoryResponses.isEmpty()) {
+            int gid = gameService.createGame(aid);
+            return new ResponseEntity<>(gid, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(gameHistoryResponses.getFirst().getGid(), HttpStatus.OK);
+        }
     }
 
     @GetMapping("/game/account")
@@ -44,29 +50,29 @@ public class GameController {
     }
 
     @GetMapping("/game")
-    public List<GameHistory> getGameHistories(
+    public List<GameHistoryResponse> getGameHistories(
             @RequestParam(required = false) Integer aid,
             @RequestParam(required = false) Integer gid
     ) {
         assert aid == null ^ gid == null;
-        List<GameHistory> gameHistories;
+        List<GameHistoryResponse> gameHistoryResponses;
         if (aid != null) {
-            gameHistories = gameService.getGameHistoryByAccountId(aid);
+            gameHistoryResponses = gameService.getGameHistoryByAccountId(aid);
             log.info(String.format("[GET] /game?aid=%s", aid));
         } else {
-            gameHistories = gameService.getGameHistoryByGameId(gid);
+            gameHistoryResponses = gameService.getGameHistoryByGameId(gid);
             log.info(String.format("[GET] /game?gid=%s", gid));
         }
-        return gameHistories;
+        return gameHistoryResponses;
     }
 
     @GetMapping("/game/un-finished")
-    public List<GameHistory> getUnFinishedGameHistory(
+    public List<GameHistoryResponse> getUnFinishedGameHistory(
             @RequestParam Integer aid
     ) {
-        List<GameHistory> gameHistories = gameService.getUnFinishedGameHistory(aid);
+        List<GameHistoryResponse> gameHistoryResponses = gameService.getUnFinishedGameHistory(aid);
         log.info(String.format("[GET] /game/un-finished?aid=%s", aid));
-        return gameHistories;
+        return gameHistoryResponses;
     }
 
     @PostMapping("/game/order/buy")

@@ -1,6 +1,7 @@
 package com.mztrade.hki.service;
 
 import com.mztrade.hki.dto.AccountResponse;
+import com.mztrade.hki.dto.GameHistoryResponse;
 import com.mztrade.hki.dto.OrderResponse;
 import com.mztrade.hki.entity.*;
 import com.mztrade.hki.repository.*;
@@ -23,6 +24,7 @@ public class GameService {
     private final StockInfoRepository stockInfoRepository;
     private final OrderHistoryRepository orderHistoryRepository;
     private final GameOrderRepository gameOrderRepository;
+    private final AccountRepository accountRepository;
 
     @Autowired
     public GameService(
@@ -30,7 +32,7 @@ public class GameService {
             AccountService accountService,
             OrderService orderService,
             StockPriceService stockPriceService,
-            StockPriceRepository stockPriceRepository, StockInfoRepository stockInfoRepository, OrderHistoryRepository orderHistoryRepository, GameOrderRepository gameOrderRepository) {
+            StockPriceRepository stockPriceRepository, StockInfoRepository stockInfoRepository, OrderHistoryRepository orderHistoryRepository, GameOrderRepository gameOrderRepository, AccountRepository accountRepository) {
         this.gameRepository = gameRepository;
         this.accountService = accountService;
         this.orderService = orderService;
@@ -39,6 +41,7 @@ public class GameService {
         this.stockInfoRepository = stockInfoRepository;
         this.orderHistoryRepository = orderHistoryRepository;
         this.gameOrderRepository = gameOrderRepository;
+        this.accountRepository = accountRepository;
     }
 
     public int createGame(int aid) {
@@ -56,8 +59,8 @@ public class GameService {
         long balance = accountService.getBalance(aid);
 
         GameHistory gameHistory = gameRepository.save(GameHistory.builder()
-                .aid(aid)
-                .ticker(ticker)
+                .account(accountRepository.getReferenceById(aid))
+                .stockInfo(stockInfoRepository.getByTicker(ticker))
                 .startDate(startDate)
                 .startBalance(balance).build());
         log.debug(String.format("createGame(aid: %d) -> gid: %d", aid, gameHistory.getGid()));
@@ -71,22 +74,31 @@ public class GameService {
         return accountResponses;
     }
 
-    public List<GameHistory> getGameHistoryByAccountId(int aid) {
-        List<GameHistory> gameHistories = gameRepository.findByAidAndFinished(aid,true);
-        log.debug(String.format("getGameHistoryByAccountId(aid: %d) -> gameHistories: %s", aid, gameHistories));
-        return gameHistories;
+    public List<GameHistoryResponse> getGameHistoryByAccountId(int aid) {
+        List<GameHistoryResponse> gameHistoryResponses = gameRepository.findByAccountAidAndFinished(aid,true)
+                .stream()
+                .map((g) -> GameHistoryResponse.from(g))
+                .toList();
+        log.debug(String.format("getGameHistoryByAccountId(aid: %d) -> gameHistories: %s", aid, gameHistoryResponses));
+        return gameHistoryResponses;
     }
 
-    public List<GameHistory> getGameHistoryByGameId(int gid) {
-        List<GameHistory> gameHistories = gameRepository.findByGid(gid);
-        log.debug(String.format("getGameHistoryByGameId(gid: %d) -> gameHistories: %s", gid, gameHistories));
-        return gameHistories;
+    public List<GameHistoryResponse> getGameHistoryByGameId(int gid) {
+        List<GameHistoryResponse> gameHistoryResponses = gameRepository.findByGid(gid)
+                .stream()
+                .map((g) -> GameHistoryResponse.from(g))
+                .toList();
+        log.debug(String.format("getGameHistoryByGameId(gid: %d) -> gameHistories: %s", gid, gameHistoryResponses));
+        return gameHistoryResponses;
     }
 
-    public List<GameHistory> getUnFinishedGameHistory(int aid) {
-        List<GameHistory> gameHistories = gameRepository.findByAidAndFinished(aid,false);
-        log.debug(String.format("getUnFinishedGameHistory(gid: %d) -> gameHistories: %s", aid, gameHistories));
-        return gameHistories;
+    public List<GameHistoryResponse> getUnFinishedGameHistory(int aid) {
+        List<GameHistoryResponse> gameHistoryResponses = gameRepository.findByAccountAidAndFinished(aid,false)
+                .stream()
+                .map((g) -> GameHistoryResponse.from(g))
+                .toList();
+        log.debug(String.format("getUnFinishedGameHistory(gid: %d) -> gameHistories: %s", aid, gameHistoryResponses));
+        return gameHistoryResponses;
     }
 
     public Boolean sell(Integer gid, Integer aid, String ticker, LocalDateTime date, Integer qty) {
@@ -161,7 +173,7 @@ public class GameService {
 
     public void finishGame(Integer gid) {
         GameHistory gameHistory = gameRepository.findByGid(gid).getFirst();
-        long balance = accountService.getBalance(gameHistory.getAid());
+        long balance = accountService.getBalance(gameHistory.getAccount().getAid());
 
         gameHistory.setTurns(gameHistory.getTurns());
         gameHistory.setMaxTurn(gameHistory.getMaxTurn());

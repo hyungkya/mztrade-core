@@ -10,5 +10,5 @@ import java.util.List;
 public interface GameRepository extends JpaRepository<GameHistory, Integer> {
     GameHistory save(GameHistory gameHistory);
     List<GameHistory> findByGid(Integer gid);
-    List<GameHistory> findByAidAndFinished(int aid, boolean finished);
+    List<GameHistory> findByAccountAidAndFinished(int aid, boolean finished);
 }
