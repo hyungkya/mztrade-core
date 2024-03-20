@@ -78,19 +78,16 @@ public class AuthController {
     public ResponseEntity<?> reissue(@Valid @RequestBody TokenDto tokenDto) {
 
         log.info("토큰 재발급 시작");
-
         try {
             // accessToken 유효성 검사
             boolean validateToken = tokenProvider.validateToken(tokenDto.getAccessToken());
-
             // access token 이 유효하지 않은 경우
             if (!validateToken) {
 
                 String username = tokenProvider.getUsername(tokenDto.getRefreshToken());
-                log.info("username : {}", username);
+
                 // Redis에서 저장된 Refresh Token 가져오기
                 String storedRefreshToken = redisService.getRefreshToken(username);
-
                 String refreshToken = tokenDto.getRefreshToken();
 
                 if (storedRefreshToken != null && storedRefreshToken.equals(refreshToken)
@@ -121,7 +118,10 @@ public class AuthController {
 
             }
         } catch (Exception e) {
+
             log.info("토큰 재발급 실패");
+
+            // 400 status code 반환
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
