@@ -7,11 +7,11 @@ spring:
     jackson:
         property-naming-strategy: SNAKE_CASE
 # 쿼리 수행시 콘솔창에 출력되는 옵션 추가
-#    jpa:
-#        properties:
-#            hibernate:
-#                format_sql: true
-#                show_sql: true
+    jpa:
+        properties:
+            hibernate:
+                format_sql: true
+                show_sql: true
 
     output:
         ansi:

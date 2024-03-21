@@ -1,5 +1,6 @@
 package com.mztrade.hki.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +18,9 @@ import lombok.ToString;
 @Builder
 @ToString
 public class TokenDto {
+    @JsonProperty("access_token")
     private String accessToken;
+
+    @JsonProperty("refresh_token")
     private String refreshToken;
 }
