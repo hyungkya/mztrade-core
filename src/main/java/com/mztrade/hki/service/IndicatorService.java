@@ -65,7 +65,7 @@ public class IndicatorService {
 
     public Map<LocalDateTime, Double> getIndicators(String ticker, LocalDateTime startDate, LocalDateTime endDate, Indicator indicator) {
         Map<LocalDateTime, Double> result = new HashMap<>();
-        if (indicator.getType().equals("SMA")) {
+        if (indicator.getType().startsWith("SMA")) {
             result = calculateSMAs(ticker, startDate, endDate, indicator.getParams());
         } else if (indicator.getType().equals("EMA")) {
             result = calculateEMAs(ticker, startDate, endDate, indicator.getParams());

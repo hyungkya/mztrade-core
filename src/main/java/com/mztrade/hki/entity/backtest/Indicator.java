@@ -32,7 +32,7 @@ public class Indicator {
         if (type.toUpperCase().matches("RSI")) {
             return calculateRSI(stockPrices, params);
         }
-        if (type.toUpperCase().matches("SMA")) {
+        if (type.toUpperCase().startsWith("SMA")) {
             return calculateSMA(stockPrices, params);
         }
         if (type.toUpperCase().matches("EMA")) {
