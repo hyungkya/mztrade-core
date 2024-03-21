@@ -222,9 +222,11 @@ public class BacktestController {
 
         log.info(String.format("[GET] /backtest/top-plratio/uid=%s", uid));
 
-        return highestProfitLossRatioAid.map(
-                        aid -> new ResponseEntity<>(backtestService.get(aid), HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(null, HttpStatus.OK));
+        if (highestProfitLossRatioAid.isEmpty()) {
+            return new ResponseEntity<>(null, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(backtestService.get(highestProfitLossRatioAid.get()), HttpStatus.OK);
+        }
     }
 
     @GetMapping("/compare-chart/bt-table")
