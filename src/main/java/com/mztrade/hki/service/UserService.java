@@ -41,7 +41,7 @@ public class UserService implements UserDetailsService {
 
     }
 
-    public void login(String username, String password) throws Exception {
+    public Integer login(String username, String password) throws Exception {
 
         User user = userRepository.findByName(username)
                     .orElseThrow(() -> new Exception("유효한 회원ID가 아닙니다."));
@@ -51,6 +51,7 @@ public class UserService implements UserDetailsService {
             throw new Exception(("유효한 회원 패스워드가 아닙니다."));
         }
 
+        return user.getUid();
     }
 
     @Override

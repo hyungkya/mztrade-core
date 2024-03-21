@@ -50,7 +50,7 @@ CREATE TABLE hkidb.stock_info (
                                   capital           INT         NULL,
                                   market_capital    INTEGER     NOT NULL,
                                   par_value         INT         NULL,
-                                  issued_shares     INT         NULL,
+                                  issued_shares     BIGINT      NULL,
                                   per               INT         NULL,
                                   eps               INT         NULL,
                                   pbr               INT         NULL,

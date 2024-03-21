@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 public class LoginResponseDto {
 
     private String name;
-
+    private Integer uid;
 }

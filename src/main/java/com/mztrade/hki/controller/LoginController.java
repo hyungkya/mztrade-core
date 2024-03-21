@@ -54,14 +54,14 @@ public class LoginController {
         log.info("로그인 유저요청 = " + loginRequestDto.getName());
 
         try{
-            userService.login(loginRequestDto.getName(), loginRequestDto.getPassword()); // 유저 정보 확인
+            Integer uid = userService.login(loginRequestDto.getName(), loginRequestDto.getPassword()); // 유저 정보 확인
 
             log.info("로그인 완료");
 
             return new ResponseEntity<>(DefaultResponse.response(
                     StatusCode.OK,
                     ResponseMessage.LOGIN_SUCCESS,
-                    new LoginResponseDto(loginRequestDto.getName())
+                    new LoginResponseDto(loginRequestDto.getName(), uid)
             ), HttpStatus.OK);
 
 

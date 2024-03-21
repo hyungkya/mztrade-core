@@ -31,7 +31,7 @@ public class StockInfo {
     @Column(name = "par_value")
     private Integer parValue;
     @Column(name = "issued_shares")
-    private Integer issuedShares;
+    private Long issuedShares;
     @Column(name = "per")
     private Integer per;
     @Column(name = "eps")

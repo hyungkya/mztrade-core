@@ -15,7 +15,7 @@ public class StockFinancialInfoResponse {
     private Integer capital;
     private Integer marketCapital;
     private Integer parValue;
-    private Integer issuedShares;
+    private Long issuedShares;
     private Integer per;
     private Integer eps;
     private Integer pbr;
