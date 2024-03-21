@@ -2,6 +2,7 @@ package com.mztrade.hki.controller;
 
 import com.mztrade.hki.dto.AccountResponse;
 import com.mztrade.hki.dto.GameHistoryResponse;
+import com.mztrade.hki.dto.GameRanking;
 import com.mztrade.hki.dto.OrderResponse;
 import com.mztrade.hki.entity.Account;
 import com.mztrade.hki.entity.GameHistory;
@@ -64,6 +65,13 @@ public class GameController {
             log.info(String.format("[GET] /game?gid=%s", gid));
         }
         return gameHistoryResponses;
+    }
+
+    @GetMapping("/game/ranking")
+    public List<GameRanking> getGameRanking() {
+        List<GameRanking> gameRanking = gameService.getGameRanking();
+        log.info("[GET] /game/ranking");
+        return gameRanking;
     }
 
     @GetMapping("/game/un-finished")

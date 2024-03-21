@@ -44,10 +44,16 @@ CREATE TABLE hkidb.account_history (
 );
 
 CREATE TABLE hkidb.stock_info (
-                                  ticker      VARCHAR(16) NOT NULL,
-                                  name        VARCHAR(64) NOT NULL,
-                                  listed_date DATE        NOT NULL,
-                                  market_capital INTEGER  NOT NULL,
+                                  ticker            VARCHAR(16) NOT NULL,
+                                  name              VARCHAR(64) NOT NULL,
+                                  listed_date       DATE        NOT NULL,
+                                  capital           INT         NULL,
+                                  market_capital    INTEGER     NOT NULL,
+                                  par_value         INT         NULL,
+                                  issued_shares     INT         NULL,
+                                  per               INT         NULL,
+                                  eps               INT         NULL,
+                                  pbr               INT         NULL,
 
                                   PRIMARY KEY (ticker)
 );

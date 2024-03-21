@@ -11,9 +11,11 @@ values  (6, 1, 8261487),
         (9, 1, 2950083),
         (10, 1, 7625500);
 
+insert into hkidb.stock_info (ticker, name, listed_date, capital, market_capital, par_value, issued_shares, per, eps, pbr)
+values  ('000660', 'SK하이닉스', '1996-12-26', 36577, 679954, 5000, 728002365, -12.50, -12517.00, 2.04);
+
 insert into hkidb.stock_info (ticker, name, listed_date, market_capital)
 values  ('000270', '기아', '1973-07-21', 282538),
-        ('000660', 'SK하이닉스', '1996-12-26', 679954),
         ('003670', '포스코케미칼', '2019-05-29', 173517),
         ('005380', '현대차', '1974-06-28', 363022),
         ('005490', 'POSCO홀딩스', '1988-06-10', 256673),

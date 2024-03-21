@@ -218,6 +218,7 @@ public class BacktestService {
         log.debug(String.format("[BacktestService] get(int: %d) -> backtestHistory: %s", aid, backtestHistoryResponse));
         return backtestHistoryResponse;
     }
+
     public List<BacktestHistoryResponse> getBacktestTop5(int uid) {
         List<BacktestHistoryResponse> backtestHistoryResponse = backtestHistoryRepository.findTop5ByUserUidOrderByPlratioDesc(uid)
                 .stream()
@@ -226,6 +227,7 @@ public class BacktestService {
         log.debug(String.format("[BacktestService] getBacktestTop5(uid: %s) -> backtestHistories: %s", uid, backtestHistoryResponse));
         return backtestHistoryResponse;
     }
+
     public List<BacktestHistoryResponse> getRanking() {
         List<BacktestHistoryResponse> backtestHistoryResponse = backtestHistoryRepository.findTop5ByOrderByPlratioDesc()
                 .stream()

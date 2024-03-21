@@ -1,6 +1,7 @@
 package com.mztrade.hki.service;
 
 import com.mztrade.hki.Util;
+import com.mztrade.hki.dto.StockFinancialInfoResponse;
 import com.mztrade.hki.dto.StockInfoResponse;
 import com.mztrade.hki.dto.StockPriceResponse;
 import com.mztrade.hki.entity.StockPrice;
@@ -144,5 +145,11 @@ public class StockPriceService {
         StockInfoResponse stockInfoResponse = StockInfoResponse.from(stockInfoRepository.findByTicker(ticker).get());
         log.debug(String.format("[StockPriceService] findStockInfoByTicker(ticker: %s) -> StockInfo:%s", ticker, stockInfoResponse));
         return stockInfoResponse;
+    }
+
+    public StockFinancialInfoResponse findStockFinancialInfoByTicker(String ticker) {
+        StockFinancialInfoResponse stockFinancialInfoResponse = StockFinancialInfoResponse.from(stockInfoRepository.getByTicker(ticker));
+        log.debug(String.format("[StockPriceService] findStockFinancialInfoByTicker(ticker: %s) -> StockInfo:%s", ticker, stockFinancialInfoResponse));
+        return stockFinancialInfoResponse;
     }
 }

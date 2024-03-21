@@ -24,8 +24,20 @@ public class StockInfo {
     private String name;
     @Column(name = "listed_date")
     private LocalDate listedDate;
+    @Column(name = "capital")
+    private Integer capital;
     @Column(name = "market_capital")
     private Integer marketCapital;
+    @Column(name = "par_value")
+    private Integer parValue;
+    @Column(name = "issued_shares")
+    private Integer issuedShares;
+    @Column(name = "per")
+    private Integer per;
+    @Column(name = "eps")
+    private Integer eps;
+    @Column(name = "pbr")
+    private Integer pbr;
     //@OneToMany(mappedBy = "stockInfo")
     //private Set<StockPrice> stockPrices = new HashSet<>();
     //@OneToMany(mappedBy = "stockInfo")

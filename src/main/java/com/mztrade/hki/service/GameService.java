@@ -2,6 +2,7 @@ package com.mztrade.hki.service;
 
 import com.mztrade.hki.dto.AccountResponse;
 import com.mztrade.hki.dto.GameHistoryResponse;
+import com.mztrade.hki.dto.GameRanking;
 import com.mztrade.hki.dto.OrderResponse;
 import com.mztrade.hki.entity.*;
 import com.mztrade.hki.repository.*;
@@ -25,6 +26,7 @@ public class GameService {
     private final OrderHistoryRepository orderHistoryRepository;
     private final GameOrderRepository gameOrderRepository;
     private final AccountRepository accountRepository;
+    private final GameRepositoryImpl gameRepositoryImpl;
 
     @Autowired
     public GameService(
@@ -32,7 +34,7 @@ public class GameService {
             AccountService accountService,
             OrderService orderService,
             StockPriceService stockPriceService,
-            StockPriceRepository stockPriceRepository, StockInfoRepository stockInfoRepository, OrderHistoryRepository orderHistoryRepository, GameOrderRepository gameOrderRepository, AccountRepository accountRepository) {
+            StockPriceRepository stockPriceRepository, StockInfoRepository stockInfoRepository, OrderHistoryRepository orderHistoryRepository, GameOrderRepository gameOrderRepository, AccountRepository accountRepository, GameRepositoryImpl gameRepositoryImpl) {
         this.gameRepository = gameRepository;
         this.accountService = accountService;
         this.orderService = orderService;
@@ -42,6 +44,7 @@ public class GameService {
         this.orderHistoryRepository = orderHistoryRepository;
         this.gameOrderRepository = gameOrderRepository;
         this.accountRepository = accountRepository;
+        this.gameRepositoryImpl = gameRepositoryImpl;
     }
 
     public int createGame(int aid) {
@@ -81,6 +84,12 @@ public class GameService {
                 .toList();
         log.debug(String.format("getGameHistoryByAccountId(aid: %d) -> gameHistories: %s", aid, gameHistoryResponses));
         return gameHistoryResponses;
+    }
+
+    public List<GameRanking> getGameRanking() {
+        List<GameRanking> gameRanking = gameRepositoryImpl.getGameRanking();
+        log.debug(String.format("getGameHistoryRanking() -> gameRanking: %s", gameRanking));
+        return gameRanking;
     }
 
     public List<GameHistoryResponse> getGameHistoryByGameId(int gid) {

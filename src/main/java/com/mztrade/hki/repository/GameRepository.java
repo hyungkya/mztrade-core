@@ -11,4 +11,5 @@ public interface GameRepository extends JpaRepository<GameHistory, Integer> {
     GameHistory save(GameHistory gameHistory);
     List<GameHistory> findByGid(Integer gid);
     List<GameHistory> findByAccountAidAndFinished(int aid, boolean finished);
+
 }
