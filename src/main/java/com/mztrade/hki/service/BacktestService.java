@@ -11,6 +11,7 @@ import com.mztrade.hki.entity.backtest.Condition;
 import com.mztrade.hki.repository.BacktestHistoryRepository;
 import com.mztrade.hki.repository.PositionRepository;
 import com.mztrade.hki.repository.TagRepositoryImpl;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -207,9 +208,16 @@ public class BacktestService {
     }
 
     public boolean create(BacktestHistory backtestHistory) {
-
         backtestHistoryRepository.save(backtestHistory);
         log.debug(String.format("[BacktestService] create(backtestHistory: %s) -> isSuccess: %b", backtestHistory, true));
+        return true;
+    }
+
+    @Transactional
+    public boolean update(Integer aid, String param) {
+        BacktestHistory backtestHistory = backtestHistoryRepository.getReferenceById(aid);
+        backtestHistory.setParam(param);
+        log.debug(String.format("[BacktestService] update(backtestHistory: %s) -> isSuccess: %b", backtestHistory, true));
         return true;
     }
 

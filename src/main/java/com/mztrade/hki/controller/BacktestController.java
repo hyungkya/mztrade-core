@@ -205,6 +205,16 @@ public class BacktestController {
         return new ResponseEntity<>(queryResult, HttpStatus.OK);
     }
 
+    @PutMapping("/backtest")
+    public ResponseEntity<Boolean> updateBacktestHistory(
+            @RequestParam Integer aid,
+            @RequestBody BacktestRequest backtestRequest
+    ) throws JsonProcessingException {
+        log.info(String.format("[PUT] /backtest/aid=%s", aid));
+        backtestService.update(aid, objectMapper.writeValueAsString(backtestRequest));
+        return new ResponseEntity<>(true, HttpStatus.OK);
+    }
+
     @DeleteMapping("/backtest")
     public ResponseEntity<Boolean> deleteAccount(
             @RequestParam Integer aid

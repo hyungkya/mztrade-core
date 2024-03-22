@@ -115,12 +115,12 @@ public class GameController {
     }
 
     @PostMapping("/game/turns")
-    public ResponseEntity<Boolean> increaseGameTurns(
+    public ResponseEntity<Integer> increaseGameTurns(
             @RequestParam Integer gid
     ) {
-        boolean bool = gameService.increaseTurns(gid);
+        Integer currentTurn = gameService.increaseTurns(gid);
         log.info(String.format("[POST] /game/turns?gid=%d", gid));
-        return new ResponseEntity<>(bool, HttpStatus.OK);
+        return new ResponseEntity<>(currentTurn, HttpStatus.OK);
     }
 
     @PostMapping("/game/max-turn")
