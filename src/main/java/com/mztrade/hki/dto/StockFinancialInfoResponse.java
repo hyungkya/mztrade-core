@@ -16,9 +16,9 @@ public class StockFinancialInfoResponse {
     private Integer marketCapital;
     private Integer parValue;
     private Long issuedShares;
-    private Integer per;
+    private Double per;
     private Integer eps;
-    private Integer pbr;
+    private Double pbr;
     static public StockFinancialInfoResponse from(StockInfo stockInfo) {
         return StockFinancialInfoResponse.builder()
                 .ticker(stockInfo.getTicker())

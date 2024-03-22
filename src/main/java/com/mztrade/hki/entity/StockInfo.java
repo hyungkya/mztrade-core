@@ -33,11 +33,11 @@ public class StockInfo {
     @Column(name = "issued_shares")
     private Long issuedShares;
     @Column(name = "per")
-    private Integer per;
+    private Double per;
     @Column(name = "eps")
     private Integer eps;
     @Column(name = "pbr")
-    private Integer pbr;
+    private Double pbr;
     //@OneToMany(mappedBy = "stockInfo")
     //private Set<StockPrice> stockPrices = new HashSet<>();
     //@OneToMany(mappedBy = "stockInfo")
