@@ -1,7 +1,6 @@
 package com.mztrade.hki;
 
-import com.mztrade.hki.entity.backtest.BacktestRequest;
-import com.mztrade.hki.repository.BacktestHistoryRepositoryImpl;
+
 import com.mztrade.hki.repository.TagRepositoryImpl;
 import com.mztrade.hki.service.OrderService;
 import com.mztrade.hki.service.StatisticService;
@@ -18,8 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ExampleTests {
-    @Autowired
-    private BacktestHistoryRepositoryImpl backtestHistoryRepositoryImpl;
     @Autowired
     private OrderService orderService;
     @Autowired

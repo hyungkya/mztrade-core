@@ -22,6 +22,11 @@ public class Indicator {
         this.params = params;
     }
 
+    public String key() {
+        return type + params;
+    }
+
+
     public double calculate(List<StockPrice> stockPrices) {
         if (type.toUpperCase().matches("NONE")) {
             return 0;

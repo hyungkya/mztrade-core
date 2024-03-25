@@ -2,9 +2,9 @@ package com.mztrade.hki.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.Util;
+import com.mztrade.hki.dto.BacktestRequest;
 import com.mztrade.hki.entity.Order;
 import com.mztrade.hki.entity.OrderType;
-import com.mztrade.hki.entity.backtest.BacktestRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,7 +75,7 @@ public class StatisticService {
             ((double) order.getQty() * order.getPrice()) - (order.getQty() * order.getAvgEntryPrice().doubleValue());
         }
 
-        double profit = totalProfitLoss / Double.parseDouble(backtestService.getBacktestRequest(aid).getInitialBalance());
+        double profit = totalProfitLoss / backtestService.getBacktestRequest(aid).getInitialBalance();
 
         log.debug(String.format("[StatisticService] getTickerProfit(aid: %s, ticker: %s) -> Profit:%s", aid, ticker,profit));
         return profit;

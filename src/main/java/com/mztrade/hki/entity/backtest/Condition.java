@@ -1,78 +1,103 @@
 package com.mztrade.hki.entity.backtest;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mztrade.hki.entity.StockPrice;
+import com.mztrade.hki.service.IndicatorService;
+import com.mztrade.hki.service.StockPriceService;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@Getter @Setter @ToString @Builder(toBuilder = true)
+@AllArgsConstructor
 @Slf4j
 public class Condition {
-    private Indicator baseIndicator;
-    private Indicator targetIndicator;
-    private Float constantBound;
+    private String baseType;
+    private String baseParam;
+    private String targetType;
+    private String targetParam;
     private String compareType;
-    private List<Integer> frequency;
+    private List<Integer> compareParam;
+    @JsonIgnore
+    private Map<String, Map<LocalDateTime, Double>> bases;
+    @JsonIgnore
+    private Map<String, Map<LocalDateTime, Double>> targets;
+    @JsonIgnore
     private Map<String, List<Boolean>> recentMatches;
 
-    public Condition() {
-        this.targetIndicator = new Indicator("NONE", Collections.emptyList());
-        this.frequency = List.of(1, 1);
-        this.recentMatches = new HashMap<>();
+    public void load(StockPriceService stockPriceService, IndicatorService indicatorService, String ticker, LocalDateTime startDate, LocalDateTime endDate) {
+        if (bases == null) bases = new HashMap<>();
+        if (targets == null) targets = new HashMap<>();
+
+        if (baseType.equals("indicator")) {
+            bases.put(ticker, indicatorService.getIndicators(ticker, startDate, endDate, this.parseBaseIndicator()));
+        } else if (baseType.equals("price_close")) {
+            Map<LocalDateTime, Double> temp = new HashMap<>();
+            for (StockPrice stockPrice : stockPriceService.getPrices(ticker, startDate, endDate)) {
+                temp.put(stockPrice.getDate(), stockPrice.getClose().doubleValue());
+            }
+            bases.put(ticker, temp);
+        } else {
+            Map<LocalDateTime, Double> temp = new HashMap<>();
+            for (LocalDateTime currentDate = startDate; currentDate.isBefore(endDate); currentDate = currentDate.plus(1, ChronoUnit.DAYS)) {
+                temp.put(currentDate, Double.parseDouble(baseParam));
+            }
+            bases.put(ticker, temp);
+        }
+        if (targetType.equals("indicator")) {
+            targets.put(ticker, indicatorService.getIndicators(ticker, startDate, endDate, this.parseTargetIndicator()));
+        } else if (targetType.equals("price_close")) {
+            Map<LocalDateTime, Double> temp = new HashMap<>();
+            for (StockPrice stockPrice : stockPriceService.getPrices(ticker, startDate, endDate)) {
+                temp.put(stockPrice.getDate(), stockPrice.getClose().doubleValue());
+            }
+            targets.put(ticker, temp);
+        } else {
+            Map<LocalDateTime, Double> temp = new HashMap<>();
+            for (LocalDateTime currentDate = startDate; currentDate.isBefore(endDate); currentDate = currentDate.plus(1, ChronoUnit.DAYS)) {
+                temp.put(currentDate, Double.parseDouble(targetParam));
+            }
+            targets.put(ticker, temp);
+        }
     }
 
-    public Condition setBaseIndicator(Indicator baseIndicator) {
-        this.baseIndicator = baseIndicator;
-        return this;
-    }
-
-    public Condition setTargetIndicator(Indicator targetIndicator) {
-        this.targetIndicator = targetIndicator;
-        return this;
-    }
-
-    public Condition setConstantBound(Float constantBound) {
-        this.constantBound = constantBound;
-        return this;
-    }
-
-    public Condition setCompareType(String compareType) {
-        this.compareType = compareType;
-        return this;
-    }
-
-    public Condition setFrequency(List<Integer> frequency) {
-        this.frequency = frequency;
-        return this;
-    }
-
-    public boolean check(List<StockPrice> stockPrices) {
-        String ticker = stockPrices.getFirst().getStockInfo().getTicker();
+    public boolean check(String ticker, LocalDateTime date) {
+        if (recentMatches == null) recentMatches = new HashMap<>();
         if (!recentMatches.containsKey(ticker)) {
             recentMatches.put(ticker, new ArrayList<>());
         }
-        log.trace("baseIndicator: " + baseIndicator.calculate(stockPrices) + " targetIndicator: " + targetIndicator.calculate(stockPrices));
+
         if (compareType.matches(">") || compareType.matches(">>")) {
-            if (baseIndicator.calculate(stockPrices) > targetIndicator.calculate(stockPrices) + constantBound) {
+            if (bases.get(ticker).containsKey(date)
+                    && targets.get(ticker).containsKey(date)
+                    && bases.get(ticker).get(date) > targets.get(ticker).get(date)) {
                 recentMatches.get(ticker).add(true);
             } else {
                 recentMatches.get(ticker).add(false);
             }
         }
         if (compareType.matches("<") || compareType.matches("<<")) {
-            if (baseIndicator.calculate(stockPrices) < targetIndicator.calculate(stockPrices) + constantBound) {
+            if (bases.get(ticker).containsKey(date)
+                    && targets.get(ticker).containsKey(date)
+                    && bases.get(ticker).get(date) < targets.get(ticker).get(date)) {
                 recentMatches.get(ticker).add(true);
             } else {
                 recentMatches.get(ticker).add(false);
             }
         }
-        if (recentMatches.get(ticker).size() > frequency.get(0)) {
+        if (recentMatches.get(ticker).size() > compareParam.get(0)) {
             recentMatches.get(ticker).removeFirst();
         }
-
-        if (recentMatches.get(ticker).size() != frequency.get(0)) {
+        if (recentMatches.get(ticker).size() != compareParam.get(0)) {
             return false;
         } else {
-            int falseTrueTransitionIndex = frequency.get(0) - frequency.get(1);
-            for (int i = 0; i < frequency.get(0); i++) {
+            int falseTrueTransitionIndex = compareParam.get(0) - compareParam.get(1);
+            for (int i = 0; i < compareParam.get(0); i++) {
                 if (i < falseTrueTransitionIndex && recentMatches.get(ticker).get(i) != false) {
                     return false;
                 } else if (i >= falseTrueTransitionIndex && recentMatches.get(ticker).get(i) != true) {
@@ -83,15 +108,16 @@ public class Condition {
         return true;
     }
 
-    @Override
-    public String toString() {
-        return "Condition{" +
-                "baseIndicator=" + baseIndicator +
-                ", targetIndicator=" + targetIndicator +
-                ", constantBound=" + constantBound +
-                ", compareType='" + compareType + '\'' +
-                ", frequency=" + frequency +
-                ", recentMatches=" + recentMatches +
-                '}';
-    }
+    public Indicator parseBaseIndicator() {
+        List<String> s = Stream.of(this.getBaseParam().trim().split(",")).collect(Collectors.toList());
+        String type = s.get(0);
+        List<Float> params = s.subList(1, s.size()).stream().map(p -> Float.parseFloat(p.trim())).collect(Collectors.toList());
+        return new Indicator(type, params);
+    };
+    public Indicator parseTargetIndicator() {
+        List<String> s = Stream.of(this.getTargetParam().trim().split(",")).collect(Collectors.toList());
+        String type = s.get(0);
+        List<Float> params = s.subList(1, s.size()).stream().map(p -> Float.parseFloat(p.trim())).collect(Collectors.toList());
+        return new Indicator(type, params);
+    };
 }

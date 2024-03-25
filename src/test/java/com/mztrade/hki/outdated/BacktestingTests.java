@@ -24,39 +24,4 @@ public class BacktestingTests {
     @Autowired
     private BacktestService backtestService;
 
-    @Test
-    @Order(1)
-    void simpleExecuteTest() {
-        List<List<Condition>> buyConditions = new ArrayList<>();
-        List<List<Condition>> sellConditions = new ArrayList<>();
-
-        Condition buyCondition = new Condition()
-                .setBaseIndicator(new Indicator("RSI", List.of(14f)))
-                .setConstantBound(30f)
-                .setCompareType("<");
-
-        Condition sellCondition = new Condition()
-                .setBaseIndicator(new Indicator("RSI", List.of(14f)))
-                .setConstantBound(70f)
-                .setCompareType(">");
-
-        buyConditions.add(List.of(buyCondition));
-        sellConditions.add(List.of(sellCondition));
-
-        backtestService.execute(
-                1,
-                10_000_000L,
-                buyConditions,
-                sellConditions,
-                List.of(0.33f, 0.33f, 0.34f),
-                0.9,
-                1.05,
-                0.1,
-                2,
-                List.of("000270", "000660", "003670", "005380", "005490"),
-                LocalDateTime.parse(Util.formatDate("20120101")),
-                LocalDateTime.parse(Util.formatDate("20151231"))
-        );
-    }
-
 }
