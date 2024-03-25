@@ -47,6 +47,8 @@ CREATE TABLE hkidb.stock_info (
                                   ticker            VARCHAR(16) NOT NULL,
                                   name              VARCHAR(64) NOT NULL,
                                   listed_date       DATE        NOT NULL,
+                                  listed_market     VARCHAR(32) NOT NULL,
+                                  industry          VARCHAR(64) NULL,
                                   capital           INT         NULL,
                                   market_capital    INTEGER     NOT NULL,
                                   par_value         INT         NULL,
