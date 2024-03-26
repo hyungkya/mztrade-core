@@ -7,6 +7,7 @@ import com.mztrade.hki.entity.User;
 import com.mztrade.hki.repository.AccountHistoryRepository;
 import com.mztrade.hki.repository.AccountRepository;
 import com.mztrade.hki.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -79,6 +80,16 @@ public class AccountService {
         );
         log.debug(String.format("[AccountService] createAccountHistory(aid: %d, date: %s, balance:%d)", aid, date, balance));
     }
+
+    @Transactional
+    public void createAccountHistories(int aid, Map<LocalDateTime, Long> balances) {
+        for (Map.Entry<LocalDateTime, Long> entry : balances.entrySet()) {
+            accountHistoryRepository.save(
+                    AccountHistory.builder().aid(aid).date(entry.getKey()).balance(entry.getValue()).build()
+            );
+        }
+    }
+
 
     public Map<LocalDateTime,Long> getPlRatio(Integer aid) {
 

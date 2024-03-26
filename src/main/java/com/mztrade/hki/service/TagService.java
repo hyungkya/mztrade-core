@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -30,6 +31,26 @@ public class TagService {
 
     public TagService(TagRepositoryImpl tagRepositoryImpl) {
         this.tagRepositoryImpl = tagRepositoryImpl;
+    }
+
+    public Optional<TagResponse> findTagByName(int uid, String name) {
+        Optional<TagResponse> tagResponse = Optional.empty();
+        Optional<Tag> tag = tagRepository.findByUserUidAndTname(uid, name);
+        if (tag.isPresent()) {
+            tagResponse = Optional.of(TagResponse.from(tagRepository.findByUserUidAndTname(uid, name).get()));
+        }
+        return tagResponse;
+    }
+
+    public int createIfNotExists(int uid, String name, TagCategory category) {
+        Optional<TagResponse> tagResponse = findTagByName(uid, name);
+        int tid;
+        if (tagResponse.isEmpty()) {
+            tid = createTag(uid, name, "0xFFFFFFFF", category.name());
+        } else {
+            tid = tagResponse.get().getTid();
+        }
+        return tid;
     }
 
     public List<TagResponse> getStockInfoTag(int uid) {

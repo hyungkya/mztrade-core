@@ -36,10 +36,18 @@ public class Condition {
 
         if (baseType.equals("indicator")) {
             bases.put(ticker, indicatorService.getIndicators(ticker, startDate, endDate, this.parseBaseIndicator()));
-        } else if (baseType.equals("price_close")) {
+        } else if (baseType.equals("price")) {
             Map<LocalDateTime, Double> temp = new HashMap<>();
             for (StockPrice stockPrice : stockPriceService.getPrices(ticker, startDate, endDate)) {
-                temp.put(stockPrice.getDate(), stockPrice.getClose().doubleValue());
+                if (baseParam.equals("close")) {
+                    temp.put(stockPrice.getDate(), stockPrice.getClose().doubleValue());
+                } else if (baseParam.equals("open")) {
+                    temp.put(stockPrice.getDate(), stockPrice.getOpen().doubleValue());
+                } else if (baseParam.equals("high")) {
+                    temp.put(stockPrice.getDate(), stockPrice.getHigh().doubleValue());
+                } else if (baseParam.equals("low")) {
+                    temp.put(stockPrice.getDate(), stockPrice.getLow().doubleValue());
+                }
             }
             bases.put(ticker, temp);
         } else {
@@ -51,10 +59,18 @@ public class Condition {
         }
         if (targetType.equals("indicator")) {
             targets.put(ticker, indicatorService.getIndicators(ticker, startDate, endDate, this.parseTargetIndicator()));
-        } else if (targetType.equals("price_close")) {
+        } else if (targetType.equals("price")) {
             Map<LocalDateTime, Double> temp = new HashMap<>();
             for (StockPrice stockPrice : stockPriceService.getPrices(ticker, startDate, endDate)) {
-                temp.put(stockPrice.getDate(), stockPrice.getClose().doubleValue());
+                if (targetParam.equals("close")) {
+                    temp.put(stockPrice.getDate(), stockPrice.getClose().doubleValue());
+                } else if (targetParam.equals("open")) {
+                    temp.put(stockPrice.getDate(), stockPrice.getOpen().doubleValue());
+                } else if (targetParam.equals("high")) {
+                    temp.put(stockPrice.getDate(), stockPrice.getHigh().doubleValue());
+                } else if (targetParam.equals("low")) {
+                    temp.put(stockPrice.getDate(), stockPrice.getLow().doubleValue());
+                }
             }
             targets.put(ticker, temp);
         } else {

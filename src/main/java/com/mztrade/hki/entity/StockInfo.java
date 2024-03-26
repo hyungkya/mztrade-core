@@ -24,6 +24,10 @@ public class StockInfo {
     private String name;
     @Column(name = "listed_date")
     private LocalDate listedDate;
+    @Column(name = "listed_market")
+    private String listedMarket;
+    @Column(name = "industry")
+    private String industry;
     @Column(name = "capital")
     private Integer capital;
     @Column(name = "market_capital")
