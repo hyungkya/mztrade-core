@@ -53,6 +53,8 @@ public class TagRepositoryImpl {
                                 .name(rs.getString("name"))
                                 .listedDate(rs.getDate("listed_date").toLocalDate())
                                 .marketCapital(rs.getInt("market_capital"))
+                                .listedMarket(rs.getString("listed_market"))
+                                .industry(rs.getString("industry"))
                                 .build()
         );
     }
