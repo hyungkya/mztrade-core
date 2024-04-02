@@ -1,6 +1,9 @@
 package com.mztrade.hki.controller;
 
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 import com.mztrade.hki.config.jwt.JwtFilter;
 import com.mztrade.hki.config.jwt.TokenProvider;
 import com.mztrade.hki.dto.DefaultResponse;
@@ -21,10 +24,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -34,6 +36,15 @@ public class AuthController {
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final RedisService redisService;
+
+    @GetMapping("/test")
+    public ResponseEntity<?> test(@RequestParam String idToken) throws FirebaseAuthException {
+        System.out.println(idToken);
+        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken);
+        String uid = decodedToken.getUid();
+        System.out.println("hi");
+        return null;
+    }
 
     @PostMapping("/auth/issue")
     public ResponseEntity<?> authorize(@Valid @RequestBody LoginRequestDto loginRequestDto) {

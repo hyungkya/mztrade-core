@@ -3,10 +3,10 @@ DROP DATABASE IF EXISTS hkidb;
 CREATE DATABASE hkidb;
 
 CREATE TABLE hkidb.customers (
-                                 uid         INT         NOT NULL    AUTO_INCREMENT  PRIMARY KEY,
-                                 name        VARCHAR(30) NOT NULL    UNIQUE,
-                                 password    VARCHAR(64) NOT NULL,
-                                 role        VARCHAR(30) NOT NULL    DEFAULT 'ROLE_USER'
+                                 uid          INT         NOT NULL    AUTO_INCREMENT  PRIMARY KEY,
+                                 firebase_uid VARCHAR(64) NOT NULL    UNIQUE,
+                                 name         VARCHAR(30) NOT NULL    UNIQUE,
+                                 role         VARCHAR(30) NOT NULL    DEFAULT 'ROLE_USER'
 );
 
 CREATE TABLE hkidb.tag (

@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.outdated;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,20 +26,20 @@ public class UserTests {
     @Test
     void loginTest() throws Exception {
         UserDto userDto = new UserDto("testUser", "testUser");
-        assertDoesNotThrow(()->userService.login(userDto.getName(), userDto.getPassword()));
+        assertDoesNotThrow(()->userService.getUser(userDto.getName(), userDto.getPassword()));
     }
 
     @Test
     void loginExceptionTest1() throws Exception {
         UserDto userDto = new UserDto("js", "js");
-        assertThrows(Exception.class, ()->userService.login(userDto.getName(), userDto.getPassword()));
+        assertThrows(Exception.class, ()->userService.getUser(userDto.getName(), userDto.getPassword()));
     }
 
     @Test
     void loginExceptionTest2() throws Exception {
         UserDto userDto = new UserDto("js", "js");
         try {
-            userService.login(userDto.getName(),userDto.getPassword());
+            userService.getUser(userDto.getName(),userDto.getPassword());
         }catch (Exception e) {
             assertEquals("유효한 회원ID가 아닙니다.", e.getMessage());
         }
@@ -48,9 +49,10 @@ public class UserTests {
     void loginExceptionTest3() throws Exception {
         UserDto userDto = new UserDto("ADMIN", "js");
         try {
-            userService.login(userDto.getName(),userDto.getPassword());
+            userService.getUser(userDto.getName(),userDto.getPassword());
         }catch (Exception e) {
             assertEquals("유효한 회원 패스워드가 아닙니다.", e.getMessage());
         }
     }
 }
+*/

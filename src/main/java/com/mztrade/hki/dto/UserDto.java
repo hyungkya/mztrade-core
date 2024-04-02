@@ -10,25 +10,16 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class UserDto {
-
     private int uid;
     private String name;
-    private String password;
+    private String firebaseUid;
     private String role;
 
-
-    public User toEntity(){
-        User user = User.builder()
-                .uid(uid)
-                .name(name)
-                .password(password)
+    public static UserDto fromEntity(User user) {
+        return UserDto.builder()
+                .name(user.getName())
+                .firebaseUid(user.getFirebaseUid())
+                .uid(user.getUid())
                 .build();
-        return user;
     }
-
-    public UserDto(String name, String password) {
-        this.name = name;
-        this.password = password;
-    }
-
 }

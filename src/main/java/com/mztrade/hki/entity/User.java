@@ -17,17 +17,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Table(name = "customers")
 @Entity
-public class User implements UserDetails {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int uid;
 
+    @Column(name = "firebase_uid", length = 64)
+    private String firebaseUid;
+
     @Column(name = "name", unique = true, length = 30)
     private String name;
-
-    @Column(name = "password", length = 64)
-    private String password;
 
     @Column(name = "role", length = 30, columnDefinition = "ROLE_USER")
     @Builder.Default
@@ -39,7 +39,7 @@ public class User implements UserDetails {
     //@OneToMany(mappedBy = "user")
     //private Set<Account> accounts = new HashSet<>();
 
-
+/*
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
@@ -73,5 +73,5 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
+    }*/
 }

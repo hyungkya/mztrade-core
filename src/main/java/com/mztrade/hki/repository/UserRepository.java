@@ -14,6 +14,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     User save(User user);
 
     Optional<User> findByName(String name);
+    Optional<User> findByFirebaseUid(String firebaseUid);
 
     User getByName(String name);
 }

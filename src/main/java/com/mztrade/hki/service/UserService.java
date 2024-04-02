@@ -3,11 +3,8 @@ package com.mztrade.hki.service;
 import com.mztrade.hki.dto.UserDto;
 import com.mztrade.hki.entity.User;
 import com.mztrade.hki.repository.UserRepository;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,7 +16,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserService implements UserDetailsService {
+public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -29,40 +26,28 @@ public class UserService implements UserDetailsService {
     }
 
     public int saveUser(UserDto userDto) {
-
-        if(userRepository.findByName(userDto.getName()).isPresent()) {
+        if(userRepository.findByFirebaseUid(userDto.getFirebaseUid()).isPresent()) {
             throw new RuntimeException("이미 가입된 회원입니다.");
-        }else{
-            User user = User.builder().name(userDto.getName())
-                    .password(passwordEncoder.encode(userDto.getPassword()))
+        } else if(userRepository.findByName(userDto.getName()).isPresent()) {
+            throw new RuntimeException("이미 존재하는 닉네임입니다.");
+        } else{
+            User user = User.builder()
+                    .name(userDto.getName())
+                    .firebaseUid(userDto.getFirebaseUid())
                     .role("ROLE_USER").build();
             return userRepository.save(user).getUid();
         }
-
     }
 
-    public Integer login(String username, String password) throws Exception {
+    public UserDto getUser(String firebaseUid) throws UsernameNotFoundException {
+        User user = userRepository.findByFirebaseUid(firebaseUid)
+                    .orElseThrow(() -> new UsernameNotFoundException("유효한 회원ID가 아닙니다."));
 
-        User user = userRepository.findByName(username)
-                    .orElseThrow(() -> new Exception("유효한 회원ID가 아닙니다."));
-
-        // 평문과 암호화 비밀번호 비교
+        /*// 평문과 암호화 비밀번호 비교
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new Exception(("유효한 회원 패스워드가 아닙니다."));
-        }
+        }*/
 
-        return user.getUid();
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-
-        Optional<User> findUser = userRepository.findByName(username);
-        if (findUser.isPresent()) {
-            return findUser.get();
-
-        } else {
-            throw new UsernameNotFoundException("사용자를 찾을 수 없습니다.");
-        }
+        return UserDto.fromEntity(user);
     }
 }

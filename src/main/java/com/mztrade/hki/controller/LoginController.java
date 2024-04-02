@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.controller;
 
 import com.mztrade.hki.dto.*;
@@ -5,7 +6,6 @@ import com.mztrade.hki.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,10 +19,12 @@ public class LoginController {
         this.userService = userService;
     }
 
-    /**
+    */
+/**
      * @param userDto
      * @return int uid : 회원정보 uid 반환
-     */
+     *//*
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserDto userDto) {
 
@@ -44,17 +46,19 @@ public class LoginController {
 
     }
 
-    /**
+    */
+/**
      * @param loginRequestDto
      * @return Token, 회원정보 반환
-     */
+     *//*
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequestDto) {
 
         log.info("로그인 유저요청 = " + loginRequestDto.getName());
 
         try{
-            Integer uid = userService.login(loginRequestDto.getName(), loginRequestDto.getPassword()); // 유저 정보 확인
+            Integer uid = userService.getUser(loginRequestDto.getName()); // 유저 정보 확인
 
             log.info("로그인 완료");
 
@@ -79,3 +83,4 @@ public class LoginController {
 
     }
 }
+*/

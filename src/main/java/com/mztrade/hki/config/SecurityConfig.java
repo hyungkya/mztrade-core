@@ -47,7 +47,7 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer configure() {
         return (web) -> web.ignoring()
-                .requestMatchers("/login", "/register", "/error", "/auth/issue", "/auth/reissue");
+                .requestMatchers("/login", "/register", "/error", "/auth/issue", "/auth/reissue", "/**");
     }
 
     @Bean
@@ -55,24 +55,9 @@ public class SecurityConfig {
 
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
-
-                .exceptionHandling((handling) ->
-                        handling.authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                                .accessDeniedHandler(jwtAccessDeniedHandler)
-                )
-                .headers((header) -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
-                .sessionManagement((session)->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
-                        .requestMatchers("/register", "/login", "/auth", "/auth/**").permitAll()
-                        .requestMatchers("/account", "/account/**",
-                                "/execute", "/execute/**", "/backtest", "/backtest/**",
-                                "/order_history", "/order_history/**", "/stock_price", "/stock_price/**",
-                                "/stock", "/stock/**", "/stock_price", "/stock_price/**",
-                                "/statistic", "/statistic/**", "/user", "/user/**").hasAnyRole("USER","ADMIN")
-                        .anyRequest().authenticated()
-                )
-                .apply(new JwtSecurityConfig(tokenProvider));
-
+                .authorizeRequests()
+                .anyRequest()
+                .authenticated();
 
                 return httpSecurity.build();
 
