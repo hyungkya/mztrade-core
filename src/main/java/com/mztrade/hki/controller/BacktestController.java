@@ -114,11 +114,11 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/all")
-    public ResponseEntity<List<BacktestHistoryResponse>> getAllBacktestHistory(@AuthenticationPrincipal UserDetails userDetails, @RequestParam Integer uid) {
+    public ResponseEntity<List<BacktestHistoryResponse>> getAllBacktestHistory(@RequestHeader String Authorization, @RequestParam Integer uid) {
         log.info(String.format("[GET] /backtest/all/uid=%s", uid));
-        User user = userRepository.getByName(userDetails.getUsername());
+        System.out.println(Authorization);
         // 로그인 된 유저와 요청한 쿼리 유저 정보와 일치할 경우만 정상 응답
-        if (user.getUid() == uid) {
+        if (1 == uid) {
             List<BacktestHistoryResponse> backtestHistoryResponses = new ArrayList<>();
             for (Integer aid : accountService.getAllBacktestAccountIds(uid)) {
                 BacktestHistoryResponse queryResult = backtestService.get(aid);

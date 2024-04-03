@@ -1,6 +1,6 @@
 insert into hkidb.customers (uid, firebase_uid, name, role)
-values  (1, 'admin@admin.com', 'ADMIN', 'ROLE_ADMIN'),
-        (2, 'user@user.com', 'USER', 'ROLE_USER');
+values  (1, 'xYt1jzToaccfhDVKpmZg5Wu2Jqs2', 'ADMIN', 'ROLE_ADMIN'),
+        (2, 'uxLzu66XwHM6qO8WmPPCXjVbqLG3', 'USER', 'ROLE_USER');
 
 insert into hkidb.account (aid, uid, balance, type)
 values  (3, 1, 11412550, 'BACKTEST'),

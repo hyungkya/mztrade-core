@@ -1,7 +1,10 @@
 package com.mztrade.hki.service;
 
 import com.mztrade.hki.dto.TokenDto;
+
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,18 +19,23 @@ public class RedisService {
 
     private final RedisTemplate<String, String> redisTemplate;
 
-    // Redis는 저장과 덮어쓰기 모두 동일한 연산 수행
-    public void saveRefreshToken(String username, String refreshToken, long refreshExpiration) {
-        redisTemplate.opsForValue().set(username, refreshToken, refreshExpiration, TimeUnit.MILLISECONDS);
+    public String getData(String key) {//지정된 키(key)에 해당하는 데이터를 Redis에서 가져오는 메서드
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        return valueOperations.get(key);
     }
 
-    public String getRefreshToken(String username) {
-        return redisTemplate.opsForValue().get(username);
+    public void setData(String key, String value) {//지정된 키(key)에 값을 저장하는 메서드
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        valueOperations.set(key, value);
     }
 
-    public void deleteRefreshToken(String username) {
-        redisTemplate.delete(username);
+    public void setDataExpire(String key, String value, long duration) {//지정된 키(key)에 값을 저장하고, 지정된 시간(duration) 후에 데이터가 만료되도록 설정하는 메서드
+        ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
+        Duration expireDuration = Duration.ofSeconds(duration);
+        valueOperations.set(key, value, expireDuration);
     }
 
-
+    public void deleteData(String key) {//지정된 키(key)에 해당하는 데이터를 Redis에서 삭제하는 메서드
+        redisTemplate.delete(key);
+    }
 }

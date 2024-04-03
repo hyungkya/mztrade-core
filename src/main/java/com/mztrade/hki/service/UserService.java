@@ -5,13 +5,9 @@ import com.mztrade.hki.entity.User;
 import com.mztrade.hki.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,11 +15,6 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-
-    public boolean checkUserDuplicate(String username) {
-        return userRepository.existsByName(username);
-    }
 
     public int saveUser(UserDto userDto) {
         if(userRepository.findByFirebaseUid(userDto.getFirebaseUid()).isPresent()) {
@@ -39,14 +30,9 @@ public class UserService {
         }
     }
 
-    public UserDto getUser(String firebaseUid) throws UsernameNotFoundException {
+    public UserDto findUser(String firebaseUid) throws UsernameNotFoundException {
         User user = userRepository.findByFirebaseUid(firebaseUid)
                     .orElseThrow(() -> new UsernameNotFoundException("유효한 회원ID가 아닙니다."));
-
-        /*// 평문과 암호화 비밀번호 비교
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new Exception(("유효한 회원 패스워드가 아닙니다."));
-        }*/
 
         return UserDto.fromEntity(user);
     }

@@ -1,7 +1,6 @@
 package com.mztrade.hki.controller;
 
 import com.mztrade.hki.dto.UserDto;
-import com.mztrade.hki.service.AccountService;
 import com.mztrade.hki.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,11 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @Slf4j
@@ -47,7 +41,7 @@ public class UserController {
     ) {
         log.info(String.format("[GET] /findUser?firebaseUid=%s has been called.", firebaseUid));
         try {
-            return new ResponseEntity<>(userService.getUser(firebaseUid), HttpStatus.OK);
+            return new ResponseEntity<>(userService.findUser(firebaseUid), HttpStatus.OK);
         } catch (UsernameNotFoundException e) {
             return new ResponseEntity<>(null, HttpStatus.OK);
         }
