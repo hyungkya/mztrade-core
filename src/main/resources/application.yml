@@ -32,3 +32,6 @@ logging:
 
 smtp:
   key: ${SMTP_KEY}
+
+path:
+  firebase_admin_key: ${FB_KEY_PATH}
