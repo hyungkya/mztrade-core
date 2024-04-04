@@ -36,7 +36,6 @@ public class EmailService {
         for (int i = 0; i < 6; i++) {
             randomNumber += Integer.toString(r.nextInt(10));
         }
-
         authNumber = Integer.parseInt(randomNumber);
     }
 

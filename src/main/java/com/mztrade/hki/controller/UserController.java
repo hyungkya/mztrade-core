@@ -1,5 +1,6 @@
 package com.mztrade.hki.controller;
 
+import com.google.firebase.auth.FirebaseAuthException;
 import com.mztrade.hki.dto.UserDto;
 import com.mztrade.hki.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +46,14 @@ public class UserController {
         } catch (UsernameNotFoundException e) {
             return new ResponseEntity<>(null, HttpStatus.OK);
         }
+    }
+
+    @GetMapping("/user/duplicate-check/{str}")
+    public ResponseEntity<Boolean> duplicateCheck(
+            @PathVariable String str
+    ) {
+        log.info(String.format("[GET] /user/duplicate-check/%s has been called.", str));
+        return new ResponseEntity<>(userService.isEmailExists(str) || userService.isNameExists(str), HttpStatus.OK);
     }
 
     @DeleteMapping("/user")

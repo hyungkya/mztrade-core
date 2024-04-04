@@ -2,6 +2,8 @@ package com.mztrade.hki.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import com.mztrade.hki.Util;
 import com.mztrade.hki.dto.*;
 import com.mztrade.hki.entity.*;
@@ -38,10 +40,23 @@ public class BacktestController {
     private TagService tagService;
     private ChartSettingService chartSettingService;
     private IndicatorService indicatorService;
+
+    private FirebaseAuth firebaseAuth;
     private ObjectMapper objectMapper;
 
     @Autowired
-    public BacktestController(BacktestService backtestService, StockPriceService stockPriceService, OrderService orderService, AccountService accountService, StatisticService statisticService, TagService tagService, ChartSettingService chartSettingService, IndicatorService indicatorService, ObjectMapper objectMapper, AccountRepository accountRepository, UserRepository userRepository) {
+    public BacktestController(BacktestService backtestService,
+                              StockPriceService stockPriceService,
+                              OrderService orderService,
+                              AccountService accountService,
+                              StatisticService statisticService,
+                              TagService tagService,
+                              ChartSettingService chartSettingService,
+                              IndicatorService indicatorService,
+                              ObjectMapper objectMapper,
+                              AccountRepository accountRepository,
+                              UserRepository userRepository,
+                              FirebaseAuth firebaseAuth) {
         this.backtestService = backtestService;
         this.stockPriceService = stockPriceService;
         this.orderService = orderService;
@@ -53,6 +68,7 @@ public class BacktestController {
         this.objectMapper = objectMapper;
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
+        this.firebaseAuth = firebaseAuth;
     }
 
     @PostMapping("/execute")
@@ -114,24 +130,18 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/all")
-    public ResponseEntity<List<BacktestHistoryResponse>> getAllBacktestHistory(@RequestHeader String Authorization, @RequestParam Integer uid) {
+    public ResponseEntity<List<BacktestHistoryResponse>> getAllBacktestHistory(@RequestHeader String Authorization, @RequestParam Integer uid) throws FirebaseAuthException {
         log.info(String.format("[GET] /backtest/all/uid=%s", uid));
-        System.out.println(Authorization);
-        // 로그인 된 유저와 요청한 쿼리 유저 정보와 일치할 경우만 정상 응답
-        if (1 == uid) {
-            List<BacktestHistoryResponse> backtestHistoryResponses = new ArrayList<>();
-            for (Integer aid : accountService.getAllBacktestAccountIds(uid)) {
-                BacktestHistoryResponse queryResult = backtestService.get(aid);
-                if (queryResult != null) {
-                    backtestHistoryResponses.add(queryResult);
-                }
+
+        List<BacktestHistoryResponse> backtestHistoryResponses = new ArrayList<>();
+        for (Integer aid : accountService.getAllBacktestAccountIds(uid)) {
+            BacktestHistoryResponse queryResult = backtestService.get(aid);
+            if (queryResult != null) {
+                backtestHistoryResponses.add(queryResult);
             }
-            return new ResponseEntity<>(backtestHistoryResponses, HttpStatus.OK);
         }
-        // 불일치 시 BAD REQUEST 응답
-        else {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        }
+        return new ResponseEntity<>(backtestHistoryResponses, HttpStatus.OK);
+
     }
 
     @GetMapping("/backtest/top5")
