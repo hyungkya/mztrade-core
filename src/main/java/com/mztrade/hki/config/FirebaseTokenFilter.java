@@ -1,72 +1,62 @@
 package com.mztrade.hki.config;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+
+import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.http.HttpStatus;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.NoSuchElementException;
-
-
+@Component
+@Order(1)
 public class FirebaseTokenFilter extends OncePerRequestFilter {
+    private final FirebaseAuth firebaseAuth;
 
-    private UserDetailsService userDetailsService;
-    private FirebaseAuth firebaseAuth;
-
-    public FirebaseTokenFilter(UserDetailsService userDetailsService, FirebaseAuth firebaseAuth) {
-        this.userDetailsService = userDetailsService;
+    public FirebaseTokenFilter(FirebaseAuth firebaseAuth) {
         this.firebaseAuth = firebaseAuth;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-        System.out.println("토근 검증 시작");
-        // get the token from the request
-        FirebaseToken decodedToken;
-        String header = request.getHeader("Authorization");
-        if (header == null || !header.startsWith("Bearer ")) {
-            setUnauthorizedResponse(response, "INVALID_HEADER");
-            return;
-        }
-        String token = header.substring(7);
-
-        // verify IdToken
-        try{
-            decodedToken = firebaseAuth.verifyIdToken(token);
-            System.out.println(decodedToken);
-        } catch (FirebaseAuthException e) {
-            setUnauthorizedResponse(response, "INVALID_TOKEN");
-            return;
+    public void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
+            throws IOException, ServletException {
+        System.out.println(request.getRequestURI());
+        for (Iterator<String> it = request.getHeaderNames().asIterator(); it.hasNext(); ) {
+            String header = it.next();
+            System.out.println(header);
         }
 
-        // User를 가져와 SecurityContext에 저장한다.
-        try{
-            UserDetails user = userDetailsService.loadUserByUsername(decodedToken.getUid());
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    user, null, user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        } catch(NoSuchElementException e){
-            setUnauthorizedResponse(response, "USER_NOT_FOUND");
-            return;
+        if (request.getRequestURI().startsWith("/user/duplicate-check")) {
+            chain.doFilter(request, response);
+        } else if (request.getRequestURI().startsWith("/send-email")) {
+            chain.doFilter(request, response);
+        } else if (request.getRequestURI().startsWith("/check-email")) {
+            chain.doFilter(request, response);
+        } else if (request.getRequestURI().startsWith("/login")) {
+            chain.doFilter(request, response);
+        } else {
+            try {
+                System.out.println(request.getHeader("Authorization"));
+                firebaseAuth.verifyIdToken(request.getHeader("Authorization"));
+                chain.doFilter(request, response);
+            } catch (IllegalArgumentException e) {
+                System.out.println("토큰이 없음");
+                response.sendError(HttpStatus.UNAUTHORIZED.value(), "토큰이 없거나 잘못된 형식입니다.");
+            } catch (FirebaseAuthException e) {
+                System.out.println("토큰 검증 실패");
+                response.sendError(HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다.");
+            }
         }
-        filterChain.doFilter(request, response);
-    }
-
-    private void setUnauthorizedResponse(HttpServletResponse response, String code) throws IOException {
-        response.setStatus(HttpStatus.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.getWriter().write("{\"code\":\""+code+"\"}");
     }
 }

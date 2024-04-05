@@ -8,8 +8,6 @@ import com.mztrade.hki.entity.User;
 import com.mztrade.hki.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -55,9 +53,9 @@ public class UserService {
         return randomName;
     }
 
-    public UserDto findUser(String firebaseUid) throws UsernameNotFoundException {
+    public UserDto findUser(String firebaseUid) throws IllegalArgumentException {
         User user = userRepository.findByFirebaseUid(firebaseUid)
-                    .orElseThrow(() -> new UsernameNotFoundException("유효한 회원ID가 아닙니다."));
+                    .orElseThrow(() -> new IllegalArgumentException("유효한 회원ID가 아닙니다."));
 
         return UserDto.fromEntity(user);
     }

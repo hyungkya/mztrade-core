@@ -1,13 +1,12 @@
 package com.mztrade.hki.controller;
 
-import com.google.firebase.auth.FirebaseAuthException;
+
 import com.mztrade.hki.dto.UserDto;
 import com.mztrade.hki.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -40,10 +39,10 @@ public class UserController {
     public ResponseEntity<UserDto> findUser(
             @RequestParam String firebaseUid
     ) {
-        log.info(String.format("[GET] /findUser?firebaseUid=%s has been called.", firebaseUid));
+        log.info(String.format("[GET] /user?firebaseUid=%s has been called.", firebaseUid));
         try {
             return new ResponseEntity<>(userService.findUser(firebaseUid), HttpStatus.OK);
-        } catch (UsernameNotFoundException e) {
+        } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(null, HttpStatus.OK);
         }
     }

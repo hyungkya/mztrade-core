@@ -19,8 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -157,7 +155,7 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/search")
-    public ResponseEntity<List<BacktestHistoryResponse>> searchBacktestHistory(@AuthenticationPrincipal User user, @RequestParam Integer uid, @RequestParam String title) {
+    public ResponseEntity<List<BacktestHistoryResponse>> searchBacktestHistory(@RequestParam Integer uid, @RequestParam String title) {
         List<BacktestHistoryResponse> queryResult = backtestService.searchByTitle(uid, title);
 
         log.info(String.format("[GET] /backtest/search/uid=%s&title=%s", uid, title));
