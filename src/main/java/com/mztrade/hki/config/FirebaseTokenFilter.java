@@ -36,8 +36,8 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
             String header = it.next();
             System.out.println(header);
         }
-
-        if (request.getRequestURI().startsWith("/user/duplicate-check")) {
+        chain.doFilter(request, response);
+        /*if (request.getRequestURI().startsWith("/user/duplicate-check")) {
             chain.doFilter(request, response);
         } else if (request.getRequestURI().startsWith("/send-email")) {
             chain.doFilter(request, response);
@@ -57,6 +57,6 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
                 System.out.println("토큰 검증 실패");
                 response.sendError(HttpStatus.UNAUTHORIZED.value(), "유효하지 않은 토큰입니다.");
             }
-        }
+        }*/
     }
 }
