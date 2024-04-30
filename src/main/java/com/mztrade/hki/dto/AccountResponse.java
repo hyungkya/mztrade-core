@@ -1,13 +1,8 @@
 package com.mztrade.hki.dto;
 
 import com.mztrade.hki.entity.Account;
-import com.mztrade.hki.entity.Position;
-import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.math.BigDecimal;
 
 @Getter
 @Builder(toBuilder = true)

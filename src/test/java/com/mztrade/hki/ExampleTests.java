@@ -1,17 +1,18 @@
 package com.mztrade.hki;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.mztrade.hki.repository.TagRepositoryImpl;
 import com.mztrade.hki.service.OrderService;
 import com.mztrade.hki.service.StatisticService;
 import org.assertj.core.data.Offset;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)

@@ -3,14 +3,13 @@ package com.mztrade.hki.repo;
 import com.mztrade.hki.Util;
 import com.mztrade.hki.entity.StockPrice;
 import com.mztrade.hki.repository.StockPriceRepository;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 public class StockPriceRepositoryTest {

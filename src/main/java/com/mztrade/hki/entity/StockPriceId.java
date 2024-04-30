@@ -1,10 +1,9 @@
 package com.mztrade.hki.entity;
 
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor

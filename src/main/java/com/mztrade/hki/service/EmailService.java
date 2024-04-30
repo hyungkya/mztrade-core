@@ -1,15 +1,12 @@
 package com.mztrade.hki.service;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-
-import java.util.Random;
 
 @Service
 public class EmailService {

@@ -2,19 +2,13 @@ package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.entity.StockInfo;
-import com.mztrade.hki.entity.Tag;
-import com.mztrade.hki.entity.TagCategory;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
+import java.sql.Types;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-
-import java.sql.Types;
-import java.util.List;
-import java.util.Objects;
 
 @Repository
 public class TagRepositoryImpl {

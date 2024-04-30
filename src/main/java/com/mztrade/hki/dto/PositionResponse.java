@@ -1,13 +1,9 @@
 package com.mztrade.hki.dto;
 
 import com.mztrade.hki.entity.Position;
-import com.mztrade.hki.entity.StockInfo;
-import jakarta.persistence.Column;
+import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Getter
 @Builder(toBuilder = true)

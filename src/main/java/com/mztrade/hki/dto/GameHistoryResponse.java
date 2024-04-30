@@ -1,10 +1,9 @@
 package com.mztrade.hki.dto;
 
 import com.mztrade.hki.entity.GameHistory;
+import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Builder(toBuilder = true)

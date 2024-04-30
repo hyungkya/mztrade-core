@@ -1,18 +1,19 @@
 package com.mztrade.hki.service;
 
+import static java.lang.Math.abs;
+
 import com.mztrade.hki.entity.StockPrice;
 import com.mztrade.hki.entity.backtest.Indicator;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.*;
-import java.time.temporal.ChronoUnit;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
 
 @Service
 @Slf4j

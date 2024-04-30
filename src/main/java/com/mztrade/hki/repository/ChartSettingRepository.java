@@ -2,14 +2,12 @@ package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.entity.ChartSetting;
-import com.mztrade.hki.entity.backtest.BacktestHistory;
+import java.sql.Types;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
-
-import java.sql.Types;
 
 @Component
 public class ChartSettingRepository {

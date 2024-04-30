@@ -2,16 +2,14 @@ package com.mztrade.hki.service;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.UserRecord;
 import com.mztrade.hki.dto.UserDto;
 import com.mztrade.hki.entity.User;
 import com.mztrade.hki.repository.UserRepository;
+import java.util.Optional;
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor

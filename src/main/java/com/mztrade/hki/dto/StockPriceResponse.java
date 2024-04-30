@@ -1,11 +1,9 @@
 package com.mztrade.hki.dto;
 
 import com.mztrade.hki.entity.StockPrice;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-
 import java.time.LocalDateTime;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @Builder(toBuilder = true)

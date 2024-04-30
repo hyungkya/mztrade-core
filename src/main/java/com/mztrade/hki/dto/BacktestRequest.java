@@ -2,13 +2,11 @@ package com.mztrade.hki.dto;
 
 import com.mztrade.hki.Util;
 import com.mztrade.hki.entity.backtest.Condition;
+import java.time.LocalDateTime;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Getter
 @Setter @ToString

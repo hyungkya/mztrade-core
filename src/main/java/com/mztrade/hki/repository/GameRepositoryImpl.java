@@ -2,12 +2,11 @@ package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.dto.GameRanking;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
-import java.sql.Types;
-import java.util.List;
 
 @Component
 public class GameRepositoryImpl {

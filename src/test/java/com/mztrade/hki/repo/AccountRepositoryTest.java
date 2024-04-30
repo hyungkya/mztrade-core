@@ -5,11 +5,10 @@ import com.mztrade.hki.entity.Account;
 import com.mztrade.hki.entity.AccountHistory;
 import com.mztrade.hki.repository.AccountHistoryRepository;
 import com.mztrade.hki.repository.AccountRepository;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.List;
 
 @SpringBootTest
 public class AccountRepositoryTest {

@@ -4,8 +4,6 @@ import com.mztrade.hki.entity.GameHistory;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Builder(toBuilder = true)
 public class GameRanking {

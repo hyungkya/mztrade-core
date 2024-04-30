@@ -1,15 +1,10 @@
 package com.mztrade.hki.service;
 
-import com.mztrade.hki.dto.TokenDto;
-
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 @Service

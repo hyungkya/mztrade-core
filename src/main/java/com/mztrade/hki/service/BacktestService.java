@@ -4,29 +4,25 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.dto.BacktestHistoryResponse;
 import com.mztrade.hki.dto.BacktestRequest;
-import com.mztrade.hki.dto.TagResponse;
-import com.mztrade.hki.entity.StockPrice;
 import com.mztrade.hki.entity.Position;
+import com.mztrade.hki.entity.StockPrice;
 import com.mztrade.hki.entity.TagCategory;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
 import com.mztrade.hki.entity.backtest.Condition;
-import com.mztrade.hki.entity.backtest.Indicator;
 import com.mztrade.hki.repository.BacktestHistoryRepository;
 import com.mztrade.hki.repository.PositionRepository;
 import com.mztrade.hki.repository.TagRepositoryImpl;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @Slf4j

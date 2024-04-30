@@ -1,9 +1,8 @@
 package com.mztrade.hki.entity;
 
+import java.io.Serializable;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor

@@ -1,7 +1,6 @@
 package com.mztrade.hki.entity.backtest;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import java.time.LocalDateTime;
 
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)

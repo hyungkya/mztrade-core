@@ -1,15 +1,13 @@
 package com.mztrade.hki.entity.backtest;
 
-import com.mztrade.hki.entity.StockPrice;
-import lombok.Builder;
-import lombok.Getter;
+import static java.lang.Math.abs;
 
+import com.mztrade.hki.entity.StockPrice;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalDouble;
-
-import static java.lang.Math.abs;
-import static java.lang.Math.max;
+import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 @Builder

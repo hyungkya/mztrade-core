@@ -2,11 +2,10 @@ package com.mztrade.hki.repo;
 
 import com.mztrade.hki.entity.GameHistory;
 import com.mztrade.hki.repository.GameRepository;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.List;
 
 @SpringBootTest
 public class GameRepositoryTest {

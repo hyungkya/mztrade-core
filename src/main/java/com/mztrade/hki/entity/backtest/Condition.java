@@ -1,17 +1,23 @@
 package com.mztrade.hki.entity.backtest;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mztrade.hki.entity.StockPrice;
 import com.mztrade.hki.service.IndicatorService;
 import com.mztrade.hki.service.StockPriceService;
-import lombok.*;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter @Setter @ToString @Builder(toBuilder = true)
 @AllArgsConstructor
