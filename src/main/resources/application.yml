@@ -1,7 +1,7 @@
 spring:
     datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://localhost:3306/hkidb?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+        url: jdbc:mysql://${RDS_HOST_NAME}:${RDS_PORT}/hkidb?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
         username: ${RDS_USERNAME}
         password: ${RDS_PASSWORD}
     jackson:
@@ -19,8 +19,8 @@ spring:
 
     data:
         redis:
-            host: localhost
-            port: 6379
+            host: ${REDIS_HOST}
+            port: ${REDIS_PORT}
 
 server.port: ${SERVER_PORT}
 
