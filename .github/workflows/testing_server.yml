@@ -1,0 +1,38 @@
+name: Testing Server CI/CD
+
+on:
+  push: 
+    branches: [ "master" ]
+    
+env:
+  REGISTRY: mztrade
+  IMAGE_NAME: core
+  TAG: latest
+  # docker push 명령어를 사용할 경우 login 이 필요합니다. 이를 구분하고 필요시에만 로그인하는 습관을 들이는 것이 보안상 좋다.
+  IS_PUSH: ${{ github.event_name != 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.ACTION_TOKEN }} 
+
+    - name: Login to DockerHub
+      if: ${{ env.IS_PUSH }}
+      uses: docker/login-action@v1
+      with:
+        # docker hub login을 위해서 계정 정보를 github repo settings에 설정해 두었다.
+        username: ${{ secrets.DEV_DOCKER_ID }}
+        password: ${{ secrets.DEV_DOCKER_PW }}
+    
+    # 여기서 docker에서 제공하는 action이 있지만, 아래처럼 cli 명령어를 사용하는 것이 간편하여 그냥 사용하였다.
+    - uses: actions/checkout@v3
+    - name: Build the Docker image  
+      run: docker build . --file Dockerfile --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+
+    - name: Push the Docker image
+      run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
