@@ -30,15 +30,24 @@ jobs:
 
       - name: Build with gradle
         run: ./gradlew clean build
-        
-      - name: Build the Docker image
-        run: docker buildx build . --file Dockerfile --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DEV_DOCKER_ID }}
           password: ${{ secrets.DEV_DOCKER_PW }}
+        
+      - name: Build the Docker image [arm64]
+        run: docker build . --platform linux/arm64 --file Dockerfile --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64
 
-      - name: Push the Docker image
-        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+      - name: Push the Docker image [arm64]
+        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:arm64
+      
+      - name: Build the Docker image [amd64]
+        run: docker build . --platform linux/amd64 --file Dockerfile --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64
+
+      - name: Push the Docker image [amd64]
+        run: docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:amd64
+      
+
+      
