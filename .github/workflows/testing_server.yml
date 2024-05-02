@@ -2,7 +2,7 @@ name: Testing Server CI/CD
 
 on:
   push: 
-    branches: [ "master" ]
+    branches: [ "test2" ]
     
 env:
   REGISTRY: mztrade
