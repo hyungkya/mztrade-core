@@ -23,7 +23,7 @@ services: # 컨테이너
             - "6379:6379"
 
     core:
-        image: mztrade/core
+        image: mztrade/core:arm64
         container_name: mztrade-core
         restart: always
         ports:
