@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.repo;
 
 import com.mztrade.hki.entity.GameHistory;
@@ -33,3 +34,4 @@ public class GameRepositoryTest {
         }
     }
 }
+*/

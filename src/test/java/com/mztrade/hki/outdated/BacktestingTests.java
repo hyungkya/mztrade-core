@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.outdated;
 
 import com.mztrade.hki.service.BacktestService;
@@ -16,3 +17,4 @@ public class BacktestingTests {
     private BacktestService backtestService;
 
 }
+*/

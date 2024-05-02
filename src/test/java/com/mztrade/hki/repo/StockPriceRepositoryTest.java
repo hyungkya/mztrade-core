@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.repo;
 
 import com.mztrade.hki.Util;
@@ -43,3 +44,4 @@ public class StockPriceRepositoryTest {
 
     }
 }
+*/

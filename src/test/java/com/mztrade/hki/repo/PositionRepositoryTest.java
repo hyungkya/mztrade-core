@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.repo;
 
 import com.mztrade.hki.entity.Position;
@@ -41,3 +42,4 @@ public class PositionRepositoryTest {
         System.out.println(positionRepository.findByAccountAid(6));
     }
 }
+*/

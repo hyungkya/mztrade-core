@@ -21,3 +21,10 @@ services: # 컨테이너
         restart: always
         ports:
             - "6379:6379"
+
+    core:
+        image: mztrade/core
+        container_name: mztrade-core
+        restart: always
+        ports:
+            - "8080:8080"

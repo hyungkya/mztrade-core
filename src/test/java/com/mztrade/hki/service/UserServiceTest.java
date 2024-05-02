@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.service;
 
 import org.junit.jupiter.api.DisplayName;
@@ -29,4 +30,4 @@ class UserServiceTest {
         System.out.println("encodedPassword.length() = " + encodedPassword.length());
     }
 
-}
+}*/

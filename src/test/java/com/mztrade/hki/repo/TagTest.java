@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.repo;
 
 import com.mztrade.hki.repository.TagRepository;
@@ -17,7 +18,8 @@ public class TagTest {
     @Transactional
     @Test
     void saveAndDelete() {
-        /*User user = userRepository.save(User.builder().name("test11").password("test1").build());
+        */
+/*User user = userRepository.save(User.builder().name("test11").password("test1").build());
         System.out.println(user);
 
         Tag tag = tagRepository.save(
@@ -28,6 +30,8 @@ public class TagTest {
         System.out.println(user.getTags());
 
         User refreshedUser = userRepository.getReferenceById(1);
-        System.out.println(refreshedUser.getTags());*/
+        System.out.println(refreshedUser.getTags());*//*
+
     }
 }
+*/

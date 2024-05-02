@@ -34,4 +34,4 @@ smtp:
   key: ${SMTP_KEY}
 
 path:
-  firebase_admin_key: ${FB_KEY_PATH}
+  firebase_admin_key: src/main/resources/serviceAccountKey.json

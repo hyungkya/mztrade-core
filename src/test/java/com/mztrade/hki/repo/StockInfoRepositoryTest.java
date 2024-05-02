@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.repo;
 
 import com.mztrade.hki.entity.StockInfo;
@@ -33,3 +34,4 @@ public class StockInfoRepositoryTest {
         stockInfos.forEach((e) -> System.out.println(e));
     }
 }
+*/

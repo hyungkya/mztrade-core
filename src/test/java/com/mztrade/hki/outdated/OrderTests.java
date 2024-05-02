@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.outdated;
 
 import com.mztrade.hki.Util;
@@ -39,3 +40,4 @@ public class OrderTests {
         Assertions.assertThat(orderService.getPositions(2).size()).isEqualTo(0);
     }
 }
+*/

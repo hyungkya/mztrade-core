@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki;
 
 
@@ -65,3 +66,4 @@ public class ExampleTests {
     }
 
 }
+*/

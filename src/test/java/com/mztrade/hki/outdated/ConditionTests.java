@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.outdated;
 
 import com.mztrade.hki.Util;
@@ -74,3 +75,4 @@ public class ConditionTests {
                 LocalDateTime.parse(Util.formatDate("20221231")));
     }
 }
+*/

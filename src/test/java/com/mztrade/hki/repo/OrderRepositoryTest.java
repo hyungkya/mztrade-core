@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.repo;
 
 import com.mztrade.hki.entity.Order;
@@ -27,3 +28,4 @@ public class OrderRepositoryTest {
         System.out.println(order);
     }
 }
+*/

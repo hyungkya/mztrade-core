@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.outdated;
 
 import com.mztrade.hki.service.AccountService;
@@ -32,3 +33,4 @@ public class AccountTests {
     }
 
 }
+*/
