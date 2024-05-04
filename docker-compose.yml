@@ -5,11 +5,11 @@ services: # 컨테이너
         container_name: mysql-hkidb
         restart: always
         environment:
-            MYSQL_ROOT_PASSWORD: 1234
+            MYSQL_ROOT_PASSWORD: ${RDS_PASSWORD}
             MYSQL_DATABASE: hkidb
             TZ: Asia/Seoul
         ports:
-            - "3306:3306"
+            - ${RDS_PORT}:${RDS_PORT}
         command:
             - --skip-character-set-client-handshake
         volumes:
@@ -20,11 +20,11 @@ services: # 컨테이너
         container_name: redis
         restart: always
         ports:
-            - "6379:6379"
+            - ${REDIS_PORT}:${REDIS_PORT}
 
     core:
         image: mztrade/core:arm64
         container_name: mztrade-core
         restart: always
         ports:
-            - "8080:8080"
+            - ${SERVER_PORT}:${SERVER_PORT}
