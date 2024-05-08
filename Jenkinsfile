@@ -1,14 +1,7 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Git Checkout') {
-            steps {
-                echo 'Checking Out...'
-                git branch: 'master', credentialsId: 'github_personal_access_token', url: 'https://github.com/hyungkya/mztrade-core'
-            }
-        }
-        
+    stages {        
         stage('Setting Firebase Admin SDK key') {
             steps {
             	withCredentials([file(credentialsId: 'firebase_admin_sdk_key', variable: 'firebaseKey')]) {
@@ -81,6 +74,33 @@ pipeline {
                         )
                     ]
                 )
+            }
+        }
+
+        post {
+            success {
+                withCredentials([string(credentialsId: 'discord-webhook', variable: 'discord')]) {
+                            discordSend description: """
+                            제목 : ${currentBuild.displayName}
+                            결과 : ${currentBuild.result}
+                            실행 시간 : ${currentBuild.duration / 1000}s
+                            """,
+                            link: env.BUILD_URL, result: currentBuild.currentResult, 
+                            title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
+                            webhookURL: "$discord"
+                }
+            }
+            failure {
+                withCredentials([string(credentialsId: 'discord-webhook', variable: 'discord')]) {
+                            discordSend description: """
+                            제목 : ${currentBuild.displayName}
+                            결과 : ${currentBuild.result}
+                            실행 시간 : ${currentBuild.duration / 1000}s
+                            """,
+                            link: env.BUILD_URL, result: currentBuild.currentResult, 
+                            title: "${env.JOB_NAME} : ${currentBuild.displayName} 실패", 
+                            webhookURL: "$discord"
+                }
             }
         }
     }
