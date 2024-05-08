@@ -1,6 +1,8 @@
 pipeline {
     agent any
-
+    environment {
+    	GIT_MESSAGE = get_commit_msg()
+    }
     stages {        
         stage('Setting Firebase Admin SDK key') {
             steps {
@@ -81,26 +83,32 @@ pipeline {
         success {
             withCredentials([string(credentialsId: 'discord_webhook', variable: 'discord')]) {
                         discordSend description: """
-                        제목 : ${currentBuild.displayName}
+                        GitHub Commit : ${GIT_MESSAGE}
                         결과 : ${currentBuild.result}
                         실행 시간 : ${currentBuild.duration / 1000}s
                         """,
                         link: env.BUILD_URL, result: currentBuild.currentResult, 
-                        title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
+                        title: "${env.JOB_NAME}: ${currentBuild.displayName} 배포 성공", 
                         webhookURL: "$discord"
             }
         }
         failure {
             withCredentials([string(credentialsId: 'discord_webhook', variable: 'discord')]) {
                         discordSend description: """
-                        제목 : ${currentBuild.displayName}
+                        GitHub Commit : ${GIT_MESSAGE}
                         결과 : ${currentBuild.result}
                         실행 시간 : ${currentBuild.duration / 1000}s
                         """,
                         link: env.BUILD_URL, result: currentBuild.currentResult, 
-                        title: "${env.JOB_NAME} : ${currentBuild.displayName} 실패", 
+                        title: "${env.JOB_NAME}: ${currentBuild.displayName} 배포 실패", 
                         webhookURL: "$discord"
             }
         }
+    }
+}
+
+def get_commit_msg() {
+    script{
+        return sh(script:"git show -s --format=%B ${env.GIT_COMMIT}", returnStdout:true).trim()
     }
 }
