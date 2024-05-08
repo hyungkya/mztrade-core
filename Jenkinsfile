@@ -76,31 +76,30 @@ pipeline {
                 )
             }
         }
-
-        post {
-            success {
-                withCredentials([string(credentialsId: 'discord-webhook', variable: 'discord')]) {
-                            discordSend description: """
-                            제목 : ${currentBuild.displayName}
-                            결과 : ${currentBuild.result}
-                            실행 시간 : ${currentBuild.duration / 1000}s
-                            """,
-                            link: env.BUILD_URL, result: currentBuild.currentResult, 
-                            title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
-                            webhookURL: "$discord"
-                }
+    }
+    post {
+        success {
+            withCredentials([string(credentialsId: 'discord-webhook', variable: 'discord')]) {
+                        discordSend description: """
+                        제목 : ${currentBuild.displayName}
+                        결과 : ${currentBuild.result}
+                        실행 시간 : ${currentBuild.duration / 1000}s
+                        """,
+                        link: env.BUILD_URL, result: currentBuild.currentResult, 
+                        title: "${env.JOB_NAME} : ${currentBuild.displayName} 성공", 
+                        webhookURL: "$discord"
             }
-            failure {
-                withCredentials([string(credentialsId: 'discord-webhook', variable: 'discord')]) {
-                            discordSend description: """
-                            제목 : ${currentBuild.displayName}
-                            결과 : ${currentBuild.result}
-                            실행 시간 : ${currentBuild.duration / 1000}s
-                            """,
-                            link: env.BUILD_URL, result: currentBuild.currentResult, 
-                            title: "${env.JOB_NAME} : ${currentBuild.displayName} 실패", 
-                            webhookURL: "$discord"
-                }
+        }
+        failure {
+            withCredentials([string(credentialsId: 'discord-webhook', variable: 'discord')]) {
+                        discordSend description: """
+                        제목 : ${currentBuild.displayName}
+                        결과 : ${currentBuild.result}
+                        실행 시간 : ${currentBuild.duration / 1000}s
+                        """,
+                        link: env.BUILD_URL, result: currentBuild.currentResult, 
+                        title: "${env.JOB_NAME} : ${currentBuild.displayName} 실패", 
+                        webhookURL: "$discord"
             }
         }
     }
