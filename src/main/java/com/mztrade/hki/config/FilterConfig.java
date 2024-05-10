@@ -22,7 +22,7 @@ public class FilterConfig {
         FilterRegistrationBean<FirebaseTokenFilter> registrationBean = new FilterRegistrationBean<>();
 
         registrationBean.setFilter(new FirebaseTokenFilter(firebaseAuth));
-        registrationBean.addUrlPatterns("/**");
+        //registrationBean.addUrlPatterns("/**");
         registrationBean.setOrder(1);
 
         return registrationBean;

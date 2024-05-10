@@ -10,7 +10,7 @@ import lombok.ToString;
 
 @Getter
 @Setter @ToString
-public class BacktestRequest {
+public class BacktestParameter {
     private Integer uid;
     private String title;
     private List<String> tickers;

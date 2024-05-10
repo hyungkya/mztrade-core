@@ -130,7 +130,7 @@ CREATE TABLE hkidb.stock_price (
                                    FOREIGN KEY (ticker) REFERENCES hkidb.stock_info (ticker)
 );
 
-CREATE TABLE hkidb.backtest_history (
+CREATE TABLE hkidb.backtest_result(
                                         uid INT NOT NULL,
                                         aid INT NOT NULL,
                                         param JSON NOT NULL,
@@ -141,7 +141,7 @@ CREATE TABLE hkidb.backtest_history (
                                         FOREIGN KEY (aid) REFERENCES hkidb.account (aid) ON DELETE CASCADE
 );
 
-CREATE TABLE hkidb.backtest_history_tag (
+CREATE TABLE hkidb.backtest_result_tag (
                                             aid         INT         NOT NULL,
                                             tid         INT         NOT NULL,
 

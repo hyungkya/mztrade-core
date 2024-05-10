@@ -18,11 +18,11 @@ import lombok.ToString;
 @Builder(toBuilder = true)
 @Entity
 @NoArgsConstructor
-@IdClass(BacktestHistoryTagId.class)
-@Table(name = "backtest_history_tag")
+@IdClass(BacktestResultTagId.class)
+@Table(name = "backtest_result_tag")
 @ToString
 @AllArgsConstructor
-public class BacktestHistoryTag {
+public class BacktestResultTag {
     @Id @ManyToOne
     @JoinColumn(name = "tid")
     private Tag tag;

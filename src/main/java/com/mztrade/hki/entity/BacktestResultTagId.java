@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
-public class BacktestHistoryTagId implements Serializable {
+public class BacktestResultTagId implements Serializable {
     @EqualsAndHashCode.Include
     public Tag tag;
 

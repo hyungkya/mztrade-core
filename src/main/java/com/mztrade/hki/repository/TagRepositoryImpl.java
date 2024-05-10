@@ -2,7 +2,7 @@ package com.mztrade.hki.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.entity.StockInfo;
-import com.mztrade.hki.entity.backtest.BacktestHistory;
+import com.mztrade.hki.entity.backtest.BacktestResult;
 import java.sql.Types;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +53,7 @@ public class TagRepositoryImpl {
         );
     }
 
-    public List<BacktestHistory> findBacktestHistoryByTitleAndTags(int uid, String title, List<Integer> tids) {
+    public List<BacktestResult> findBacktestResultByTitleAndTags(int uid, String title, List<Integer> tids) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("uid", uid, Types.INTEGER)
                 .addValue("title", "%" + title + "%", Types.VARCHAR)
@@ -61,16 +61,16 @@ public class TagRepositoryImpl {
                 .addValue("tid_length", tids.size(), Types.INTEGER);
         return this.template.query(
                 "SELECT b.* " +
-                        "FROM hkidb.backtest_history b " +
+                        "FROM hkidb.backtest_result b " +
                         "WHERE JSON_EXTRACT(b.param, '$.title') LIKE :title AND b.aid IN ( " +
                         "    SELECT bit.aid " +
-                        "    FROM hkidb.backtest_history_tag bit " +
+                        "    FROM hkidb.backtest_result_tag bit " +
                         "    JOIN hkidb.tag t ON bit.tid = t.tid AND bit.tid IN (:tids) " +
                         "    WHERE t.uid = :uid " +
                         "    GROUP BY bit.aid " +
                         "    HAVING COUNT(DISTINCT bit.tid) = :tid_length);",
                 src,
-                (rs, rowNum) -> BacktestHistory.builder()
+                (rs, rowNum) -> BacktestResult.builder()
                         .user(userRepository.getReferenceById(rs.getInt("b.uid")))
                         .account(accountRepository.getReferenceById(rs.getInt("b.aid")))
                         .param(rs.getString("param"))

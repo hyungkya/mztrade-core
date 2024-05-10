@@ -46315,7 +46315,7 @@ values  ('000270', '2013-01-02 09:00:00', 57000, 57400, 56000, 56300, 2150020),
         ('373220', '2022-12-28 09:00:00', 450500, 450500, 432500, 436500, 446129),
         ('373220', '2022-12-29 09:00:00', 435500, 442500, 432500, 435500, 265226);
 
-insert into hkidb.backtest_history (uid, aid, param, plratio)
+insert into hkidb.backtest_result (uid, aid, param, plratio)
 values  (1, 3, '{"dca": [0.5, 0.5], "uid": 1, "title": "Swagger Test", "tickers": ["000270", "000660"], "end_date": "20201231", "stop_loss": 0.9, "start_date": "20200101", "stop_profit": 1.1, "trailing_stop": 0.15, "buy_conditions": [{"base_type": "indicator", "base_param": "MACD_SIGNAL,12,26,9", "target_type": "indicator", "compare_type": ">>", "target_param": "MACD,12,26", "compare_param": [1, 1]}], "initial_balance": 10000000, "sell_conditions": [{"base_type": "indicator", "base_param": "MACD_SIGNAL,12,26,9", "target_type": "indicator", "compare_type": "<<", "target_param": "MACD,12,26", "compare_param": [1, 1]}], "buy_condition_limit": 1, "sell_condition_limit": 1}', 0.1412549999999999),
         (1, 4, '{"dca": [0.5, 0.5], "uid": 1, "title": "Swagger Test", "tickers": ["000270", "000660"], "end_date": "20201231", "stop_loss": 0.9, "start_date": "20200101", "stop_profit": 1.1, "trailing_stop": 0.15, "buy_conditions": [{"base_type": "indicator", "base_param": "RSI,14", "target_type": "constant", "compare_type": "<<", "target_param": "30", "compare_param": [1, 1]}], "initial_balance": 10000000, "sell_conditions": [{"base_type": "indicator", "base_param": "RSI,14", "target_type": "constant", "compare_type": ">>", "target_param": "70", "compare_param": [1, 1]}], "buy_condition_limit": 1, "sell_condition_limit": 1}', 0.09099499999999994);
 

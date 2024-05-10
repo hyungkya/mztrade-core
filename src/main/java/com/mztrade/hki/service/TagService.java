@@ -2,12 +2,12 @@ package com.mztrade.hki.service;
 
 import com.mztrade.hki.dto.StockInfoResponse;
 import com.mztrade.hki.dto.TagResponse;
-import com.mztrade.hki.entity.BacktestHistoryTag;
+import com.mztrade.hki.entity.BacktestResultTag;
 import com.mztrade.hki.entity.StockInfoTag;
 import com.mztrade.hki.entity.Tag;
 import com.mztrade.hki.entity.TagCategory;
 import com.mztrade.hki.repository.AccountRepository;
-import com.mztrade.hki.repository.BacktestHistoryTagRepository;
+import com.mztrade.hki.repository.BacktestResultTagRepository;
 import com.mztrade.hki.repository.StockInfoRepository;
 import com.mztrade.hki.repository.StockInfoTagRepository;
 import com.mztrade.hki.repository.TagRepository;
@@ -29,7 +29,7 @@ public class TagService {
     @Autowired
     private StockInfoTagRepository stockInfoTagRepository;
     @Autowired
-    private BacktestHistoryTagRepository backtestHistoryTagRepository;
+    private BacktestResultTagRepository backtestResultTagRepository;
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -71,7 +71,7 @@ public class TagService {
         return tagResponses;
     }
 
-    public List<TagResponse> getBacktestHistoryTag(int uid) {
+    public List<TagResponse> getBacktestResultTag(int uid) {
         List<TagResponse> tagResponses = tagRepository.findByUserUidAndCategory(uid, TagCategory.BACKTEST_HISTORY.id())
                 .stream()
                 .map((t) -> TagResponse.from(t))
@@ -81,8 +81,8 @@ public class TagService {
         return tagResponses;
     }
 
-    public List<TagResponse> getBacktestHistoryTagByAid(int uid, int aid) {
-        List<TagResponse> tagResponses = backtestHistoryTagRepository.findByTagUserUidAndAccountAid(uid, aid)
+    public List<TagResponse> getBacktestResultTagByAid(int uid, int aid) {
+        List<TagResponse> tagResponses = backtestResultTagRepository.findByTagUserUidAndAccountAid(uid, aid)
                 .stream()
                 .map((t) -> TagResponse.from(t.getTag()))
                 .toList();
@@ -128,9 +128,9 @@ public class TagService {
         return true;
     }
 
-    public boolean createBacktestHistoryTagLink(int tid, int aid) {
-        backtestHistoryTagRepository.save(
-                BacktestHistoryTag.builder()
+    public boolean createBacktestResultTagLink(int tid, int aid) {
+        backtestResultTagRepository.save(
+                BacktestResultTag.builder()
                         .tag(tagRepository.getReferenceById(tid))
                         .account(accountRepository.getReferenceById(aid))
                         .build()
@@ -140,9 +140,9 @@ public class TagService {
         return true;
     }
 
-    public void deleteBacktestHistoryTagLink(int tid, int aid) {
-        backtestHistoryTagRepository.delete(
-                BacktestHistoryTag.builder()
+    public void deleteBacktestResultTagLink(int tid, int aid) {
+        backtestResultTagRepository.delete(
+                BacktestResultTag.builder()
                         .tag(tagRepository.getReferenceById(tid))
                         .account(accountRepository.getReferenceById(aid))
                         .build()

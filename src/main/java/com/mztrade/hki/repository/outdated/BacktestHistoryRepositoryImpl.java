@@ -4,7 +4,7 @@ package com.mztrade.hki.repository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.entity.backtest.BacktestHistory;
-import com.mztrade.hki.entity.backtest.BacktestRequest;
+import com.mztrade.hki.entity.backtest.BacktestParameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -30,12 +30,12 @@ public class  BacktestHistoryRepositoryImpl {
         this.accountRepository = accountRepository;
     }
 
-    public boolean create(BacktestHistory backtestHistory) {
+    public boolean create(BacktestHistory backtestResult) {
         MapSqlParameterSource src = new MapSqlParameterSource()
-                .addValue("uid", backtestHistory.getUid(), Types.INTEGER)
-                .addValue("aid", backtestHistory.getAid(), Types.INTEGER)
-                .addValue("param", backtestHistory.getParam(), Types.VARCHAR)
-                .addValue("plratio", backtestHistory.getPlratio(), Types.DOUBLE);
+                .addValue("uid", backtestResult.getUid(), Types.INTEGER)
+                .addValue("aid", backtestResult.getAid(), Types.INTEGER)
+                .addValue("param", backtestResult.getParam(), Types.VARCHAR)
+                .addValue("plratio", backtestResult.getPlratio(), Types.DOUBLE);
         try {
             this.template.update(
                     "INSERT INTO hkidb.backtest_history (uid, aid, param, plratio) VALUES (:uid, :aid, :param, :plratio)",
@@ -100,23 +100,23 @@ public class  BacktestHistoryRepositoryImpl {
         }
     }
 
-    public Optional<BacktestRequest> getBacktestRequest(int aid) {
+    public Optional<BacktestParameter> getBacktestParameter(int aid) {
         MapSqlParameterSource src = new MapSqlParameterSource()
                 .addValue("aid", aid, Types.INTEGER);
-        Optional<BacktestRequest> backtestRequest;
-        backtestRequest = Optional.of(
+        Optional<BacktestParameter> backtestParameter;
+        backtestParameter = Optional.of(
                 this.template.queryForObject(
                 "SELECT b.param FROM hkidb.backtest_history b WHERE b.aid = :aid",
                 src,
                 (rs, rowNum) -> {
                     try {
-                        return objectMapper.readValue(rs.getString("b.param"), BacktestRequest.class);
+                        return objectMapper.readValue(rs.getString("b.param"), BacktestParameter.class);
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
                 }
         ));
-        return backtestRequest;
+        return backtestParameter;
     }
 
 

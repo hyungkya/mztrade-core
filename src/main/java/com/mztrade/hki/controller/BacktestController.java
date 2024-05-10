@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.mztrade.hki.Util;
-import com.mztrade.hki.dto.BacktestHistoryResponse;
-import com.mztrade.hki.dto.BacktestRequest;
+import com.mztrade.hki.dto.BacktestResultResponse;
+import com.mztrade.hki.dto.BacktestParameter;
 import com.mztrade.hki.dto.OrderResponse;
 import com.mztrade.hki.dto.PositionResponse;
 import com.mztrade.hki.dto.StockFinancialInfoResponse;
@@ -18,7 +18,7 @@ import com.mztrade.hki.entity.ChartSetting;
 import com.mztrade.hki.entity.CompareTableResponse;
 import com.mztrade.hki.entity.TagRequest;
 import com.mztrade.hki.entity.User;
-import com.mztrade.hki.entity.backtest.BacktestHistory;
+import com.mztrade.hki.entity.backtest.BacktestResult;
 import com.mztrade.hki.entity.backtest.Indicator;
 import com.mztrade.hki.repository.AccountRepository;
 import com.mztrade.hki.repository.UserRepository;
@@ -96,22 +96,22 @@ public class BacktestController {
     }
 
     @PostMapping("/execute")
-    public ResponseEntity<Boolean> backtest(@RequestBody BacktestRequest backtestRequest) throws JsonProcessingException {
-        log.info(String.format("[POST] /execute backtestRequest=%s", backtestRequest));
+    public ResponseEntity<Boolean> backtest(@RequestBody BacktestParameter backtestParameter) throws JsonProcessingException {
+        log.info(String.format("[POST] /execute backtestParameter=%s", backtestParameter));
 
-        int aid = backtestService.execute(backtestRequest);
+        int aid = backtestService.execute(backtestParameter);
         Account account = accountRepository.getReferenceById(aid);
-        User user = userRepository.getReferenceById(backtestRequest.getUid());
+        User user = userRepository.getReferenceById(backtestParameter.getUid());
         backtestService.create(
-                BacktestHistory.builder()
+                BacktestResult.builder()
                         .account(account)
                         .user(user)
-                        .param(objectMapper.writeValueAsString(backtestRequest))
+                        .param(objectMapper.writeValueAsString(backtestParameter))
                         .plratio(
                                 backtestService.calculateFinalProfitLossRatio(
-                                        backtestRequest.getInitialBalance(),
+                                        backtestParameter.getInitialBalance(),
                                         aid,
-                                        backtestRequest.parseEndDate()
+                                        backtestParameter.parseEndDate()
                                 )
                         )
                         .build()
@@ -121,31 +121,31 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/{aid}")
-    public ResponseEntity<BacktestHistoryResponse> getBacktestHistory(@PathVariable Integer aid) {
-        BacktestHistoryResponse backtestHistory = backtestService.get(aid);
+    public ResponseEntity<BacktestResultResponse> getBacktestResult(@PathVariable Integer aid) {
+        BacktestResultResponse response = backtestService.get(aid);
 
         log.info(String.format("[GET] /backtest/aid=%s", aid));
 
-        if (backtestHistory == null) {
+        if (response == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(backtestHistory, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/backtest/param/{aid}")
-    public ResponseEntity<BacktestRequest> getBacktestHistoryParameter(@PathVariable Integer aid) {
-        BacktestRequest backtestRequest = backtestService.getBacktestRequest(aid);
+    public ResponseEntity<BacktestParameter> getBacktestParameter(@PathVariable Integer aid) {
+        BacktestParameter backtestParameter = backtestService.getBacktestParameter(aid);
 
         log.info(String.format("[GET] /backtest/param/aid=%s", aid));
 
-        if (backtestRequest == null) {
+        if (backtestParameter == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(backtestRequest, HttpStatus.OK);
+        return new ResponseEntity<>(backtestParameter, HttpStatus.OK);
     }
 
     @GetMapping("/backtest/count/{uid}")
-    public ResponseEntity<Integer> getUserBacktestHistoryCount(@PathVariable Integer uid) {
+    public ResponseEntity<Integer> getUserBacktestResultCount(@PathVariable Integer uid) {
         Integer recordCount = backtestService.getNumberOfHistoryByUid(uid);
 
         log.info(String.format("[GET] /backtest/count/uid=%s", uid));
@@ -154,35 +154,35 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/all")
-    public ResponseEntity<List<BacktestHistoryResponse>> getAllBacktestHistory(@RequestHeader String Authorization, @RequestParam Integer uid) throws FirebaseAuthException {
+    public ResponseEntity<List<BacktestResultResponse>> getAllBacktestResult(@RequestHeader String Authorization, @RequestParam Integer uid) throws FirebaseAuthException {
         log.info(String.format("[GET] /backtest/all/uid=%s", uid));
 
-        List<BacktestHistoryResponse> backtestHistoryResponses = new ArrayList<>();
+        List<BacktestResultResponse> backtestResultResponses = new ArrayList<>();
         for (Integer aid : accountService.getAllBacktestAccountIds(uid)) {
-            BacktestHistoryResponse queryResult = backtestService.get(aid);
+            BacktestResultResponse queryResult = backtestService.get(aid);
             if (queryResult != null) {
-                backtestHistoryResponses.add(queryResult);
+                backtestResultResponses.add(queryResult);
             }
         }
-        return new ResponseEntity<>(backtestHistoryResponses, HttpStatus.OK);
+        return new ResponseEntity<>(backtestResultResponses, HttpStatus.OK);
 
     }
 
     @GetMapping("/backtest/top5")
-    public ResponseEntity<List<BacktestHistoryResponse>> getBacktestTop5(@RequestParam Integer uid) {
-        List<BacktestHistoryResponse> backtestHistories = backtestService.getBacktestTop5(uid);
-        return new ResponseEntity<>(backtestHistories, HttpStatus.OK);
+    public ResponseEntity<List<BacktestResultResponse>> getBacktestTop5(@RequestParam Integer uid) {
+        List<BacktestResultResponse> backtestResults = backtestService.getBacktestTop5(uid);
+        return new ResponseEntity<>(backtestResults, HttpStatus.OK);
     }
 
     @GetMapping("/backtest/ranking")
-    public ResponseEntity<List<BacktestHistoryResponse>> getBacktestRanking() {
-        List<BacktestHistoryResponse> backtestHistories = backtestService.getRanking();
-        return new ResponseEntity<>(backtestHistories, HttpStatus.OK);
+    public ResponseEntity<List<BacktestResultResponse>> getBacktestRanking() {
+        List<BacktestResultResponse> backtestResults = backtestService.getRanking();
+        return new ResponseEntity<>(backtestResults, HttpStatus.OK);
     }
 
     @GetMapping("/backtest/search")
-    public ResponseEntity<List<BacktestHistoryResponse>> searchBacktestHistory(@RequestParam Integer uid, @RequestParam String title) {
-        List<BacktestHistoryResponse> queryResult = backtestService.searchByTitle(uid, title);
+    public ResponseEntity<List<BacktestResultResponse>> searchBacktestResult(@RequestParam Integer uid, @RequestParam String title) {
+        List<BacktestResultResponse> queryResult = backtestService.searchByTitle(uid, title);
 
         log.info(String.format("[GET] /backtest/search/uid=%s&title=%s", uid, title));
 
@@ -190,8 +190,8 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/search-by-tags")
-    public ResponseEntity<List<BacktestHistoryResponse>> searchBacktestHistoryWithTags(@RequestParam Integer uid, @RequestParam String title, @RequestParam List<Integer> tids) {
-        List<BacktestHistoryResponse> queryResult = backtestService.searchBacktestHistoryByTags(uid, title, tids);
+    public ResponseEntity<List<BacktestResultResponse>> searchBacktestResultWithTags(@RequestParam Integer uid, @RequestParam String title, @RequestParam List<Integer> tids) {
+        List<BacktestResultResponse> queryResult = backtestService.searchBacktestResultByTags(uid, title, tids);
 
         log.info(String.format("[GET] /backtest/search-by-tags/uid=%s&title=%s&tids=%s", uid, title, tids));
 
@@ -199,9 +199,9 @@ public class BacktestController {
     }
 
     @PutMapping("/backtest")
-    public ResponseEntity<Boolean> updateBacktestHistory(@RequestParam Integer aid, @RequestBody BacktestRequest backtestRequest) throws JsonProcessingException {
+    public ResponseEntity<Boolean> updateBacktestResult(@RequestParam Integer aid, @RequestBody BacktestParameter backtestParameter) throws JsonProcessingException {
         log.info(String.format("[PUT] /backtest/aid=%s", aid));
-        backtestService.update(aid, objectMapper.writeValueAsString(backtestRequest));
+        backtestService.update(aid, objectMapper.writeValueAsString(backtestParameter));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
@@ -213,7 +213,7 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/top-plratio")
-    public ResponseEntity<BacktestHistoryResponse> getHighestProfitLossRatio(@RequestParam Integer uid) {
+    public ResponseEntity<BacktestResultResponse> getHighestProfitLossRatio(@RequestParam Integer uid) {
         Optional<Integer> highestProfitLossRatioAid = backtestService.getHighestProfitLossRatio(uid);
 
         log.info(String.format("[GET] /backtest/top-plratio/uid=%s", uid));
@@ -230,7 +230,7 @@ public class BacktestController {
         List<CompareTableResponse> compareTableResponse = new ArrayList<>();
 
         for (Integer aid : aids) {
-            compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker("").title(backtestService.getBacktestRequest(aid).getTitle()).subTitle("").plratio(backtestService.get(aid).getPlratio()).winRate(statisticService.getTradingWinRate(aid)).frequency(statisticService.getTradeFrequency(aid)).build());
+            compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker("").title(backtestService.getBacktestParameter(aid).getTitle()).subTitle("").plratio(backtestService.get(aid).getPlratio()).winRate(statisticService.getTradingWinRate(aid)).frequency(statisticService.getTradeFrequency(aid)).build());
         }
         log.info(String.format("[GET] /compare-chart/bt-table/aids=%s -> btTableList: %s", aids, compareTableResponse));
 
@@ -242,9 +242,9 @@ public class BacktestController {
         List<CompareTableResponse> compareTableResponse = new ArrayList<>();
 
         for (Integer aid : aids) {
-            List<String> tickers = backtestService.getBacktestRequest(aid).getTickers();
+            List<String> tickers = backtestService.getBacktestParameter(aid).getTickers();
             for (String ticker : tickers) {
-                compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker(ticker).title(backtestService.getBacktestRequest(aid).getTitle()).subTitle(stockPriceService.findStockInfoByTicker(ticker).getName()).plratio(statisticService.getTickerProfit(aid, ticker)).winRate(statisticService.getTickerTradingWinRate(aid, ticker)).frequency(statisticService.getTickerTradeFrequency(aid, ticker)).build());
+                compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker(ticker).title(backtestService.getBacktestParameter(aid).getTitle()).subTitle(stockPriceService.findStockInfoByTicker(ticker).getName()).plratio(statisticService.getTickerProfit(aid, ticker)).winRate(statisticService.getTickerTradingWinRate(aid, ticker)).frequency(statisticService.getTickerTradeFrequency(aid, ticker)).build());
             }
         }
         log.info(String.format("[GET] /compare-chart/ticker-table/aids=%s -> tickerTableList: %s", aids, compareTableResponse));
@@ -281,29 +281,29 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/tag")
-    public List<TagResponse> getBacktestHistoryTag(@RequestParam Integer uid) {
-        List<TagResponse> tagResponses = tagService.getBacktestHistoryTag(uid);
+    public List<TagResponse> getBacktestResultTag(@RequestParam Integer uid) {
+        List<TagResponse> tagResponses = tagService.getBacktestResultTag(uid);
         log.info(String.format("[GET] /backtest/tag/uid=%s", uid));
         return tagResponses;
     }
 
     @GetMapping("/backtest/tag-by-aid")
-    public List<TagResponse> getBacktestHistoryTag(@RequestParam Integer uid, @RequestParam Integer aid) {
-        List<TagResponse> tagResponses = tagService.getBacktestHistoryTagByAid(uid, aid);
+    public List<TagResponse> getBacktestResultTag(@RequestParam Integer uid, @RequestParam Integer aid) {
+        List<TagResponse> tagResponses = tagService.getBacktestResultTagByAid(uid, aid);
         log.info(String.format("[GET] /backtest/tag/uid=%s&aid=%s", uid, aid));
         return tagResponses;
     }
 
     @PostMapping("/backtest/tag-link")
-    public ResponseEntity<Boolean> createBacktestHistoryTagLink(@RequestParam Integer tid, @RequestParam Integer aid) {
-        Boolean isProcessed = tagService.createBacktestHistoryTagLink(tid, aid);
+    public ResponseEntity<Boolean> createBacktestResultTagLink(@RequestParam Integer tid, @RequestParam Integer aid) {
+        Boolean isProcessed = tagService.createBacktestResultTagLink(tid, aid);
         log.info(String.format("[POST] /backtest/tag-link/tid=%s&aid=%s", tid, aid));
         return new ResponseEntity<>(isProcessed, HttpStatus.OK);
     }
 
     @DeleteMapping("/backtest/tag-link")
-    public ResponseEntity<Boolean> deleteBacktestHistoryTagLink(@RequestParam Integer tid, @RequestParam Integer aid) {
-        tagService.deleteBacktestHistoryTagLink(tid, aid);
+    public ResponseEntity<Boolean> deleteBacktestResultTagLink(@RequestParam Integer tid, @RequestParam Integer aid) {
+        tagService.deleteBacktestResultTagLink(tid, aid);
         log.info(String.format("[DELETE] /backtest/tag-link/tid=%s&aid=%s", tid, aid));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }

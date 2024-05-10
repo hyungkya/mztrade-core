@@ -22,9 +22,9 @@ import lombok.ToString;
 @Builder(toBuilder = true)
 @ToString @EqualsAndHashCode
 
-@Table(name = "backtest_history")
+@Table(name = "backtest_result")
 @Entity
-public class BacktestHistory {
+public class BacktestResult {
     @Id
     @Column(name = "aid", nullable = false)
     private Integer aid;

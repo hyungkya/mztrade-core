@@ -2,7 +2,7 @@ package com.mztrade.hki.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.Util;
-import com.mztrade.hki.dto.BacktestRequest;
+import com.mztrade.hki.dto.BacktestParameter;
 import com.mztrade.hki.entity.Order;
 import com.mztrade.hki.entity.OrderType;
 import java.math.BigDecimal;
@@ -34,11 +34,11 @@ public class StatisticService {
     public Map<String, Double> getTickerBenchmarkProfit(int aid) {
         Map<String, Double> benchmarkProfits = new HashMap<>();
 
-        BacktestRequest backtestRequest = backtestService.getBacktestRequest(aid);
-        for (String tradedTicker : backtestRequest.getTickers()) {
+        BacktestParameter backtestParameter = backtestService.getBacktestParameter(aid);
+        for (String tradedTicker : backtestParameter.getTickers()) {
             benchmarkProfits.put(tradedTicker, getTickerBenchmarkProfit(tradedTicker,
-                    backtestRequest.parseStartDate(),
-                    backtestRequest.parseEndDate()));
+                    backtestParameter.parseStartDate(),
+                    backtestParameter.parseEndDate()));
         }
 
         log.debug(String.format("[StatisticService] getTickerBenchmarkProfit(aid: %s) -> benchmarkProfits:%s", aid,benchmarkProfits));
@@ -74,19 +74,19 @@ public class StatisticService {
             ((double) order.getQty() * order.getPrice()) - (order.getQty() * order.getAvgEntryPrice().doubleValue());
         }
 
-        double profit = totalProfitLoss / backtestService.getBacktestRequest(aid).getInitialBalance();
+        double profit = totalProfitLoss / backtestService.getBacktestParameter(aid).getInitialBalance();
 
         log.debug(String.format("[StatisticService] getTickerProfit(aid: %s, ticker: %s) -> Profit:%s", aid, ticker,profit));
         return profit;
     }
 
     public Double getTickerAlphaProfit(int aid, String ticker) {
-        BacktestRequest backtestRequest = backtestService.getBacktestRequest(aid);
+        BacktestParameter backtestParameter = backtestService.getBacktestParameter(aid);
         double absoluteProfitLoss = getTickerProfit(aid, ticker);
         double benchmarkProfitLoss = getTickerBenchmarkProfit(
                 ticker,
-                backtestRequest.parseStartDate(),
-                backtestRequest.parseEndDate());
+                backtestParameter.parseStartDate(),
+                backtestParameter.parseEndDate());
 
         double profit = absoluteProfitLoss - benchmarkProfitLoss;
         log.debug(String.format("[StatisticService] getTickerAlphaProfit(aid: %s, ticker: %s) -> profit:%s", aid, ticker,profit));
@@ -95,8 +95,8 @@ public class StatisticService {
 
     public Map<String, Double> getTickerAlphaProfit(int aid) {
         Map<String, Double> alphaProfits = new HashMap<>();
-        BacktestRequest backtestRequest = backtestService.getBacktestRequest(aid);
-        for (String tradedTicker : backtestRequest.getTickers()) {
+        BacktestParameter backtestParameter = backtestService.getBacktestParameter(aid);
+        for (String tradedTicker : backtestParameter.getTickers()) {
             alphaProfits.put(tradedTicker, getTickerAlphaProfit(aid, tradedTicker));
         }
         log.debug(String.format("[StatisticService] getTickerAlphaProfit(aid: %s) -> alphaProfits:%s", aid,alphaProfits));
@@ -146,7 +146,7 @@ public class StatisticService {
     public Double getTickerTradeFrequency(int aid, String ticker) {
         int totalCount = 0;
         int tradeCount = orderService.getOrderHistory(aid,ticker).size();
-        BacktestRequest br = backtestService.getBacktestRequest(aid);
+        BacktestParameter br = backtestService.getBacktestParameter(aid);
 
         totalCount += stockPriceService.getPrices(ticker
                 ,LocalDateTime.parse(Util.formatDate(br.getStartDate()))
@@ -189,7 +189,7 @@ public class StatisticService {
         int totalCount = 0;
         int tradeCount = orderService.getOrderHistory(aid).size();
 
-        BacktestRequest br = backtestService.getBacktestRequest(aid);
+        BacktestParameter br = backtestService.getBacktestParameter(aid);
         for(String ticker : br.getTickers()) {
             totalCount += stockPriceService.getPrices(ticker
                     ,LocalDateTime.parse(Util.formatDate(br.getStartDate()))

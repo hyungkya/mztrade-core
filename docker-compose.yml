@@ -21,10 +21,3 @@ services: # 컨테이너
         restart: always
         ports:
             - ${REDIS_PORT}:${REDIS_PORT}
-
-    core:
-        image: mztrade/core:arm64
-        container_name: mztrade-core
-        restart: always
-        ports:
-            - ${SERVER_PORT}:${SERVER_PORT}
