@@ -26,7 +26,6 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
         System.out.println(request.getRequestURI());
         for (Iterator<String> it = request.getHeaderNames().asIterator(); it.hasNext(); ) {
             String header = it.next();
-            System.out.println(header);
         }
         chain.doFilter(request, response);
         /*if (request.getRequestURI().startsWith("/user/duplicate-check")) {

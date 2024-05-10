@@ -3,10 +3,9 @@ package com.mztrade.hki.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
 import com.mztrade.hki.Util;
-import com.mztrade.hki.dto.BacktestResultResponse;
 import com.mztrade.hki.dto.BacktestParameter;
+import com.mztrade.hki.dto.BacktestResultResponse;
 import com.mztrade.hki.dto.OrderResponse;
 import com.mztrade.hki.dto.PositionResponse;
 import com.mztrade.hki.dto.StockFinancialInfoResponse;
@@ -32,6 +31,7 @@ import com.mztrade.hki.service.StockPriceService;
 import com.mztrade.hki.service.TagService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -45,7 +45,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -69,18 +68,12 @@ public class BacktestController {
     private ObjectMapper objectMapper;
 
     @Autowired
-    public BacktestController(BacktestService backtestService,
-                              StockPriceService stockPriceService,
-                              OrderService orderService,
-                              AccountService accountService,
-                              StatisticService statisticService,
-                              TagService tagService,
-                              ChartSettingService chartSettingService,
-                              IndicatorService indicatorService,
-                              ObjectMapper objectMapper,
-                              AccountRepository accountRepository,
-                              UserRepository userRepository,
-                              FirebaseAuth firebaseAuth) {
+    public BacktestController(BacktestService backtestService, StockPriceService stockPriceService,
+            OrderService orderService, AccountService accountService,
+            StatisticService statisticService, TagService tagService,
+            ChartSettingService chartSettingService, IndicatorService indicatorService,
+            ObjectMapper objectMapper, AccountRepository accountRepository,
+            UserRepository userRepository, FirebaseAuth firebaseAuth) {
         this.backtestService = backtestService;
         this.stockPriceService = stockPriceService;
         this.orderService = orderService;
@@ -96,26 +89,18 @@ public class BacktestController {
     }
 
     @PostMapping("/execute")
-    public ResponseEntity<Boolean> backtest(@RequestBody BacktestParameter backtestParameter) throws JsonProcessingException {
+    public ResponseEntity<Boolean> backtest(@RequestBody BacktestParameter backtestParameter)
+            throws JsonProcessingException {
         log.info(String.format("[POST] /execute backtestParameter=%s", backtestParameter));
 
         int aid = backtestService.execute(backtestParameter);
         Account account = accountRepository.getReferenceById(aid);
         User user = userRepository.getReferenceById(backtestParameter.getUid());
-        backtestService.create(
-                BacktestResult.builder()
-                        .account(account)
-                        .user(user)
-                        .param(objectMapper.writeValueAsString(backtestParameter))
-                        .plratio(
-                                backtestService.calculateFinalProfitLossRatio(
-                                        backtestParameter.getInitialBalance(),
-                                        aid,
-                                        backtestParameter.parseEndDate()
-                                )
-                        )
-                        .build()
-        );
+        backtestService.create(BacktestResult.builder().account(account).user(user)
+                .param(objectMapper.writeValueAsString(backtestParameter)).plratio(
+                        backtestService.calculateFinalProfitLossRatio(
+                                backtestParameter.getInitialBalance(), aid,
+                                backtestParameter.parseEndDate())).build());
 
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
@@ -144,34 +129,28 @@ public class BacktestController {
         return new ResponseEntity<>(backtestParameter, HttpStatus.OK);
     }
 
-    @GetMapping("/backtest/count/{uid}")
-    public ResponseEntity<Integer> getUserBacktestResultCount(@PathVariable Integer uid) {
-        Integer recordCount = backtestService.getNumberOfHistoryByUid(uid);
-
-        log.info(String.format("[GET] /backtest/count/uid=%s", uid));
-
-        return new ResponseEntity<>(recordCount, HttpStatus.OK);
-    }
-
-    @GetMapping("/backtest/all")
-    public ResponseEntity<List<BacktestResultResponse>> getAllBacktestResult(@RequestHeader String Authorization, @RequestParam Integer uid) throws FirebaseAuthException {
-        log.info(String.format("[GET] /backtest/all/uid=%s", uid));
-
-        List<BacktestResultResponse> backtestResultResponses = new ArrayList<>();
-        for (Integer aid : accountService.getAllBacktestAccountIds(uid)) {
-            BacktestResultResponse queryResult = backtestService.get(aid);
-            if (queryResult != null) {
-                backtestResultResponses.add(queryResult);
+    @GetMapping("/backtest")
+    public ResponseEntity<List<BacktestResultResponse>> getBacktestResults(
+            @RequestParam Optional<Integer> uid,
+            @RequestParam Optional<Integer> limit,
+            @RequestParam(defaultValue = "") String title,
+            @RequestParam Optional<List<Integer>> tids) {
+        List<BacktestResultResponse> backtestResultResponses;
+        if (uid.isPresent()) {
+            if (tids.isPresent()) {
+                backtestResultResponses = backtestService.searchBacktestResultByTags(uid.get(),
+                        title, tids.get());
+            } else {
+                backtestResultResponses = backtestService.searchByTitle(uid.get(), title);
             }
+            if (limit.isPresent()) {
+                backtestResultResponses = backtestResultResponses.stream()
+                        .sorted(Comparator.comparing(BacktestResultResponse::getPlratio).reversed())
+                        .limit(limit.get()).toList();
+            }
+            return new ResponseEntity<>(backtestResultResponses, HttpStatus.OK);
         }
-        return new ResponseEntity<>(backtestResultResponses, HttpStatus.OK);
-
-    }
-
-    @GetMapping("/backtest/top5")
-    public ResponseEntity<List<BacktestResultResponse>> getBacktestTop5(@RequestParam Integer uid) {
-        List<BacktestResultResponse> backtestResults = backtestService.getBacktestTop5(uid);
-        return new ResponseEntity<>(backtestResults, HttpStatus.OK);
+        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping("/backtest/ranking")
@@ -180,26 +159,9 @@ public class BacktestController {
         return new ResponseEntity<>(backtestResults, HttpStatus.OK);
     }
 
-    @GetMapping("/backtest/search")
-    public ResponseEntity<List<BacktestResultResponse>> searchBacktestResult(@RequestParam Integer uid, @RequestParam String title) {
-        List<BacktestResultResponse> queryResult = backtestService.searchByTitle(uid, title);
-
-        log.info(String.format("[GET] /backtest/search/uid=%s&title=%s", uid, title));
-
-        return new ResponseEntity<>(queryResult, HttpStatus.OK);
-    }
-
-    @GetMapping("/backtest/search-by-tags")
-    public ResponseEntity<List<BacktestResultResponse>> searchBacktestResultWithTags(@RequestParam Integer uid, @RequestParam String title, @RequestParam List<Integer> tids) {
-        List<BacktestResultResponse> queryResult = backtestService.searchBacktestResultByTags(uid, title, tids);
-
-        log.info(String.format("[GET] /backtest/search-by-tags/uid=%s&title=%s&tids=%s", uid, title, tids));
-
-        return new ResponseEntity<>(queryResult, HttpStatus.OK);
-    }
-
     @PutMapping("/backtest")
-    public ResponseEntity<Boolean> updateBacktestResult(@RequestParam Integer aid, @RequestBody BacktestParameter backtestParameter) throws JsonProcessingException {
+    public ResponseEntity<Boolean> updateBacktestResult(@RequestParam Integer aid,
+            @RequestBody BacktestParameter backtestParameter) throws JsonProcessingException {
         log.info(String.format("[PUT] /backtest/aid=%s", aid));
         backtestService.update(aid, objectMapper.writeValueAsString(backtestParameter));
         return new ResponseEntity<>(true, HttpStatus.OK);
@@ -213,41 +175,57 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/top-plratio")
-    public ResponseEntity<BacktestResultResponse> getHighestProfitLossRatio(@RequestParam Integer uid) {
-        Optional<Integer> highestProfitLossRatioAid = backtestService.getHighestProfitLossRatio(uid);
+    public ResponseEntity<BacktestResultResponse> getHighestProfitLossRatio(
+            @RequestParam Integer uid) {
+        Optional<Integer> highestProfitLossRatioAid = backtestService.getHighestProfitLossRatio(
+                uid);
 
         log.info(String.format("[GET] /backtest/top-plratio/uid=%s", uid));
 
         if (highestProfitLossRatioAid.isEmpty()) {
             return new ResponseEntity<>(null, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(backtestService.get(highestProfitLossRatioAid.get()), HttpStatus.OK);
+            return new ResponseEntity<>(backtestService.get(highestProfitLossRatioAid.get()),
+                    HttpStatus.OK);
         }
     }
 
     @GetMapping("/compare-chart/bt-table")
-    public ResponseEntity<List<CompareTableResponse>> getCompareBtTable(@RequestParam List<Integer> aids) {
+    public ResponseEntity<List<CompareTableResponse>> getCompareBtTable(
+            @RequestParam List<Integer> aids) {
         List<CompareTableResponse> compareTableResponse = new ArrayList<>();
 
         for (Integer aid : aids) {
-            compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker("").title(backtestService.getBacktestParameter(aid).getTitle()).subTitle("").plratio(backtestService.get(aid).getPlratio()).winRate(statisticService.getTradingWinRate(aid)).frequency(statisticService.getTradeFrequency(aid)).build());
+            compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker("")
+                    .title(backtestService.getBacktestParameter(aid).getTitle()).subTitle("")
+                    .plratio(backtestService.get(aid).getPlratio())
+                    .winRate(statisticService.getTradingWinRate(aid))
+                    .frequency(statisticService.getTradeFrequency(aid)).build());
         }
-        log.info(String.format("[GET] /compare-chart/bt-table/aids=%s -> btTableList: %s", aids, compareTableResponse));
+        log.info(String.format("[GET] /compare-chart/bt-table/aids=%s -> btTableList: %s", aids,
+                compareTableResponse));
 
         return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
     }
 
     @GetMapping("/compare-chart/ticker-table")
-    public ResponseEntity<List<CompareTableResponse>> getCompareTickerTable(@RequestParam List<Integer> aids) {
+    public ResponseEntity<List<CompareTableResponse>> getCompareTickerTable(
+            @RequestParam List<Integer> aids) {
         List<CompareTableResponse> compareTableResponse = new ArrayList<>();
 
         for (Integer aid : aids) {
             List<String> tickers = backtestService.getBacktestParameter(aid).getTickers();
             for (String ticker : tickers) {
-                compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker(ticker).title(backtestService.getBacktestParameter(aid).getTitle()).subTitle(stockPriceService.findStockInfoByTicker(ticker).getName()).plratio(statisticService.getTickerProfit(aid, ticker)).winRate(statisticService.getTickerTradingWinRate(aid, ticker)).frequency(statisticService.getTickerTradeFrequency(aid, ticker)).build());
+                compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker(ticker)
+                        .title(backtestService.getBacktestParameter(aid).getTitle())
+                        .subTitle(stockPriceService.findStockInfoByTicker(ticker).getName())
+                        .plratio(statisticService.getTickerProfit(aid, ticker))
+                        .winRate(statisticService.getTickerTradingWinRate(aid, ticker))
+                        .frequency(statisticService.getTickerTradeFrequency(aid, ticker)).build());
             }
         }
-        log.info(String.format("[GET] /compare-chart/ticker-table/aids=%s -> tickerTableList: %s", aids, compareTableResponse));
+        log.info(String.format("[GET] /compare-chart/ticker-table/aids=%s -> tickerTableList: %s",
+                aids, compareTableResponse));
 
         return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
     }
@@ -260,21 +238,24 @@ public class BacktestController {
     }
 
     @GetMapping("/stock_info/tag-by-ticker")
-    public ResponseEntity<List<TagResponse>> getStockInfoTagByTicker(@RequestParam Integer uid, @RequestParam String ticker) {
+    public ResponseEntity<List<TagResponse>> getStockInfoTagByTicker(@RequestParam Integer uid,
+            @RequestParam String ticker) {
         List<TagResponse> tagResponses = tagService.getStockInfoTagByTicker(uid, ticker);
         log.info(String.format("[GET] /stock_info/tag/uid=%s&ticker=%s", uid, ticker));
         return new ResponseEntity<>(tagResponses, HttpStatus.OK);
     }
 
     @PostMapping("/stock_info/tag-link")
-    public ResponseEntity<Boolean> createStockInfoTagLink(@RequestParam Integer tid, @RequestParam String ticker) {
+    public ResponseEntity<Boolean> createStockInfoTagLink(@RequestParam Integer tid,
+            @RequestParam String ticker) {
         Boolean isProcessed = tagService.createStockInfoTagLink(tid, ticker);
         log.info(String.format("[POST] /stock_info/tag-link/tid=%s&ticker=%s", tid, ticker));
         return new ResponseEntity<>(isProcessed, HttpStatus.OK);
     }
 
     @DeleteMapping("/stock_info/tag-link")
-    public ResponseEntity<Boolean> deleteStockInfoTagLink(@RequestParam Integer tid, @RequestParam String ticker) {
+    public ResponseEntity<Boolean> deleteStockInfoTagLink(@RequestParam Integer tid,
+            @RequestParam String ticker) {
         tagService.deleteStockInfoTagLink(tid, ticker);
         log.info(String.format("[DELETE] /stock_info/tag-link/tid=%s&ticker=%s", tid, ticker));
         return new ResponseEntity<>(true, HttpStatus.OK);
@@ -288,21 +269,24 @@ public class BacktestController {
     }
 
     @GetMapping("/backtest/tag-by-aid")
-    public List<TagResponse> getBacktestResultTag(@RequestParam Integer uid, @RequestParam Integer aid) {
+    public List<TagResponse> getBacktestResultTag(@RequestParam Integer uid,
+            @RequestParam Integer aid) {
         List<TagResponse> tagResponses = tagService.getBacktestResultTagByAid(uid, aid);
         log.info(String.format("[GET] /backtest/tag/uid=%s&aid=%s", uid, aid));
         return tagResponses;
     }
 
     @PostMapping("/backtest/tag-link")
-    public ResponseEntity<Boolean> createBacktestResultTagLink(@RequestParam Integer tid, @RequestParam Integer aid) {
+    public ResponseEntity<Boolean> createBacktestResultTagLink(@RequestParam Integer tid,
+            @RequestParam Integer aid) {
         Boolean isProcessed = tagService.createBacktestResultTagLink(tid, aid);
         log.info(String.format("[POST] /backtest/tag-link/tid=%s&aid=%s", tid, aid));
         return new ResponseEntity<>(isProcessed, HttpStatus.OK);
     }
 
     @DeleteMapping("/backtest/tag-link")
-    public ResponseEntity<Boolean> deleteBacktestResultTagLink(@RequestParam Integer tid, @RequestParam Integer aid) {
+    public ResponseEntity<Boolean> deleteBacktestResultTagLink(@RequestParam Integer tid,
+            @RequestParam Integer aid) {
         tagService.deleteBacktestResultTagLink(tid, aid);
         log.info(String.format("[DELETE] /backtest/tag-link/tid=%s&aid=%s", tid, aid));
         return new ResponseEntity<>(true, HttpStatus.OK);
@@ -310,7 +294,8 @@ public class BacktestController {
 
     @PostMapping("/tag")
     public boolean createTag(@RequestBody TagRequest tagRequest) {
-        int create = tagService.createTag(tagRequest.getUid(), tagRequest.getName(), tagRequest.getColor(), tagRequest.getCategory());
+        int create = tagService.createTag(tagRequest.getUid(), tagRequest.getName(),
+                tagRequest.getColor(), tagRequest.getCategory());
         log.info(String.format("[POST] /tag tag=%s", tagRequest));
         return create > 0;
     }
@@ -323,7 +308,8 @@ public class BacktestController {
     }
 
     @PutMapping("/tag")
-    public boolean updateTag(@RequestParam Integer tid, @RequestParam String name, @RequestParam String color) {
+    public boolean updateTag(@RequestParam Integer tid, @RequestParam String name,
+            @RequestParam String color) {
         boolean update = tagService.updateTag(tid, name, color);
         log.info(String.format("[PUT] /tag/tid=%s&name=%s&color=%s", tid, name, color));
         return update;
@@ -340,7 +326,8 @@ public class BacktestController {
     public boolean saveChartSetting(@RequestParam int uid, @RequestParam String indicator) {
         ChartSetting chartSetting = ChartSetting.builder().uid(uid).indicator(indicator).build();
         boolean update = chartSettingService.save(chartSetting);
-        log.info(String.format("[PUT] /chart-setting?uid=%s&indicator=%s -> update:%b", uid, indicator, update));
+        log.info(String.format("[PUT] /chart-setting?uid=%s&indicator=%s -> update:%b", uid,
+                indicator, update));
         return update;
     }
 
@@ -376,8 +363,10 @@ public class BacktestController {
     }
 
     @GetMapping("/stock_financial_info")
-    public ResponseEntity<StockFinancialInfoResponse> getStockFinancialInfoByTicker(@RequestParam String ticker) {
-        StockFinancialInfoResponse stockFinancialInfoResponse = stockPriceService.findStockFinancialInfoByTicker(ticker);
+    public ResponseEntity<StockFinancialInfoResponse> getStockFinancialInfoByTicker(
+            @RequestParam String ticker) {
+        StockFinancialInfoResponse stockFinancialInfoResponse = stockPriceService.findStockFinancialInfoByTicker(
+                ticker);
         log.info(String.format("[GET] /stock_financial_info?ticker=%s", ticker));
         return new ResponseEntity<>(stockFinancialInfoResponse, HttpStatus.OK);
     }
@@ -389,29 +378,44 @@ public class BacktestController {
     }
 
     @GetMapping("/stock/search")
-    public ResponseEntity<List<StockInfoResponse>> searchStockInfoByName(@RequestParam String name) {
+    public ResponseEntity<List<StockInfoResponse>> searchStockInfoByName(
+            @RequestParam String name) {
         log.info("[GET] /stock/search?name=%s", name);
         return new ResponseEntity<>(stockPriceService.searchStockInfoByName(name), HttpStatus.OK);
     }
 
     @GetMapping("/stock/search-tags")
-    public ResponseEntity<List<StockInfoResponse>> searchStockInfoByNameAndTags(@RequestParam int uid, @RequestParam String name, @RequestParam List<Integer> tids) {
+    public ResponseEntity<List<StockInfoResponse>> searchStockInfoByNameAndTags(
+            @RequestParam int uid, @RequestParam String name, @RequestParam List<Integer> tids) {
         log.info("[GET] /stock/search?uid=%d&name=%s&tids=%s", uid, name, tids);
-        return new ResponseEntity<>(tagService.findStockInfoByNameAndTags(uid, name, tids), HttpStatus.OK);
+        return new ResponseEntity<>(tagService.findStockInfoByNameAndTags(uid, name, tids),
+                HttpStatus.OK);
     }
 
     @GetMapping("/stock_price/indicator")
-    public ResponseEntity<Double> getSingleIndicatorByTicker(@RequestParam String ticker, @RequestParam String date, @RequestParam String type, @RequestParam List<Float> param) {
-        log.info(String.format("[GET] /stock_price/indicator/ticker=%s&date=%s&type=%s&param=%s", ticker, date, type, param));
+    public ResponseEntity<Double> getSingleIndicatorByTicker(@RequestParam String ticker,
+            @RequestParam String date, @RequestParam String type, @RequestParam List<Float> param) {
+        log.info(String.format("[GET] /stock_price/indicator/ticker=%s&date=%s&type=%s&param=%s",
+                ticker, date, type, param));
 
-        return new ResponseEntity<>(indicatorService.getIndicator(ticker, Util.stringToLocalDateTime(date), type, param), HttpStatus.OK);
+        return new ResponseEntity<>(
+                indicatorService.getIndicator(ticker, Util.stringToLocalDateTime(date), type,
+                        param), HttpStatus.OK);
     }
 
     @GetMapping("/stock_price/indicators")
-    public ResponseEntity<Map<LocalDateTime, Double>> getIndicatorByTicker(@RequestParam String ticker, @RequestParam String startDate, @RequestParam String endDate, @RequestParam String type, @RequestParam List<Float> param) {
-        log.info(String.format("[GET] /stock_price/indicators/ticker=%s&startDate=%s&endDate=%s&type=%s&param=%s", ticker, startDate, endDate, type, param));
+    public ResponseEntity<Map<LocalDateTime, Double>> getIndicatorByTicker(
+            @RequestParam String ticker, @RequestParam String startDate,
+            @RequestParam String endDate, @RequestParam String type,
+            @RequestParam List<Float> param) {
+        log.info(String.format(
+                "[GET] /stock_price/indicators/ticker=%s&startDate=%s&endDate=%s&type=%s&param=%s",
+                ticker, startDate, endDate, type, param));
 
-        return new ResponseEntity<>(indicatorService.getIndicators(ticker, Util.stringToLocalDateTime(startDate), Util.stringToLocalDateTime(endDate), Indicator.builder().type(type).params(param).build()), HttpStatus.OK);
+        return new ResponseEntity<>(
+                indicatorService.getIndicators(ticker, Util.stringToLocalDateTime(startDate),
+                        Util.stringToLocalDateTime(endDate),
+                        Indicator.builder().type(type).params(param).build()), HttpStatus.OK);
     }
 
     @GetMapping("/statistic/getWinRate")
@@ -431,7 +435,8 @@ public class BacktestController {
     }
 
     @GetMapping("/statistic/ticker-profit")
-    public ResponseEntity<Double> getTickerProfit(@RequestParam Integer aid, @RequestParam String ticker) {
+    public ResponseEntity<Double> getTickerProfit(@RequestParam Integer aid,
+            @RequestParam String ticker) {
         log.info(String.format("[GET] /statistic/ticker-profit/aid=%s&ticker=%s", aid, ticker));
         return new ResponseEntity<>(statisticService.getTickerProfit(aid, ticker), HttpStatus.OK);
     }
@@ -443,9 +448,13 @@ public class BacktestController {
     }
 
     @GetMapping("/statistic/ticker-trade-count")
-    public ResponseEntity<Integer> getTickerTradeCount(@RequestParam Integer aid, @RequestParam String ticker, @RequestParam(defaultValue = "0") Integer option) {
-        log.info(String.format("[GET] /statistic/ticker-trade-count/aid=%s&ticker=%s&option=%s", aid, ticker, option));
-        return new ResponseEntity<>(statisticService.getTickerTradeCount(aid, ticker, option), HttpStatus.OK);
+    public ResponseEntity<Integer> getTickerTradeCount(@RequestParam Integer aid,
+            @RequestParam String ticker, @RequestParam(defaultValue = "0") Integer option) {
+        log.info(
+                String.format("[GET] /statistic/ticker-trade-count/aid=%s&ticker=%s&option=%s", aid,
+                        ticker, option));
+        return new ResponseEntity<>(statisticService.getTickerTradeCount(aid, ticker, option),
+                HttpStatus.OK);
     }
 
     @GetMapping("/statistic/ticker-benchmark-profit/all")

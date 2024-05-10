@@ -422,16 +422,6 @@ public class BacktestService {
         return backtestResultResponse;
     }
 
-    public List<BacktestResultResponse> getBacktestTop5(int uid) {
-        List<BacktestResultResponse> backtestResultResponse = backtestResultRepository.findTop5ByUserUidOrderByPlratioDesc(uid)
-                .stream()
-                .map((b) -> BacktestResultResponse.from(b))
-                .toList();
-        log.debug(String.format("[BacktestService] getBacktestTop5(uid: %s) -> backtestHistories: %s", uid,
-                backtestResultResponse));
-        return backtestResultResponse;
-    }
-
     public List<BacktestResultResponse> getRanking() {
         List<BacktestResultResponse> backtestResultResponse = backtestResultRepository.findTop5ByOrderByPlratioDesc()
                 .stream()
@@ -461,7 +451,7 @@ public class BacktestService {
     }
 
     public List<BacktestResultResponse> searchByTitle(int uid, String title) {
-        List<BacktestResultResponse> backtestResultResponses = backtestResultRepository.searchByTitle(uid, title)
+        List<BacktestResultResponse> backtestResultResponses = backtestResultRepository.search(uid, title)
                 .stream()
                 .map((b) -> BacktestResultResponse.from(b))
                 .toList();
@@ -477,12 +467,6 @@ public class BacktestService {
                 .toList();
         log.debug(String.format("[BacktestService] searchBacktestHistoryByTags(uid: %d, title: %s, tids: %s) -> backtestHistories: %s", uid, title, tids, backtestHistories));
         return backtestHistories;
-    }
-
-    public Integer getNumberOfHistoryByUid(int uid) {
-        int num = backtestResultRepository.countByUserUid(uid);
-        log.debug(String.format("[BacktestService] getNumberOfHistoryByUid(uid: %d) -> num: %d", uid, num));
-        return num;
     }
 
     public Optional<Integer> getHighestProfitLossRatio(int uid) {
