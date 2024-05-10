@@ -132,11 +132,11 @@ public class BacktestController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/backtest/param/{aid}")
+    @GetMapping("/backtest/{aid}/param")
     public ResponseEntity<BacktestParameter> getBacktestParameter(@PathVariable Integer aid) {
         BacktestParameter backtestParameter = backtestService.getBacktestParameter(aid);
 
-        log.info(String.format("[GET] /backtest/param/aid=%s", aid));
+        log.info(String.format("[GET] /backtest/%s/param", aid));
 
         if (backtestParameter == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
