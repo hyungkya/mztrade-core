@@ -170,12 +170,6 @@ public class BacktestController {
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
-    @GetMapping("/positions")
-    public ResponseEntity<List<PositionResponse>> getPositions(@RequestParam Integer aid) {
-        log.info(String.format("[GET] /positions?aid=%s", aid));
-        return new ResponseEntity<>(orderService.getPositions(aid), HttpStatus.OK);
-    }
-
     @GetMapping("/cash-balance")
     public ResponseEntity<Long> getBalance(@RequestParam Integer aid) {
         log.info(String.format("[GET] /balance?aid=%s", aid));
