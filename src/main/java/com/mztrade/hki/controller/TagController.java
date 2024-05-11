@@ -58,35 +58,35 @@ public class TagController {
         return new ResponseEntity<>(tagResponses, HttpStatus.OK);
     }
 
-    @PostMapping("/stock_info/tag-link")
-    public ResponseEntity<Boolean> createStockInfoTagLink(@RequestParam Integer tid,
-                                                          @RequestParam String ticker) {
-        Boolean isProcessed = tagService.createStockInfoTagLink(tid, ticker);
-        log.info(String.format("[POST] /stock_info/tag-link/tid=%s&ticker=%s", tid, ticker));
+    @PostMapping("/backtest/{aid}/tag")
+    public ResponseEntity<Boolean> createBacktestResultTagLink(@RequestParam Integer tid,
+                                                               @PathVariable Integer aid) {
+        Boolean isProcessed = tagService.createBacktestResultTagLink(tid, aid);
+        log.info(String.format("[POST] /backtest/%s/tag?tid=%s", aid, tid));
         return new ResponseEntity<>(isProcessed, HttpStatus.OK);
     }
 
-    @DeleteMapping("/stock_info/tag-link")
-    public ResponseEntity<Boolean> deleteStockInfoTagLink(@RequestParam Integer tid,
-                                                          @RequestParam String ticker) {
-        tagService.deleteStockInfoTagLink(tid, ticker);
-        log.info(String.format("[DELETE] /stock_info/tag-link/tid=%s&ticker=%s", tid, ticker));
+    @DeleteMapping("/backtest/{aid}/tag")
+    public ResponseEntity<Boolean> deleteBacktestResultTagLink(@RequestParam Integer tid,
+                                                               @PathVariable Integer aid) {
+        tagService.deleteBacktestResultTagLink(tid, aid);
+        log.info(String.format("[DELETE] /backtest/%s/tag?tid=%s", aid, tid));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
-    @PostMapping("/backtest/tag-link")
-    public ResponseEntity<Boolean> createBacktestResultTagLink(@RequestParam Integer tid,
-                                                               @RequestParam Integer aid) {
-        Boolean isProcessed = tagService.createBacktestResultTagLink(tid, aid);
-        log.info(String.format("[POST] /backtest/tag-link/tid=%s&aid=%s", tid, aid));
+    @PostMapping("/stock-info/{ticker}/tag")
+    public ResponseEntity<Boolean> createStockInfoTagLink(@RequestParam Integer tid,
+                                                          @PathVariable String ticker) {
+        Boolean isProcessed = tagService.createStockInfoTagLink(tid, ticker);
+        log.info(String.format("[POST] /stock-info/%s/tag?tid=%s", ticker, tid));
         return new ResponseEntity<>(isProcessed, HttpStatus.OK);
     }
 
-    @DeleteMapping("/backtest/tag-link")
-    public ResponseEntity<Boolean> deleteBacktestResultTagLink(@RequestParam Integer tid,
-                                                               @RequestParam Integer aid) {
-        tagService.deleteBacktestResultTagLink(tid, aid);
-        log.info(String.format("[DELETE] /backtest/tag-link/tid=%s&aid=%s", tid, aid));
+    @DeleteMapping("/stock-info/{ticker}/tag")
+    public ResponseEntity<Boolean> deleteStockInfoTagLink(@RequestParam Integer tid,
+                                                          @PathVariable String ticker) {
+        tagService.deleteStockInfoTagLink(tid, ticker);
+        log.info(String.format("[DELETE] /stock-info/%s/tag?tid=%s", ticker, tid));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
