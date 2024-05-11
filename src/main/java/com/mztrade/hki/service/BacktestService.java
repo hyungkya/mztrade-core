@@ -422,12 +422,12 @@ public class BacktestService {
         return backtestResultResponse;
     }
 
-    public List<BacktestResultResponse> getRanking() {
-        List<BacktestResultResponse> backtestResultResponse = backtestResultRepository.findTop5ByOrderByPlratioDesc()
+    public List<BacktestResultResponse> getAllByPlratioDesc() {
+        List<BacktestResultResponse> backtestResultResponse = backtestResultRepository.getAllByOrderByPlratioDesc()
                 .stream()
                 .map((b) -> BacktestResultResponse.from(b))
                 .toList();
-        log.debug(String.format("[BacktestService] getRanking() -> backtestHistories: %s",
+        log.debug(String.format("[BacktestService] getAllByPlratioDesc() -> backtestHistories: %s",
                 backtestResultResponse));
         return backtestResultResponse;
     }

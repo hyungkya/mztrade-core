@@ -88,10 +88,10 @@ public class BacktestController {
         this.firebaseAuth = firebaseAuth;
     }
 
-    @PostMapping("/execute")
-    public ResponseEntity<Boolean> backtest(@RequestBody BacktestParameter backtestParameter)
+    @PostMapping("/backtest")
+    public ResponseEntity<Boolean> createBacktest(@RequestBody BacktestParameter backtestParameter)
             throws JsonProcessingException {
-        log.info(String.format("[POST] /execute backtestParameter=%s", backtestParameter));
+        log.info(String.format("[POST] /backtest backtestParameter=%s", backtestParameter));
 
         int aid = backtestService.execute(backtestParameter);
         Account account = accountRepository.getReferenceById(aid);
@@ -135,6 +135,7 @@ public class BacktestController {
             @RequestParam Optional<Integer> limit,
             @RequestParam(defaultValue = "") String title,
             @RequestParam Optional<List<Integer>> tids) {
+        HttpStatus httpStatus = HttpStatus.OK;
         List<BacktestResultResponse> backtestResultResponses;
         if (uid.isPresent()) {
             if (tids.isPresent()) {
@@ -143,32 +144,30 @@ public class BacktestController {
             } else {
                 backtestResultResponses = backtestService.searchByTitle(uid.get(), title);
             }
-            if (limit.isPresent()) {
-                backtestResultResponses = backtestResultResponses.stream()
-                        .sorted(Comparator.comparing(BacktestResultResponse::getPlratio).reversed())
-                        .limit(limit.get()).toList();
-            }
-            return new ResponseEntity<>(backtestResultResponses, HttpStatus.OK);
+        } else {
+            backtestResultResponses = backtestService.getAllByPlratioDesc();
         }
-        return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-    }
-
-    @GetMapping("/backtest/ranking")
-    public ResponseEntity<List<BacktestResultResponse>> getBacktestRanking() {
-        List<BacktestResultResponse> backtestResults = backtestService.getRanking();
-        return new ResponseEntity<>(backtestResults, HttpStatus.OK);
+        if (limit.isPresent()) {
+            backtestResultResponses = backtestResultResponses.stream()
+                    .sorted(Comparator.comparing(BacktestResultResponse::getPlratio).reversed())
+                    .limit(limit.get()).toList();
+        }
+        if (backtestResultResponses.isEmpty()) {
+            httpStatus = HttpStatus.BAD_REQUEST;
+        }
+        return new ResponseEntity<>(backtestResultResponses, httpStatus);
     }
 
     @PutMapping("/backtest")
     public ResponseEntity<Boolean> updateBacktestResult(@RequestParam Integer aid,
-            @RequestBody BacktestParameter backtestParameter) throws JsonProcessingException {
+                                                        @RequestBody BacktestParameter backtestParameter) throws JsonProcessingException {
         log.info(String.format("[PUT] /backtest/aid=%s", aid));
         backtestService.update(aid, objectMapper.writeValueAsString(backtestParameter));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
     @DeleteMapping("/backtest")
-    public ResponseEntity<Boolean> deleteAccount(@RequestParam Integer aid) {
+    public ResponseEntity<Boolean> deleteBacktestResult(@RequestParam Integer aid) {
         log.info(String.format("[DELETE] /backtest/aid=%s", aid));
         accountService.deleteAccount(aid);
         return new ResponseEntity<>(true, HttpStatus.OK);
