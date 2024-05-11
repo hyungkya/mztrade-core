@@ -170,12 +170,6 @@ public class BacktestController {
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
-    @GetMapping("/order_history")
-    public ResponseEntity<List<OrderResponse>> getOrderHistory(@RequestParam Integer aid) {
-        log.info(String.format("[GET] /order_history?aid=%s", aid));
-        return new ResponseEntity<>(orderService.getOrderHistory(aid), HttpStatus.OK);
-    }
-
     @GetMapping("/stock_price")
     public ResponseEntity<List<StockPriceResponse>> getPricesByTicker(@RequestParam String ticker) {
         log.info(String.format("[GET] /stock_price/ticker=%s", ticker));

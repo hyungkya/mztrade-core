@@ -1,5 +1,6 @@
 package com.mztrade.hki.controller;
 
+import com.mztrade.hki.dto.OrderResponse;
 import com.mztrade.hki.dto.PositionResponse;
 import com.mztrade.hki.service.AccountService;
 import java.time.LocalDateTime;
@@ -48,6 +49,12 @@ public class AccountController {
     public ResponseEntity<Long> getBalance(@PathVariable Integer aid) {
         log.info(String.format("[GET] /account/%s/balance", aid));
         return new ResponseEntity<>(accountService.getBalance(aid), HttpStatus.OK);
+    }
+
+    @GetMapping("/account/{aid}/order")
+    public ResponseEntity<List<OrderResponse>> getOrderHistory(@PathVariable Integer aid) {
+        log.info(String.format("[GET] /account/%s/order", aid));
+        return new ResponseEntity<>(orderService.getOrderHistory(aid), HttpStatus.OK);
     }
 
     @GetMapping("/compare-chart/plratio")
