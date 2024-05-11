@@ -44,6 +44,12 @@ public class AccountController {
         return new ResponseEntity<>(orderService.getPositions(aid), HttpStatus.OK);
     }
 
+    @GetMapping("/account/{aid}/balance")
+    public ResponseEntity<Long> getBalance(@PathVariable Integer aid) {
+        log.info(String.format("[GET] /account/%s/balance", aid));
+        return new ResponseEntity<>(accountService.getBalance(aid), HttpStatus.OK);
+    }
+
     @GetMapping("/compare-chart/plratio")
     public ResponseEntity<Map<Integer,Map<LocalDateTime, Long>>> getPlRatio(
             @RequestParam List<Integer> aids
