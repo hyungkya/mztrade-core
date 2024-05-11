@@ -170,49 +170,6 @@ public class BacktestController {
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
-    @GetMapping("/stock_price")
-    public ResponseEntity<List<StockPriceResponse>> getPricesByTicker(@RequestParam String ticker) {
-        log.info(String.format("[GET] /stock_price/ticker=%s", ticker));
-        return new ResponseEntity<>(stockPriceService.getPrices(ticker), HttpStatus.OK);
-    }
-
-    @GetMapping("/stock_info")
-    public ResponseEntity<StockInfoResponse> getStockInfoByTicker(@RequestParam String ticker) {
-        StockInfoResponse stockInfoResponse = stockPriceService.findStockInfoByTicker(ticker);
-        log.info(String.format("[GET] /stock_info?ticker=%s", ticker));
-        return new ResponseEntity<>(stockInfoResponse, HttpStatus.OK);
-    }
-
-    @GetMapping("/stock_financial_info")
-    public ResponseEntity<StockFinancialInfoResponse> getStockFinancialInfoByTicker(
-            @RequestParam String ticker) {
-        StockFinancialInfoResponse stockFinancialInfoResponse = stockPriceService.findStockFinancialInfoByTicker(
-                ticker);
-        log.info(String.format("[GET] /stock_financial_info?ticker=%s", ticker));
-        return new ResponseEntity<>(stockFinancialInfoResponse, HttpStatus.OK);
-    }
-
-    @GetMapping("/stock")
-    public ResponseEntity<List<StockInfoResponse>> getAllStockInfo() {
-        log.info("[GET] /stock");
-        return new ResponseEntity<>(stockPriceService.getAllStockInfo(), HttpStatus.OK);
-    }
-
-    @GetMapping("/stock/search")
-    public ResponseEntity<List<StockInfoResponse>> searchStockInfoByName(
-            @RequestParam String name) {
-        log.info("[GET] /stock/search?name=%s", name);
-        return new ResponseEntity<>(stockPriceService.searchStockInfoByName(name), HttpStatus.OK);
-    }
-
-    @GetMapping("/stock/search-tags")
-    public ResponseEntity<List<StockInfoResponse>> searchStockInfoByNameAndTags(
-            @RequestParam int uid, @RequestParam String name, @RequestParam List<Integer> tids) {
-        log.info("[GET] /stock/search?uid=%d&name=%s&tids=%s", uid, name, tids);
-        return new ResponseEntity<>(tagService.findStockInfoByNameAndTags(uid, name, tids),
-                HttpStatus.OK);
-    }
-
     @GetMapping("/stock_price/indicator")
     public ResponseEntity<Double> getSingleIndicatorByTicker(@RequestParam String ticker,
             @RequestParam String date, @RequestParam String type, @RequestParam List<Float> param) {
