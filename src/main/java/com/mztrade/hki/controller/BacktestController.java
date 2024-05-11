@@ -170,24 +170,6 @@ public class BacktestController {
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
-
-
-    @GetMapping("/chart-setting")
-    public ChartSetting getChartSetting(@RequestParam int uid) {
-        ChartSetting chartSetting = chartSettingService.get(uid);
-        log.info(String.format("[GET] /chart-setting?uid=%s", chartSetting));
-        return chartSetting;
-    }
-
-    @PutMapping("/chart-setting")
-    public boolean saveChartSetting(@RequestParam int uid, @RequestParam String indicator) {
-        ChartSetting chartSetting = ChartSetting.builder().uid(uid).indicator(indicator).build();
-        boolean update = chartSettingService.save(chartSetting);
-        log.info(String.format("[PUT] /chart-setting?uid=%s&indicator=%s -> update:%b", uid,
-                indicator, update));
-        return update;
-    }
-
     @GetMapping("/positions")
     public ResponseEntity<List<PositionResponse>> getPositions(@RequestParam Integer aid) {
         log.info(String.format("[GET] /positions?aid=%s", aid));

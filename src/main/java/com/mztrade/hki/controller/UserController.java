@@ -2,27 +2,26 @@ package com.mztrade.hki.controller;
 
 
 import com.mztrade.hki.dto.UserDto;
+import com.mztrade.hki.entity.ChartSetting;
+import com.mztrade.hki.service.ChartSettingService;
 import com.mztrade.hki.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
 public class UserController {
 
+    private final ChartSettingService chartSettingService;
     private UserService userService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, ChartSettingService chartSettingService) {
         this.userService = userService;
+        this.chartSettingService = chartSettingService;
     }
 
     @PostMapping("/user")
@@ -68,4 +67,19 @@ public class UserController {
         return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
+    @GetMapping("/user/{uid}/chart-setting")
+    public ChartSetting getChartSetting(@PathVariable int uid) {
+        ChartSetting chartSetting = chartSettingService.get(uid);
+        log.info(String.format("[GET] /user/%s/chart-setting", uid));
+        return chartSetting;
+    }
+
+    @PutMapping("/user/{uid}/chart-setting")
+    public boolean saveChartSetting(@PathVariable int uid, @RequestParam String indicator) {
+        ChartSetting chartSetting = ChartSetting.builder().uid(uid).indicator(indicator).build();
+        boolean update = chartSettingService.save(chartSetting);
+        log.info(String.format("[PUT] /user/%s/chart-setting?indicator=%s -> update:%b", uid,
+                indicator, update));
+        return update;
+    }
 }
