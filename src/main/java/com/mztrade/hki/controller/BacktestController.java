@@ -170,130 +170,7 @@ public class BacktestController {
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
-    @GetMapping("/compare-chart/bt-table")
-    public ResponseEntity<List<CompareTableResponse>> getCompareBtTable(
-            @RequestParam List<Integer> aids) {
-        List<CompareTableResponse> compareTableResponse = new ArrayList<>();
 
-        for (Integer aid : aids) {
-            compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker("")
-                    .title(backtestService.getBacktestParameter(aid).getTitle()).subTitle("")
-                    .plratio(backtestService.get(aid).getPlratio())
-                    .winRate(statisticService.getTradingWinRate(aid))
-                    .frequency(statisticService.getTradeFrequency(aid)).build());
-        }
-        log.info(String.format("[GET] /compare-chart/bt-table/aids=%s -> btTableList: %s", aids,
-                compareTableResponse));
-
-        return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
-    }
-
-    @GetMapping("/compare-chart/ticker-table")
-    public ResponseEntity<List<CompareTableResponse>> getCompareTickerTable(
-            @RequestParam List<Integer> aids) {
-        List<CompareTableResponse> compareTableResponse = new ArrayList<>();
-
-        for (Integer aid : aids) {
-            List<String> tickers = backtestService.getBacktestParameter(aid).getTickers();
-            for (String ticker : tickers) {
-                compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker(ticker)
-                        .title(backtestService.getBacktestParameter(aid).getTitle())
-                        .subTitle(stockPriceService.findStockInfoByTicker(ticker).getName())
-                        .plratio(statisticService.getTickerProfit(aid, ticker))
-                        .winRate(statisticService.getTickerTradingWinRate(aid, ticker))
-                        .frequency(statisticService.getTickerTradeFrequency(aid, ticker)).build());
-            }
-        }
-        log.info(String.format("[GET] /compare-chart/ticker-table/aids=%s -> tickerTableList: %s",
-                aids, compareTableResponse));
-
-        return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
-    }
-
-    @GetMapping("/stock_info/tag")
-    public ResponseEntity<List<TagResponse>> getStockInfoTag(@RequestParam Integer uid) {
-        List<TagResponse> tagResponses = tagService.getStockInfoTag(uid);
-        log.info(String.format("[GET] /stock_info/tag/uid=%s", uid));
-        return new ResponseEntity<>(tagResponses, HttpStatus.OK);
-    }
-
-    @GetMapping("/stock_info/tag-by-ticker")
-    public ResponseEntity<List<TagResponse>> getStockInfoTagByTicker(@RequestParam Integer uid,
-            @RequestParam String ticker) {
-        List<TagResponse> tagResponses = tagService.getStockInfoTagByTicker(uid, ticker);
-        log.info(String.format("[GET] /stock_info/tag/uid=%s&ticker=%s", uid, ticker));
-        return new ResponseEntity<>(tagResponses, HttpStatus.OK);
-    }
-
-    @PostMapping("/stock_info/tag-link")
-    public ResponseEntity<Boolean> createStockInfoTagLink(@RequestParam Integer tid,
-            @RequestParam String ticker) {
-        Boolean isProcessed = tagService.createStockInfoTagLink(tid, ticker);
-        log.info(String.format("[POST] /stock_info/tag-link/tid=%s&ticker=%s", tid, ticker));
-        return new ResponseEntity<>(isProcessed, HttpStatus.OK);
-    }
-
-    @DeleteMapping("/stock_info/tag-link")
-    public ResponseEntity<Boolean> deleteStockInfoTagLink(@RequestParam Integer tid,
-            @RequestParam String ticker) {
-        tagService.deleteStockInfoTagLink(tid, ticker);
-        log.info(String.format("[DELETE] /stock_info/tag-link/tid=%s&ticker=%s", tid, ticker));
-        return new ResponseEntity<>(true, HttpStatus.OK);
-    }
-
-    @GetMapping("/backtest/tag")
-    public List<TagResponse> getBacktestResultTag(@RequestParam Integer uid) {
-        List<TagResponse> tagResponses = tagService.getBacktestResultTag(uid);
-        log.info(String.format("[GET] /backtest/tag/uid=%s", uid));
-        return tagResponses;
-    }
-
-    @GetMapping("/backtest/tag-by-aid")
-    public List<TagResponse> getBacktestResultTag(@RequestParam Integer uid,
-            @RequestParam Integer aid) {
-        List<TagResponse> tagResponses = tagService.getBacktestResultTagByAid(uid, aid);
-        log.info(String.format("[GET] /backtest/tag/uid=%s&aid=%s", uid, aid));
-        return tagResponses;
-    }
-
-    @PostMapping("/backtest/tag-link")
-    public ResponseEntity<Boolean> createBacktestResultTagLink(@RequestParam Integer tid,
-            @RequestParam Integer aid) {
-        Boolean isProcessed = tagService.createBacktestResultTagLink(tid, aid);
-        log.info(String.format("[POST] /backtest/tag-link/tid=%s&aid=%s", tid, aid));
-        return new ResponseEntity<>(isProcessed, HttpStatus.OK);
-    }
-
-    @DeleteMapping("/backtest/tag-link")
-    public ResponseEntity<Boolean> deleteBacktestResultTagLink(@RequestParam Integer tid,
-            @RequestParam Integer aid) {
-        tagService.deleteBacktestResultTagLink(tid, aid);
-        log.info(String.format("[DELETE] /backtest/tag-link/tid=%s&aid=%s", tid, aid));
-        return new ResponseEntity<>(true, HttpStatus.OK);
-    }
-
-    @PostMapping("/tag")
-    public boolean createTag(@RequestBody TagRequest tagRequest) {
-        int create = tagService.createTag(tagRequest.getUid(), tagRequest.getName(),
-                tagRequest.getColor(), tagRequest.getCategory());
-        log.info(String.format("[POST] /tag tag=%s", tagRequest));
-        return create > 0;
-    }
-
-    @DeleteMapping("/tag")
-    public ResponseEntity<Boolean> deleteTag(@RequestParam Integer tid) {
-        tagService.deleteTag(tid);
-        log.info(String.format("[DELETE] /tag/tid=%s", tid));
-        return new ResponseEntity<>(true, HttpStatus.OK);
-    }
-
-    @PutMapping("/tag")
-    public boolean updateTag(@RequestParam Integer tid, @RequestParam String name,
-            @RequestParam String color) {
-        boolean update = tagService.updateTag(tid, name, color);
-        log.info(String.format("[PUT] /tag/tid=%s&name=%s&color=%s", tid, name, color));
-        return update;
-    }
 
     @GetMapping("/chart-setting")
     public ChartSetting getChartSetting(@RequestParam int uid) {
@@ -449,5 +326,43 @@ public class BacktestController {
         return new ResponseEntity<>(statisticService.getTickerAlphaProfit(aid), HttpStatus.OK);
     }
 
+    @GetMapping("/compare-chart/bt-table")
+    public ResponseEntity<List<CompareTableResponse>> getCompareBtTable(
+            @RequestParam List<Integer> aids) {
+        List<CompareTableResponse> compareTableResponse = new ArrayList<>();
 
+        for (Integer aid : aids) {
+            compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker("")
+                    .title(backtestService.getBacktestParameter(aid).getTitle()).subTitle("")
+                    .plratio(backtestService.get(aid).getPlratio())
+                    .winRate(statisticService.getTradingWinRate(aid))
+                    .frequency(statisticService.getTradeFrequency(aid)).build());
+        }
+        log.info(String.format("[GET] /compare-chart/bt-table/aids=%s -> btTableList: %s", aids,
+                compareTableResponse));
+
+        return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/compare-chart/ticker-table")
+    public ResponseEntity<List<CompareTableResponse>> getCompareTickerTable(
+            @RequestParam List<Integer> aids) {
+        List<CompareTableResponse> compareTableResponse = new ArrayList<>();
+
+        for (Integer aid : aids) {
+            List<String> tickers = backtestService.getBacktestParameter(aid).getTickers();
+            for (String ticker : tickers) {
+                compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker(ticker)
+                        .title(backtestService.getBacktestParameter(aid).getTitle())
+                        .subTitle(stockPriceService.findStockInfoByTicker(ticker).getName())
+                        .plratio(statisticService.getTickerProfit(aid, ticker))
+                        .winRate(statisticService.getTickerTradingWinRate(aid, ticker))
+                        .frequency(statisticService.getTickerTradeFrequency(aid, ticker)).build());
+            }
+        }
+        log.info(String.format("[GET] /compare-chart/ticker-table/aids=%s -> tickerTableList: %s",
+                aids, compareTableResponse));
+
+        return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
+    }
 }
