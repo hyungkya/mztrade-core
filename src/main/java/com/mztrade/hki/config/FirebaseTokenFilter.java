@@ -23,7 +23,6 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
     @Override
     public void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
             throws IOException, ServletException {
-        System.out.println(request.getRequestURI());
         for (Iterator<String> it = request.getHeaderNames().asIterator(); it.hasNext(); ) {
             String header = it.next();
         }

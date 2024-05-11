@@ -152,9 +152,6 @@ public class BacktestController {
                     .sorted(Comparator.comparing(BacktestResultResponse::getPlratio).reversed())
                     .limit(limit.get()).toList();
         }
-        if (backtestResultResponses.isEmpty()) {
-            httpStatus = HttpStatus.BAD_REQUEST;
-        }
         return new ResponseEntity<>(backtestResultResponses, httpStatus);
     }
 
@@ -171,22 +168,6 @@ public class BacktestController {
         log.info(String.format("[DELETE] /backtest/aid=%s", aid));
         accountService.deleteAccount(aid);
         return new ResponseEntity<>(true, HttpStatus.OK);
-    }
-
-    @GetMapping("/backtest/top-plratio")
-    public ResponseEntity<BacktestResultResponse> getHighestProfitLossRatio(
-            @RequestParam Integer uid) {
-        Optional<Integer> highestProfitLossRatioAid = backtestService.getHighestProfitLossRatio(
-                uid);
-
-        log.info(String.format("[GET] /backtest/top-plratio/uid=%s", uid));
-
-        if (highestProfitLossRatioAid.isEmpty()) {
-            return new ResponseEntity<>(null, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(backtestService.get(highestProfitLossRatioAid.get()),
-                    HttpStatus.OK);
-        }
     }
 
     @GetMapping("/compare-chart/bt-table")
