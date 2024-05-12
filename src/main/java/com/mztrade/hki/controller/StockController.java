@@ -1,8 +1,11 @@
 package com.mztrade.hki.controller;
 
+import com.mztrade.hki.Util;
 import com.mztrade.hki.dto.StockFinancialInfoResponse;
 import com.mztrade.hki.dto.StockInfoResponse;
 import com.mztrade.hki.dto.StockPriceResponse;
+import com.mztrade.hki.entity.backtest.Indicator;
+import com.mztrade.hki.service.IndicatorService;
 import com.mztrade.hki.service.StockPriceService;
 import com.mztrade.hki.service.TagService;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +24,12 @@ import java.util.Optional;
 public class StockController {
     private final StockPriceService stockPriceService;
     private final TagService tagService;
+    private final IndicatorService indicatorService;
 
-    public StockController(StockPriceService stockPriceService, TagService tagService) {
+    public StockController(StockPriceService stockPriceService, TagService tagService, IndicatorService indicatorService) {
         this.stockPriceService = stockPriceService;
         this.tagService = tagService;
+        this.indicatorService = indicatorService;
     }
 
     @GetMapping("/stock")
@@ -71,5 +76,28 @@ public class StockController {
                 ticker);
         log.info(String.format("[GET] /stock/%s/financial-info", ticker));
         return new ResponseEntity<>(stockFinancialInfoResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/stock/{ticker}/indicator")
+    public ResponseEntity<?> getSingleIndicatorByTicker(
+            @PathVariable String ticker,
+            @RequestParam String startDate,
+            @RequestParam(defaultValue = "") String endDate,
+            @RequestParam String type,
+            @RequestParam List<Float> param
+    ) {
+        log.info(String.format("[GET] /stock/%s/indicator?startDate=%s&endDate=%s&type=%s&param=%s",
+                ticker, startDate, endDate, type, param));
+
+        if (!endDate.isEmpty()) {
+            return new ResponseEntity<>(
+                    indicatorService.getIndicators(ticker, Util.stringToLocalDateTime(startDate),
+                            Util.stringToLocalDateTime(endDate),
+                            Indicator.builder().type(type).params(param).build()), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(
+                    indicatorService.getIndicator(ticker, Util.stringToLocalDateTime(startDate), type,
+                            param), HttpStatus.OK);
+        }
     }
 }

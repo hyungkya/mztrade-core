@@ -170,44 +170,6 @@ public class BacktestController {
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
-    @GetMapping("/stock/{ticker}/indicator")
-    public ResponseEntity<?> getSingleIndicatorByTicker(
-            @PathVariable String ticker,
-            @RequestParam String startDate,
-            @RequestParam(defaultValue = "") String endDate,
-            @RequestParam String type,
-            @RequestParam List<Float> param
-    ) {
-        log.info(String.format("[GET] /stock/%s/indicator?startDate=%s&endDate=%s&type=%s&param=%s",
-                ticker, startDate, endDate, type, param));
-
-        if (!endDate.isEmpty()) {
-            return new ResponseEntity<>(
-                    indicatorService.getIndicators(ticker, Util.stringToLocalDateTime(startDate),
-                            Util.stringToLocalDateTime(endDate),
-                            Indicator.builder().type(type).params(param).build()), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(
-                    indicatorService.getIndicator(ticker, Util.stringToLocalDateTime(startDate), type,
-                            param), HttpStatus.OK);
-        }
-    }
-
-    @GetMapping("/stock_price/indicators")
-    public ResponseEntity<Map<LocalDateTime, Double>> getIndicatorByTicker(
-            @RequestParam String ticker, @RequestParam String startDate,
-            @RequestParam String endDate, @RequestParam String type,
-            @RequestParam List<Float> param) {
-        log.info(String.format(
-                "[GET] /stock_price/indicators/ticker=%s&startDate=%s&endDate=%s&type=%s&param=%s",
-                ticker, startDate, endDate, type, param));
-
-        return new ResponseEntity<>(
-                indicatorService.getIndicators(ticker, Util.stringToLocalDateTime(startDate),
-                        Util.stringToLocalDateTime(endDate),
-                        Indicator.builder().type(type).params(param).build()), HttpStatus.OK);
-    }
-
     @GetMapping("/statistic/getWinRate")
     public ResponseEntity<Double> getTradingWinRate(@RequestParam Integer aid) {
         Double winRate = statisticService.getTradingWinRate(aid);
