@@ -3,22 +3,12 @@ package com.mztrade.hki.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
-import com.mztrade.hki.Util;
 import com.mztrade.hki.dto.BacktestParameter;
 import com.mztrade.hki.dto.BacktestResultResponse;
-import com.mztrade.hki.dto.OrderResponse;
-import com.mztrade.hki.dto.PositionResponse;
-import com.mztrade.hki.dto.StockFinancialInfoResponse;
-import com.mztrade.hki.dto.StockInfoResponse;
-import com.mztrade.hki.dto.StockPriceResponse;
-import com.mztrade.hki.dto.TagResponse;
 import com.mztrade.hki.entity.Account;
-import com.mztrade.hki.entity.ChartSetting;
 import com.mztrade.hki.entity.CompareTableResponse;
-import com.mztrade.hki.entity.TagRequest;
 import com.mztrade.hki.entity.User;
 import com.mztrade.hki.entity.backtest.BacktestResult;
-import com.mztrade.hki.entity.backtest.Indicator;
 import com.mztrade.hki.repository.AccountRepository;
 import com.mztrade.hki.repository.UserRepository;
 import com.mztrade.hki.service.AccountService;
@@ -29,11 +19,9 @@ import com.mztrade.hki.service.OrderService;
 import com.mztrade.hki.service.StatisticService;
 import com.mztrade.hki.service.StockPriceService;
 import com.mztrade.hki.service.TagService;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -168,57 +156,6 @@ public class BacktestController {
         log.info(String.format("[DELETE] /backtest/aid=%s", aid));
         accountService.deleteAccount(aid);
         return new ResponseEntity<>(true, HttpStatus.OK);
-    }
-
-    @GetMapping("/statistic/getWinRate")
-    public ResponseEntity<Double> getTradingWinRate(@RequestParam Integer aid) {
-        Double winRate = statisticService.getTradingWinRate(aid);
-
-        log.info(String.format("[GET] /statistic/getWinRate/aid=%s", aid));
-
-        return new ResponseEntity<Double>(winRate, HttpStatus.OK);
-    }
-
-    @GetMapping("/statistic/tradeFrequency")
-    public ResponseEntity<Double> getTradeFrequency(@RequestParam Integer aid) {
-        Double tradeFrequency = statisticService.getTradeFrequency(aid);
-        log.info(String.format("[GET] /statistic/tradeFrequency/aid=%s", aid));
-        return new ResponseEntity<Double>(tradeFrequency, HttpStatus.OK);
-    }
-
-    @GetMapping("/statistic/ticker-profit")
-    public ResponseEntity<Double> getTickerProfit(@RequestParam Integer aid,
-            @RequestParam String ticker) {
-        log.info(String.format("[GET] /statistic/ticker-profit/aid=%s&ticker=%s", aid, ticker));
-        return new ResponseEntity<>(statisticService.getTickerProfit(aid, ticker), HttpStatus.OK);
-    }
-
-    @GetMapping("/statistic/ticker-profit/all")
-    public ResponseEntity<Map<String, Double>> getTickerProfit(@RequestParam Integer aid) {
-        log.info(String.format("[GET] /statistic/ticker-profit/all/aid=%s", aid));
-        return new ResponseEntity<>(statisticService.getTickerProfit(aid), HttpStatus.OK);
-    }
-
-    @GetMapping("/statistic/ticker-trade-count")
-    public ResponseEntity<Integer> getTickerTradeCount(@RequestParam Integer aid,
-            @RequestParam String ticker, @RequestParam(defaultValue = "0") Integer option) {
-        log.info(
-                String.format("[GET] /statistic/ticker-trade-count/aid=%s&ticker=%s&option=%s", aid,
-                        ticker, option));
-        return new ResponseEntity<>(statisticService.getTickerTradeCount(aid, ticker, option),
-                HttpStatus.OK);
-    }
-
-    @GetMapping("/statistic/ticker-benchmark-profit/all")
-    public ResponseEntity<Map<String, Double>> getTickerBenchmarkProfit(@RequestParam Integer aid) {
-        log.info(String.format("[GET] /statistic/ticker-benchmark-profit/all/aid=%s", aid));
-        return new ResponseEntity<>(statisticService.getTickerBenchmarkProfit(aid), HttpStatus.OK);
-    }
-
-    @GetMapping("/statistic/ticker-alpha-profit/all")
-    public ResponseEntity<Map<String, Double>> getTickerAlphaProfit(@RequestParam Integer aid) {
-        log.info(String.format("[GET] /statistic/ticker=alpha-profit/all/aid=%s", aid));
-        return new ResponseEntity<>(statisticService.getTickerAlphaProfit(aid), HttpStatus.OK);
     }
 
     @GetMapping("/compare-chart/bt-table")

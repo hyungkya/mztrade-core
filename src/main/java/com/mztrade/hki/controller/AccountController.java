@@ -3,6 +3,7 @@ package com.mztrade.hki.controller;
 import com.mztrade.hki.dto.OrderResponse;
 import com.mztrade.hki.dto.PositionResponse;
 import com.mztrade.hki.service.AccountService;
+import com.mztrade.hki.service.StatisticService;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +24,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class AccountController {
 
     private final OrderService orderService;
+    private final StatisticService statisticService;
     private AccountService accountService;
 
     @Autowired
-    public AccountController(AccountService accountService, OrderService orderService) {
+    public AccountController(AccountService accountService, OrderService orderService,
+            StatisticService statisticService) {
         this.accountService = accountService;
         this.orderService = orderService;
+        this.statisticService = statisticService;
     }
 
     @GetMapping("/account")
