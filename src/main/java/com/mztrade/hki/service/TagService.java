@@ -67,7 +67,6 @@ public class TagService {
                 .map((t) -> TagResponse.from(t))
                 .toList();
 
-        log.debug(String.format("getStockInfoTag(uid: %s) -> %s",uid, tagResponses));
         return tagResponses;
     }
 
@@ -77,7 +76,6 @@ public class TagService {
                 .map((t) -> TagResponse.from(t))
                 .toList();
 
-        log.debug(String.format("getBacktestHistoryTag(uid: %s) -> %s",uid, tagResponses));
         return tagResponses;
     }
 
@@ -87,7 +85,6 @@ public class TagService {
                 .map((t) -> TagResponse.from(t.getTag()))
                 .toList();
 
-        log.debug(String.format("getBacktestHistoryTagByAid(uid: %s,aid: %s) -> %s",uid, aid, tagResponses));
         return tagResponses;
     }
 
@@ -97,7 +94,6 @@ public class TagService {
                 .map((t) -> TagResponse.from(t.getTag()))
                 .toList();;
 
-        log.debug(String.format("getStockInfoTagByTicker(uid: %s,ticker: %s) -> %s",uid, ticker, tagResponses));
         return tagResponses;
     }
 
@@ -110,13 +106,11 @@ public class TagService {
                         .category(TagCategory.valueOf(category).id())
                         .build());
 
-        log.debug(String.format("createTag(uid: %s, color: %s, category: %s) -> tid:%s",uid,color,category,tag.getTid()));
         return tag.getTid();
     }
 
     public void deleteTag(int tid) {
         tagRepository.deleteById(tid);
-        log.debug(String.format("deleteTag(tid: %s)",tid));
     }
 
     public boolean updateTag(int tid,String name, String color) {
@@ -124,7 +118,6 @@ public class TagService {
         tag.setTname(name);
         tag.setTcolor(color);
         tagRepository.save(tag);
-        log.debug(String.format("updateTag(tid: %s, name: %s, color: %s) -> update:%s",tid,name,color, true));
         return true;
     }
 
@@ -135,8 +128,6 @@ public class TagService {
                         .account(accountRepository.getReferenceById(aid))
                         .build()
         );
-
-        log.debug(String.format("createBacktestHistoryTagLink(tid: %d, aid: %d) -> isProcessed: %b", tid, aid, true));
         return true;
     }
 
@@ -147,8 +138,6 @@ public class TagService {
                         .account(accountRepository.getReferenceById(aid))
                         .build()
         );
-
-        log.debug(String.format("deleteBacktestHistoryTagLink(tid: %d, aid: %d)", tid, aid));
     }
 
     public boolean createStockInfoTagLink(int tid, String ticker) {
@@ -159,7 +148,6 @@ public class TagService {
                 .build()
         );
 
-        log.debug(String.format("createStockInfoTagLink(tid: %d, ticker: %s) -> isProcessed: %b", tid, ticker, true));
         return true;
     }
 
@@ -171,7 +159,6 @@ public class TagService {
                         .build()
         );
 
-        log.debug(String.format("deleteStockInfoTagLink(tid: %d, ticker: %s)", tid, ticker));
     }
 
     public List<StockInfoResponse> findStockInfoByNameAndTags(int uid, String name, List<Integer> tids) {
@@ -180,7 +167,6 @@ public class TagService {
                 .map((s) -> StockInfoResponse.from(s))
                 .toList();
 
-        log.debug(String.format("findStockInfoByNameAndTags(uid: %d, name: %s, tids: %s) -> stockInfos: %b", uid, name, tids, stockInfoResponses));
         return stockInfoResponses;
     }
 

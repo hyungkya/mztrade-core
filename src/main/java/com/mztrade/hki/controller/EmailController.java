@@ -27,8 +27,6 @@ public class EmailController {
             @RequestBody @Valid EmailRequestDto emailDto,
             BindingResult bindingResult
     ) {
-        log.info(String.format("[POST] /email-verification/send (email=%s) has been called.",
-                emailDto.getEmail()));
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
         } else {
@@ -43,8 +41,6 @@ public class EmailController {
     @PostMapping("/email-verification/check")
     public ResponseEntity<String> checkEmail(@RequestBody @Valid EmailCheckDto emailCheckDto,
             BindingResult bindingResult) {
-        log.info(String.format("[POST] /email-verification/check (email=%s, code=%s) has been called.",
-                emailCheckDto.getEmail(), emailCheckDto.getAuthNum()));
         Boolean Checked = emailService.CheckAuthNum(emailCheckDto.getEmail(),
                 emailCheckDto.getAuthNum());
         if (Checked) {

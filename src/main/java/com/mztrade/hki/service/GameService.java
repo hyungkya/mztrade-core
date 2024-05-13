@@ -74,14 +74,11 @@ public class GameService {
                 .stockInfo(stockInfoRepository.getByTicker(ticker))
                 .startDate(startDate)
                 .startBalance(balance).build());
-        log.debug(String.format("createGame(aid: %d) -> gid: %d", aid, gameHistory.getGid()));
-
         return gameHistory.getGid();
     }
 
     public List<AccountResponse> getAccounts(int uid) {
         List<AccountResponse> accountResponses = accountService.getGameAccount(uid);
-        log.debug(String.format("getAccounts(uid: %d) -> accounts: %s", uid, accountResponses));
         return accountResponses;
     }
 
@@ -90,13 +87,11 @@ public class GameService {
                 .stream()
                 .map((g) -> GameHistoryResponse.from(g))
                 .toList();
-        log.debug(String.format("getGameHistoryByAccountId(aid: %d) -> gameHistories: %s", aid, gameHistoryResponses));
         return gameHistoryResponses;
     }
 
     public List<GameRanking> getGameRanking() {
         List<GameRanking> gameRanking = gameRepositoryImpl.getGameRanking();
-        log.debug(String.format("getGameHistoryRanking() -> gameRanking: %s", gameRanking));
         return gameRanking;
     }
 
@@ -105,7 +100,6 @@ public class GameService {
                 .stream()
                 .map((g) -> GameHistoryResponse.from(g))
                 .toList();
-        log.debug(String.format("getGameHistoryByGameId(gid: %d) -> gameHistories: %s", gid, gameHistoryResponses));
         return gameHistoryResponses;
     }
 
@@ -114,7 +108,6 @@ public class GameService {
                 .stream()
                 .map((g) -> GameHistoryResponse.from(g))
                 .toList();
-        log.debug(String.format("getUnFinishedGameHistory(gid: %d) -> gameHistories: %s", aid, gameHistoryResponses));
         return gameHistoryResponses;
     }
 
@@ -131,7 +124,6 @@ public class GameService {
                 isProcessed = true;
             }
         }
-        log.debug(String.format("sell(gid: %d, aid: %d, ticker: %s, date: %s, qty: %d) -> isProcessed: %b", gid, aid, ticker, date, qty, isProcessed));
         return isProcessed;
     }
 
@@ -148,7 +140,6 @@ public class GameService {
                 isProcessed = true;
             }
         }
-        log.debug(String.format("buy(gid: %d, aid: %d, ticker: %s, date: %s, qty: %d) -> isProcessed: %b", gid, aid, ticker, date, qty, isProcessed));
         return isProcessed;
     }
 
@@ -157,7 +148,6 @@ public class GameService {
                 .stream()
                 .map((go) -> OrderResponse.from(go.getOrder()))
                 .toList();
-        log.debug(String.format("getGameOrderHistories(gid: %d) -> orders: %s", gid, orderResponses));
         return orderResponses;
     }
 
@@ -169,10 +159,8 @@ public class GameService {
             gameHistory.setMaxTurn(gameHistory.getMaxTurn());
             gameHistory.setFinalBalance(gameHistory.getFinalBalance());
             gameRepository.save(gameHistory);
-            log.debug(String.format("increaseGameTurns(gid: %d)", gid));
             return increasedTurn;
         } else {
-            log.debug(String.format("increaseGameTurns(gid: %d)", gid));
             return 0;
         }
     }
@@ -186,7 +174,6 @@ public class GameService {
         gameHistory.setFinished(false);
 
         gameRepository.save(gameHistory);
-        log.debug(String.format("increaseGameTurns(gid: %d)", gid));
     }
 
     public void finishGame(Integer gid) {
@@ -199,6 +186,5 @@ public class GameService {
         gameHistory.setFinished(true);
 
         gameRepository.save(gameHistory);
-        log.debug(String.format("finishGame(gid: %d)", gid));
     }
 }

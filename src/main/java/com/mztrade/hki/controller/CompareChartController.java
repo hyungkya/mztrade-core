@@ -47,9 +47,6 @@ public class CompareChartController {
                     .winRate(statisticService.getTradingWinRate(aid))
                     .frequency(statisticService.getTradeFrequency(aid)).build());
         }
-        log.info(String.format("[GET] /compare-chart/bt-table/aids=%s -> btTableList: %s", aids,
-                compareTableResponse));
-
         return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
     }
 
@@ -69,9 +66,6 @@ public class CompareChartController {
                         .frequency(statisticService.getTickerTradeFrequency(aid, ticker)).build());
             }
         }
-        log.info(String.format("[GET] /compare-chart/ticker-table/aids=%s -> tickerTableList: %s",
-                aids, compareTableResponse));
-
         return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
     }
 
@@ -84,9 +78,6 @@ public class CompareChartController {
         for(Integer aid : aids) {
             mapList.put(aid,accountService.getPlRatio(aid));
         }
-
-        log.info(String.format("[GET] /compare-chart/plratio/aids=%s",aids));
-
         return new ResponseEntity<>(mapList, HttpStatus.OK);
     }
 }

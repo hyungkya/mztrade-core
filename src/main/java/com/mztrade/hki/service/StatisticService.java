@@ -40,9 +40,6 @@ public class StatisticService {
                     backtestParameter.parseStartDate(),
                     backtestParameter.parseEndDate()));
         }
-
-        log.debug(String.format("[StatisticService] getTickerBenchmarkProfit(aid: %s) -> benchmarkProfits:%s", aid,benchmarkProfits));
-
         return benchmarkProfits;
     }
 
@@ -50,8 +47,6 @@ public class StatisticService {
 
         double BenchmarkProfit = ((double)stockPriceService.getAvailablePriceBefore(ticker, endDate).orElseThrow().getClose() /
                 stockPriceService.getAvailablePriceAfter(ticker, startDate).orElseThrow().getClose()) - 1;
-
-        log.debug(String.format("[StatisticService] getTickerBenchmarkProfit(ticker: %s, startDate: %s, endDate: %s) -> BenchmarkProfit:%s", ticker,startDate,endDate,BenchmarkProfit));
 
         return BenchmarkProfit;
     }
@@ -62,8 +57,6 @@ public class StatisticService {
         for (String tradedTicker : tradedTickers) {
             profit.put(tradedTicker, getTickerProfit(aid, tradedTicker));
         }
-
-        log.debug(String.format("[StatisticService] getTickerProfit(aid: %s) -> Profit:%s", aid,profit));
         return profit;
     }
 
@@ -75,8 +68,6 @@ public class StatisticService {
         }
 
         double profit = totalProfitLoss / backtestService.getBacktestParameter(aid).getInitialBalance();
-
-        log.debug(String.format("[StatisticService] getTickerProfit(aid: %s, ticker: %s) -> Profit:%s", aid, ticker,profit));
         return profit;
     }
 
@@ -89,7 +80,6 @@ public class StatisticService {
                 backtestParameter.parseEndDate());
 
         double profit = absoluteProfitLoss - benchmarkProfitLoss;
-        log.debug(String.format("[StatisticService] getTickerAlphaProfit(aid: %s, ticker: %s) -> profit:%s", aid, ticker,profit));
         return profit;
     }
 
@@ -99,7 +89,6 @@ public class StatisticService {
         for (String tradedTicker : backtestParameter.getTickers()) {
             alphaProfits.put(tradedTicker, getTickerAlphaProfit(aid, tradedTicker));
         }
-        log.debug(String.format("[StatisticService] getTickerAlphaProfit(aid: %s) -> alphaProfits:%s", aid,alphaProfits));
         return alphaProfits;
     }
 
@@ -112,7 +101,6 @@ public class StatisticService {
         } else {
             size = orderService.getOrderHistory(aid, ticker).size();
         }
-        log.debug(String.format("[StatisticService] getTickerTradeCount(aid: %s, ticker: %s, option: %s) -> size:%s", aid,ticker,option,size));
         return size;
     }
 
@@ -139,7 +127,6 @@ public class StatisticService {
             rate = (double)winRate / (double)totalCount;
         }
 
-        log.debug(String.format("[StatisticService] getTradingWinRate(aid: %s) -> rate:%s", aid,rate));
         return rate;
     }
 
@@ -154,7 +141,6 @@ public class StatisticService {
         ).size();
 
         double TradeFrequency = (double) tradeCount / (double) (totalCount);
-        log.debug(String.format("[StatisticService] getTradeFrequency(aid: %s) -> TradeFrequency:%s", aid,TradeFrequency));
         return TradeFrequency;
     }
 
@@ -181,7 +167,6 @@ public class StatisticService {
             rate = (double)winRate / (double)totalCount;
         }
 
-        log.debug(String.format("[StatisticService] getTradingWinRate(aid: %s) -> rate:%s", aid,rate));
         return rate;
     }
 
@@ -198,7 +183,6 @@ public class StatisticService {
         }
 
         double TradeFrequency = (double) tradeCount / (double) (totalCount);
-        log.debug(String.format("[StatisticService] getTradeFrequency(aid: %s) -> TradeFrequency:%s", aid,TradeFrequency));
         return TradeFrequency;
     }
 }

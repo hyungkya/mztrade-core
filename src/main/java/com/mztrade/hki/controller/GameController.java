@@ -26,7 +26,6 @@ public class GameController {
     public ResponseEntity<Integer> createGame(
             @RequestParam Integer aid
     ) {
-        log.info(String.format("[POST] /game?aid=%s", aid));
         List<GameHistoryResponse> gameHistoryResponses = gameService.getUnFinishedGameHistory(aid);
         if (gameHistoryResponses.isEmpty()) {
             int gid = gameService.createGame(aid);
@@ -41,7 +40,6 @@ public class GameController {
             @RequestParam Integer uid
     ) {
         List<AccountResponse> accountResponses = gameService.getAccounts(uid);
-        log.info(String.format("[GET] /game/account?uid=%s", uid));
         return accountResponses;
     }
     @GetMapping("/game/{gid}")
@@ -50,7 +48,6 @@ public class GameController {
     ) {
         List<GameHistoryResponse> gameHistoryResponses;
         gameHistoryResponses = gameService.getGameHistoryByGameId(gid);
-        log.info(String.format("[GET] /game/%s", gid));
         return gameHistoryResponses;
     }
 
@@ -60,14 +57,12 @@ public class GameController {
     ) {
         List<GameHistoryResponse> gameHistoryResponses;
         gameHistoryResponses = gameService.getGameHistoryByAccountId(aid);
-        log.info(String.format("[GET] /game?aid=%s", aid));
         return gameHistoryResponses;
     }
 
     @GetMapping("/game/ranking")
     public List<GameRanking> getGameRanking() {
         List<GameRanking> gameRanking = gameService.getGameRanking();
-        log.info("[GET] /game/ranking");
         return gameRanking;
     }
 
@@ -76,7 +71,6 @@ public class GameController {
             @RequestParam Integer aid
     ) {
         List<GameHistoryResponse> gameHistoryResponses = gameService.getUnFinishedGameHistory(aid);
-        log.info(String.format("[GET] /game/un-finished?aid=%s", aid));
         return gameHistoryResponses;
     }
 
@@ -88,7 +82,6 @@ public class GameController {
             @RequestParam LocalDateTime date,
             @RequestParam Integer qty
     ) {
-        log.info(String.format("[POST] /game/%s/order/buy?aid=%s&ticker=%s&date=%s&qty=%s", gid, aid, ticker, date, qty));
         return new ResponseEntity<>(gameService.buy(gid, aid, ticker, date, qty), HttpStatus.OK);
     }
     @PostMapping("/game/{gid}/order/sell")
@@ -99,7 +92,6 @@ public class GameController {
             @RequestParam LocalDateTime date,
             @RequestParam Integer qty
     ) {
-        log.info(String.format("[POST] /game/%s/order/sell?aid=%s&ticker=%s&date=%s&qty=%s", gid, aid, ticker, date, qty));
         return new ResponseEntity<>(gameService.sell(gid, aid, ticker, date, qty), HttpStatus.OK);
     }
 
@@ -107,7 +99,6 @@ public class GameController {
     public ResponseEntity<List<OrderResponse>> getGameOrderHistories(
             @PathVariable Integer gid
     ) {
-        log.info(String.format("[GET] /game/order?gid=%d", gid));
         return new ResponseEntity<>(gameService.getGameOrderHistories(gid), HttpStatus.OK);
     }
 
@@ -116,7 +107,6 @@ public class GameController {
             @PathVariable Integer gid
     ) {
         Integer currentTurn = gameService.increaseTurns(gid);
-        log.info(String.format("[POST] /game/%s/turns", gid));
         return new ResponseEntity<>(currentTurn, HttpStatus.OK);
     }
 
@@ -126,7 +116,6 @@ public class GameController {
             @RequestParam Integer amount
     ) {
         gameService.updateMaxTurn(gid, amount);
-        log.info(String.format("[POST] /game/%s/max-turn?amount=%d", gid, amount));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
@@ -135,7 +124,6 @@ public class GameController {
             @PathVariable Integer gid
     ) {
         gameService.finishGame(gid);
-        log.info(String.format("[POST] /game/%s/finish", gid));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 }

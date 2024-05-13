@@ -33,23 +33,19 @@ public class AccountService {
     public int createAccount(int uid) {
         User user = userRepository.getReferenceById(uid);
         Account account = accountRepository.save(Account.builder().user(user).build());
-        log.debug(String.format("[AccountService] createAccount(uid: %d) -> aid: %d", uid, account.getAid()));
         return account.getAid();
     }
     public void deleteAccount(int aid) {
         accountRepository.deleteById(aid);
-        log.debug(String.format("[AccountService] deleteAccount(aid: %d)", aid));
     }
 
     public List<Integer> getAllBacktestAccountIds(int uid) {
         List<Integer> accountIds = accountRepository.findByUserUidAndType(uid, "BACKTEST").stream()
                 .map((a) -> a.getAid()).toList();
-        log.debug(String.format("[AccountService] getAll(uid: %d) -> accounts: %s", uid, accountIds));
         return accountIds;
     }
     public long getBalance(int aid) {
         Long balance = accountRepository.findById(aid).get().getBalance();
-        log.debug(String.format("[AccountService] getBalance(aid: %d) -> balance: %d", aid, balance));
         return balance;
     }
 
@@ -57,7 +53,6 @@ public class AccountService {
         Account account = accountRepository.findById(aid).orElseThrow();
         account.setBalance(account.getBalance() + amount);
         accountRepository.save(account);
-        log.debug(String.format("[AccountService] deposit(aid: %d, amount: %d) -> success: %b", aid, amount, true));
         return true;
     }
 
@@ -69,7 +64,6 @@ public class AccountService {
             accountRepository.save(account);
             isSuccess = true;
         }
-        log.debug(String.format("[AccountService] withdraw(aid: %d, amount: %d) -> success: %b", aid, amount, isSuccess));
         return isSuccess;
     }
 
@@ -77,7 +71,6 @@ public class AccountService {
         accountHistoryRepository.save(
                 AccountHistory.builder().aid(aid).date(date).balance(balance).build()
         );
-        log.debug(String.format("[AccountService] createAccountHistory(aid: %d, date: %s, balance:%d)", aid, date, balance));
     }
 
     @Transactional
@@ -100,9 +93,6 @@ public class AccountService {
                 resultMap.put(accountHistory.getDate(),accountHistory.getBalance());
             }
         }
-
-        log.debug(String.format("[AccountService] getPlRatio(aid: %d) -> isSuccess: %b", aid, accountHistories));
-
         return resultMap;
     }
 
@@ -111,7 +101,6 @@ public class AccountService {
                 .stream()
                 .map((a) -> AccountResponse.from(a))
                 .toList();
-        log.debug(String.format("[AccountService] getGameAccount(uid: %d) -> accounts: %s", uid, accountResponses));
         return accountResponses;
     }
 }

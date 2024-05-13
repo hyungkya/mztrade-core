@@ -1,3 +1,4 @@
+/*
 package com.mztrade.hki.config;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,12 +22,13 @@ public class FilterConfig {
     public FilterRegistrationBean<FirebaseTokenFilter> firebaseTokenFilterFilterRegistrationBean() {
         FilterRegistrationBean<FirebaseTokenFilter> registrationBean = new FilterRegistrationBean<>();
 
-        registrationBean.setFilter(new FirebaseTokenFilter(firebaseAuth));
+        //registrationBean.setFilter(new FirebaseTokenFilter(firebaseAuth));
         //registrationBean.addUrlPatterns("/**");
-        registrationBean.setOrder(1);
+        //registrationBean.setOrder(1);
 
         return registrationBean;
     }
 }
 
 
+*/

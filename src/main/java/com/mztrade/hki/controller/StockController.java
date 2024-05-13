@@ -38,7 +38,6 @@ public class StockController {
             @RequestParam Optional<List<Integer>> tids,
             @RequestParam Optional<Integer> uid
     ) {
-        log.info(String.format("[GET] /stock?name=%s&tids=%s&uid=%s", name, tids, uid));
         HttpStatus httpStatus = HttpStatus.OK;
         List<StockInfoResponse> stockInfoResponses = null;
         if (tids.isPresent() && !tids.isEmpty()) {
@@ -57,7 +56,6 @@ public class StockController {
 
     @GetMapping("/stock/{ticker}/price")
     public ResponseEntity<List<StockPriceResponse>> getPricesByTicker(@PathVariable String ticker) {
-        log.info(String.format("[GET] /stock/%s/price", ticker));
         return new ResponseEntity<>(stockPriceService.getPrices(ticker), HttpStatus.OK);
     }
 
@@ -65,7 +63,6 @@ public class StockController {
     public ResponseEntity<StockInfoResponse> getStockInfoByTicker(
             @PathVariable String ticker) {
         StockInfoResponse stockInfoResponse = stockPriceService.findStockInfoByTicker(ticker);
-        log.info(String.format("[GET] /stock/%s/info", ticker));
         return new ResponseEntity<>(stockInfoResponse, HttpStatus.OK);
     }
 
@@ -74,7 +71,6 @@ public class StockController {
             @PathVariable String ticker) {
         StockFinancialInfoResponse stockFinancialInfoResponse = stockPriceService.findStockFinancialInfoByTicker(
                 ticker);
-        log.info(String.format("[GET] /stock/%s/financial-info", ticker));
         return new ResponseEntity<>(stockFinancialInfoResponse, HttpStatus.OK);
     }
 
@@ -86,9 +82,6 @@ public class StockController {
             @RequestParam String type,
             @RequestParam List<Float> param
     ) {
-        log.info(String.format("[GET] /stock/%s/indicator?startDate=%s&endDate=%s&type=%s&param=%s",
-                ticker, startDate, endDate, type, param));
-
         if (!endDate.isEmpty()) {
             return new ResponseEntity<>(
                     indicatorService.getIndicators(ticker, Util.stringToLocalDateTime(startDate),

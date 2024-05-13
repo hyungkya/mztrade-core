@@ -51,8 +51,6 @@ public class BacktestController {
     @PostMapping("/backtest")
     public ResponseEntity<Boolean> createBacktest(@RequestBody BacktestParameter backtestParameter)
             throws JsonProcessingException {
-        log.info(String.format("[POST] /backtest backtestParameter=%s", backtestParameter));
-
         int aid = backtestService.execute(backtestParameter);
         Account account = accountRepository.getReferenceById(aid);
         User user = userRepository.getReferenceById(backtestParameter.getUid());
@@ -68,9 +66,6 @@ public class BacktestController {
     @GetMapping("/backtest/{aid}")
     public ResponseEntity<BacktestResultResponse> getBacktestResult(@PathVariable Integer aid) {
         BacktestResultResponse response = backtestService.get(aid);
-
-        log.info(String.format("[GET] /backtest/aid=%s", aid));
-
         if (response == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -80,9 +75,6 @@ public class BacktestController {
     @GetMapping("/backtest/{aid}/param")
     public ResponseEntity<BacktestParameter> getBacktestParameter(@PathVariable Integer aid) {
         BacktestParameter backtestParameter = backtestService.getBacktestParameter(aid);
-
-        log.info(String.format("[GET] /backtest/%s/param", aid));
-
         if (backtestParameter == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -118,14 +110,12 @@ public class BacktestController {
     @PutMapping("/backtest/{aid}")
     public ResponseEntity<Boolean> updateBacktestResult(@PathVariable Integer aid,
                                                         @RequestBody BacktestParameter backtestParameter) throws JsonProcessingException {
-        log.info(String.format("[PUT] /backtest/%s", aid));
         backtestService.update(aid, objectMapper.writeValueAsString(backtestParameter));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
     @DeleteMapping("/backtest/{aid}")
     public ResponseEntity<Boolean> deleteBacktestResult(@PathVariable Integer aid) {
-        log.info(String.format("[DELETE] /backtest/%s", aid));
         accountService.deleteAccount(aid);
         return new ResponseEntity<>(true, HttpStatus.OK);
     }

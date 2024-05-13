@@ -391,17 +391,11 @@ public class BacktestService {
 
             accountService.createAccountHistory(aid,startDate,balance);
         }
-        log.debug(String.format("[BacktestService] execute(uid: %d, initialBalance: %d, buyConditions: %s, " +
-                "sellConditions: %s, dca: %s, stopLoss: %s, stopProfit: %s, maxTradingCount: %d, targetTickers: %s, " +
-                "startDate: %s, endDate: %s) -> aid: %d", uid, initialBalance, buyConditions, sellConditions, dca, stopLoss, stopProfit,
-                maxTradingCount, targetTickers, startDate, endDate, aid));
         return aid;
     }
 */
     public boolean create(BacktestResult backtestResult) {
         backtestResultRepository.save(backtestResult);
-        log.debug(String.format("[BacktestService] create(backtestResult: %s) -> isSuccess: %b",
-                backtestResult, true));
         return true;
     }
 
@@ -409,16 +403,12 @@ public class BacktestService {
     public boolean update(Integer aid, String param) {
         BacktestResult backtestResult = backtestResultRepository.getReferenceById(aid);
         backtestResult.setParam(param);
-        log.debug(String.format("[BacktestService] update(backtestResult: %s) -> isSuccess: %b",
-                backtestResult, true));
         return true;
     }
 
     public BacktestResultResponse get(int aid) {
         BacktestResultResponse backtestResultResponse = BacktestResultResponse.from(
                 backtestResultRepository.getReferenceById(aid));
-        log.debug(String.format("[BacktestService] get(int: %d) -> backtestResult: %s", aid,
-                backtestResultResponse));
         return backtestResultResponse;
     }
 
@@ -427,8 +417,6 @@ public class BacktestService {
                 .stream()
                 .map((b) -> BacktestResultResponse.from(b))
                 .toList();
-        log.debug(String.format("[BacktestService] getAllByPlratioDesc() -> backtestHistories: %s",
-                backtestResultResponse));
         return backtestResultResponse;
     }
 
@@ -437,8 +425,6 @@ public class BacktestService {
         BacktestResult backtestResult = backtestResultRepository.findById(aid).orElseThrow();
         try {
             backtestParameter = objectMapper.readValue(backtestResult.getParam(), BacktestParameter.class);
-            log.debug(String.format("[BacktestService] getBacktestParameter(aid: %d) -> backtestParameter: %s", aid,
-                    backtestParameter));
             return backtestParameter;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
@@ -446,7 +432,6 @@ public class BacktestService {
     }
     public List<String> getTradedTickers(int aid) {
         List<String> tickers = getBacktestParameter(aid).getTickers();
-        log.debug(String.format("[BacktestService] getTradedTickers(aid: %d) -> tickers: %s", aid, tickers));
         return tickers;
     }
 
@@ -455,8 +440,6 @@ public class BacktestService {
                 .stream()
                 .map((b) -> BacktestResultResponse.from(b))
                 .toList();
-        log.debug(String.format("[BacktestService] searchByTitle(uid: %d, title: %s) -> backtestHistories: %s", uid, title,
-                backtestResultResponses));
         return backtestResultResponses;
     }
 
@@ -465,7 +448,6 @@ public class BacktestService {
                 .stream()
                 .map((b) -> BacktestResultResponse.from(b))
                 .toList();
-        log.debug(String.format("[BacktestService] searchBacktestHistoryByTags(uid: %d, title: %s, tids: %s) -> backtestHistories: %s", uid, title, tids, backtestHistories));
         return backtestHistories;
     }
 
@@ -477,8 +459,6 @@ public class BacktestService {
             finalBalance += (long) position.getQty() * finalClosePrice;
         }
         double plratio = (finalBalance / (double) initialBalance) - 1;
-        log.debug(String.format("[BacktestService] calculateFinalProfitLossRatio(initialBalance: %d, aid: %d, " +
-                "backtestEndDate: %s) -> plratio: %f", initialBalance, aid, backtestEndDate, plratio));
         return plratio;
     }
 }

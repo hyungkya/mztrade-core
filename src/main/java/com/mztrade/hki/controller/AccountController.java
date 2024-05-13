@@ -35,25 +35,21 @@ public class AccountController {
     public ResponseEntity<List<Integer>> getAccounts(
             @RequestParam int uid
     ) {
-        log.info(String.format("[GET] /account?uid=%d has been called.", uid));
         return new ResponseEntity<>(accountService.getAllBacktestAccountIds(uid), HttpStatus.OK);
     }
 
     @GetMapping("/account/{aid}/position")
     public ResponseEntity<List<PositionResponse>> getPositions(@PathVariable Integer aid) {
-        log.info(String.format("[GET] /account/%s/position", aid));
         return new ResponseEntity<>(orderService.getPositions(aid), HttpStatus.OK);
     }
 
     @GetMapping("/account/{aid}/balance")
     public ResponseEntity<Long> getBalance(@PathVariable Integer aid) {
-        log.info(String.format("[GET] /account/%s/balance", aid));
         return new ResponseEntity<>(accountService.getBalance(aid), HttpStatus.OK);
     }
 
     @GetMapping("/account/{aid}/order")
     public ResponseEntity<List<OrderResponse>> getOrderHistory(@PathVariable Integer aid) {
-        log.info(String.format("[GET] /account/%s/order", aid));
         return new ResponseEntity<>(orderService.getOrderHistory(aid), HttpStatus.OK);
     }
 }

@@ -35,14 +35,12 @@ public class StockPriceService {
                 .sorted(StockPrice.COMPARE_BY_DATE).map((s) -> StockPriceResponse.from(s))
                 .collect(Collectors.toList());
 
-        log.debug(String.format("[StockPriceService] getPrices(ticker: %s) -> List<bar>:%s", ticker, stockPriceResponses));
         // return all ticker data
         return stockPriceResponses;
     }
 
     public List<StockPrice> getPrices(String ticker, LocalDateTime startDate, LocalDateTime endDate) {
         List<StockPrice> stockPrice = stockPriceRepository.findByStockInfoTickerAndDateBetween(ticker, startDate, endDate);
-        log.debug(String.format("[StockPriceService] getPrices(ticker: %s, startDate: %s, endDate: %s) -> List<Bar>:%s", ticker,startDate, endDate, stockPrice));
         // return requested date range's ticker data
         return stockPrice;
     }
@@ -53,7 +51,6 @@ public class StockPriceService {
         if (bar.isEmpty()) {
             throw new EmptyResultDataAccessException(1);
         }
-        log.debug(String.format("[StockPriceService] getPrice(ticker: %s, date: %s) -> Bar:%s", ticker,date, bar.get()));
         return bar.get();
     }
 
@@ -68,7 +65,6 @@ public class StockPriceService {
             }
         }
 
-        log.debug(String.format("[StockPriceService] getAvailablePriceBefore(ticker: %s, date: %s) -> Optional<Bar>:%s", ticker,date, bar));
         return bar;
     }
 
@@ -83,7 +79,6 @@ public class StockPriceService {
             }
         }
 
-        log.debug(String.format("[StockPriceService] getAvailablePriceAfter(ticker: %s, date: %s) -> Optional<Bar>:%s", ticker,date, bar));
         return bar;
     }
 
@@ -98,7 +93,6 @@ public class StockPriceService {
             }
         }
 
-        log.debug(String.format("[StockPriceService] getAvailablePriceBefore(ticker: %s, date: %s, maxRange: %s) -> Optional<Bar>:%s", ticker,date,maxRange, bar));
         return bar;
     }
 
@@ -112,7 +106,6 @@ public class StockPriceService {
                 date = date.plus(1, ChronoUnit.DAYS);
             }
         }
-        log.debug(String.format("[StockPriceService] getAvailablePriceAfter(ticker: %s, date: %s, maxRange: %s) -> Optional<Bar>:%s", ticker,date,maxRange, bar));
         return bar;
     }
 
@@ -120,13 +113,11 @@ public class StockPriceService {
         // return the most recent ticker data
         List<StockPrice> stockPrices = stockPriceRepository.findByStockInfoTicker(ticker);
         StockPrice stockPrice = stockPrices.get(stockPrices.size() - 1);
-        log.debug(String.format("[StockPriceService] getCurrentPrice(ticker: %s) -> Bar:%s", ticker, stockPrice));
         return stockPrice;
     }
 
     public List<StockInfoResponse> getAllStockInfo() {
         List<StockInfoResponse> stockInfoResponses = stockInfoRepository.findAll().stream().map((s) -> StockInfoResponse.from(s)).toList();
-        log.debug(String.format("[StockPriceService] getAllStockInfo() -> StockInfo:%s", stockInfoResponses));
         return stockInfoResponses;
     }
 
@@ -135,19 +126,16 @@ public class StockPriceService {
                 .stream()
                 .map((s) -> StockInfoResponse.from(s))
                 .toList();
-        log.debug(String.format("[StockPriceService] searchStockInfoByName(name: %s) -> StockInfo:%s", name, stockInfoResponses));
         return stockInfoResponses;
     }
 
     public StockInfoResponse findStockInfoByTicker(String ticker) {
         StockInfoResponse stockInfoResponse = StockInfoResponse.from(stockInfoRepository.findByTicker(ticker).get());
-        log.debug(String.format("[StockPriceService] findStockInfoByTicker(ticker: %s) -> StockInfo:%s", ticker, stockInfoResponse));
         return stockInfoResponse;
     }
 
     public StockFinancialInfoResponse findStockFinancialInfoByTicker(String ticker) {
         StockFinancialInfoResponse stockFinancialInfoResponse = StockFinancialInfoResponse.from(stockInfoRepository.getByTicker(ticker));
-        log.debug(String.format("[StockPriceService] findStockFinancialInfoByTicker(ticker: %s) -> StockInfo:%s", ticker, stockFinancialInfoResponse));
         return stockFinancialInfoResponse;
     }
 }

@@ -31,7 +31,6 @@ public class TagController {
             @RequestParam Optional<String> ticker,
             @RequestParam Optional<Integer> aid
     ) {
-        log.info(String.format("[GET] /tag?uid=%s&category=%s", uid, category));
         TagCategory tagCategory;
         try {
             tagCategory = TagCategory.valueOf(category);
@@ -62,7 +61,6 @@ public class TagController {
     public ResponseEntity<Boolean> createBacktestResultTagLink(@RequestParam Integer tid,
                                                                @PathVariable Integer aid) {
         Boolean isProcessed = tagService.createBacktestResultTagLink(tid, aid);
-        log.info(String.format("[POST] /backtest/%s/tag?tid=%s", aid, tid));
         return new ResponseEntity<>(isProcessed, HttpStatus.OK);
     }
 
@@ -70,7 +68,6 @@ public class TagController {
     public ResponseEntity<Boolean> deleteBacktestResultTagLink(@RequestParam Integer tid,
                                                                @PathVariable Integer aid) {
         tagService.deleteBacktestResultTagLink(tid, aid);
-        log.info(String.format("[DELETE] /backtest/%s/tag?tid=%s", aid, tid));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
@@ -78,7 +75,6 @@ public class TagController {
     public ResponseEntity<Boolean> createStockInfoTagLink(@RequestParam Integer tid,
                                                           @PathVariable String ticker) {
         Boolean isProcessed = tagService.createStockInfoTagLink(tid, ticker);
-        log.info(String.format("[POST] /stock-info/%s/tag?tid=%s", ticker, tid));
         return new ResponseEntity<>(isProcessed, HttpStatus.OK);
     }
 
@@ -86,7 +82,6 @@ public class TagController {
     public ResponseEntity<Boolean> deleteStockInfoTagLink(@RequestParam Integer tid,
                                                           @PathVariable String ticker) {
         tagService.deleteStockInfoTagLink(tid, ticker);
-        log.info(String.format("[DELETE] /stock-info/%s/tag?tid=%s", ticker, tid));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
@@ -94,14 +89,12 @@ public class TagController {
     public boolean createTag(@RequestBody TagRequest tagRequest) {
         int create = tagService.createTag(tagRequest.getUid(), tagRequest.getName(),
                 tagRequest.getColor(), tagRequest.getCategory());
-        log.info(String.format("[POST] /tag tag=%s", tagRequest));
         return create > 0;
     }
 
     @DeleteMapping("/tag")
     public ResponseEntity<Boolean> deleteTag(@RequestParam Integer tid) {
         tagService.deleteTag(tid);
-        log.info(String.format("[DELETE] /tag/tid=%s", tid));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
@@ -109,7 +102,6 @@ public class TagController {
     public boolean updateTag(@RequestParam Integer tid, @RequestParam String name,
                              @RequestParam String color) {
         boolean update = tagService.updateTag(tid, name, color);
-        log.info(String.format("[PUT] /tag/tid=%s&name=%s&color=%s", tid, name, color));
         return update;
     }
 }
