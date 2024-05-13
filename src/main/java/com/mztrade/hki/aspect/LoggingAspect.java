@@ -28,6 +28,6 @@ public class LoggingAspect {
                 .range(0, parameterNames.length)
                 .mapToObj(i -> String.format("%s: %s", parameterNames[i], parameterValues[i]))
                 .toList();
-        log.info(String.format("%s: %s(%s)", joinPoint.getSourceLocation().getWithinType().getName(), method.getName(), String.join(", ", parameters)));
+        log.debug(String.format("[%s] %s(%s)", joinPoint.getSourceLocation().getWithinType().getSimpleName(), method.getName(), String.join(", ", parameters)));
     }
 }
