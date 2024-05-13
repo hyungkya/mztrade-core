@@ -115,17 +115,17 @@ public class BacktestController {
         return new ResponseEntity<>(backtestResultResponses, httpStatus);
     }
 
-    @PutMapping("/backtest")
-    public ResponseEntity<Boolean> updateBacktestResult(@RequestParam Integer aid,
+    @PutMapping("/backtest/{aid}")
+    public ResponseEntity<Boolean> updateBacktestResult(@PathVariable Integer aid,
                                                         @RequestBody BacktestParameter backtestParameter) throws JsonProcessingException {
-        log.info(String.format("[PUT] /backtest/aid=%s", aid));
+        log.info(String.format("[PUT] /backtest/%s", aid));
         backtestService.update(aid, objectMapper.writeValueAsString(backtestParameter));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
-    @DeleteMapping("/backtest")
-    public ResponseEntity<Boolean> deleteBacktestResult(@RequestParam Integer aid) {
-        log.info(String.format("[DELETE] /backtest/aid=%s", aid));
+    @DeleteMapping("/backtest/{aid}")
+    public ResponseEntity<Boolean> deleteBacktestResult(@PathVariable Integer aid) {
+        log.info(String.format("[DELETE] /backtest/%s", aid));
         accountService.deleteAccount(aid);
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
