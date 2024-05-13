@@ -2,24 +2,15 @@ package com.mztrade.hki.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.firebase.auth.FirebaseAuth;
 import com.mztrade.hki.dto.BacktestParameter;
 import com.mztrade.hki.dto.BacktestResultResponse;
 import com.mztrade.hki.entity.Account;
-import com.mztrade.hki.entity.CompareTableResponse;
 import com.mztrade.hki.entity.User;
 import com.mztrade.hki.entity.backtest.BacktestResult;
 import com.mztrade.hki.repository.AccountRepository;
 import com.mztrade.hki.repository.UserRepository;
 import com.mztrade.hki.service.AccountService;
 import com.mztrade.hki.service.BacktestService;
-import com.mztrade.hki.service.ChartSettingService;
-import com.mztrade.hki.service.IndicatorService;
-import com.mztrade.hki.service.OrderService;
-import com.mztrade.hki.service.StatisticService;
-import com.mztrade.hki.service.StockPriceService;
-import com.mztrade.hki.service.TagService;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -43,37 +34,18 @@ public class BacktestController {
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
     private BacktestService backtestService;
-
-    private StockPriceService stockPriceService;
-    private OrderService orderService;
     private AccountService accountService;
-    private StatisticService statisticService;
-    private TagService tagService;
-    private ChartSettingService chartSettingService;
-    private IndicatorService indicatorService;
-
-    private FirebaseAuth firebaseAuth;
     private ObjectMapper objectMapper;
 
     @Autowired
-    public BacktestController(BacktestService backtestService, StockPriceService stockPriceService,
-            OrderService orderService, AccountService accountService,
-            StatisticService statisticService, TagService tagService,
-            ChartSettingService chartSettingService, IndicatorService indicatorService,
+    public BacktestController(BacktestService backtestService, AccountService accountService,
             ObjectMapper objectMapper, AccountRepository accountRepository,
-            UserRepository userRepository, FirebaseAuth firebaseAuth) {
+            UserRepository userRepository) {
         this.backtestService = backtestService;
-        this.stockPriceService = stockPriceService;
-        this.orderService = orderService;
         this.accountService = accountService;
-        this.statisticService = statisticService;
-        this.tagService = tagService;
-        this.chartSettingService = chartSettingService;
-        this.indicatorService = indicatorService;
         this.objectMapper = objectMapper;
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
-        this.firebaseAuth = firebaseAuth;
     }
 
     @PostMapping("/backtest")
@@ -156,45 +128,5 @@ public class BacktestController {
         log.info(String.format("[DELETE] /backtest/aid=%s", aid));
         accountService.deleteAccount(aid);
         return new ResponseEntity<>(true, HttpStatus.OK);
-    }
-
-    @GetMapping("/compare-chart/bt-table")
-    public ResponseEntity<List<CompareTableResponse>> getCompareBtTable(
-            @RequestParam List<Integer> aids) {
-        List<CompareTableResponse> compareTableResponse = new ArrayList<>();
-
-        for (Integer aid : aids) {
-            compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker("")
-                    .title(backtestService.getBacktestParameter(aid).getTitle()).subTitle("")
-                    .plratio(backtestService.get(aid).getPlratio())
-                    .winRate(statisticService.getTradingWinRate(aid))
-                    .frequency(statisticService.getTradeFrequency(aid)).build());
-        }
-        log.info(String.format("[GET] /compare-chart/bt-table/aids=%s -> btTableList: %s", aids,
-                compareTableResponse));
-
-        return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
-    }
-
-    @GetMapping("/compare-chart/ticker-table")
-    public ResponseEntity<List<CompareTableResponse>> getCompareTickerTable(
-            @RequestParam List<Integer> aids) {
-        List<CompareTableResponse> compareTableResponse = new ArrayList<>();
-
-        for (Integer aid : aids) {
-            List<String> tickers = backtestService.getBacktestParameter(aid).getTickers();
-            for (String ticker : tickers) {
-                compareTableResponse.add(CompareTableResponse.builder().aid(aid).ticker(ticker)
-                        .title(backtestService.getBacktestParameter(aid).getTitle())
-                        .subTitle(stockPriceService.findStockInfoByTicker(ticker).getName())
-                        .plratio(statisticService.getTickerProfit(aid, ticker))
-                        .winRate(statisticService.getTickerTradingWinRate(aid, ticker))
-                        .frequency(statisticService.getTickerTradeFrequency(aid, ticker)).build());
-            }
-        }
-        log.info(String.format("[GET] /compare-chart/ticker-table/aids=%s -> tickerTableList: %s",
-                aids, compareTableResponse));
-
-        return new ResponseEntity<>(compareTableResponse, HttpStatus.OK);
     }
 }

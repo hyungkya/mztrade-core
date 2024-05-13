@@ -3,13 +3,9 @@ package com.mztrade.hki.controller;
 import com.mztrade.hki.dto.OrderResponse;
 import com.mztrade.hki.dto.PositionResponse;
 import com.mztrade.hki.service.AccountService;
-import com.mztrade.hki.service.StatisticService;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.mztrade.hki.service.OrderService;
+import com.mztrade.hki.service.StatisticService;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,20 +55,5 @@ public class AccountController {
     public ResponseEntity<List<OrderResponse>> getOrderHistory(@PathVariable Integer aid) {
         log.info(String.format("[GET] /account/%s/order", aid));
         return new ResponseEntity<>(orderService.getOrderHistory(aid), HttpStatus.OK);
-    }
-
-    @GetMapping("/compare-chart/plratio")
-    public ResponseEntity<Map<Integer,Map<LocalDateTime, Long>>> getPlRatio(
-            @RequestParam List<Integer> aids
-    ) {
-        Map<Integer,Map<LocalDateTime,Long>> mapList = new HashMap<>();
-
-        for(Integer aid : aids) {
-            mapList.put(aid,accountService.getPlRatio(aid));
-        }
-
-        log.info(String.format("[GET] /compare-chart/plratio/aids=%s",aids));
-
-        return new ResponseEntity<>(mapList, HttpStatus.OK);
     }
 }
