@@ -19,13 +19,11 @@ public class ChartSettingService {
 
     public boolean save(ChartSetting chartSetting) {
         boolean isSuccess = chartSettingRepository.save(chartSetting);
-        log.debug(String.format("[ChartSettingService] save(ChartSetting: %s) -> isSuccess: %b", chartSetting, isSuccess));
         return isSuccess;
     }
 
     public ChartSetting get(int uid) {
         ChartSetting chartSetting = chartSettingRepository.get(uid);
-        log.debug(String.format("[ChartSettingService] get(int: %d) -> chartSetting: %s", uid, chartSetting));
         return chartSetting;
     }
 }

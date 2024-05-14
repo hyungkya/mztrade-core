@@ -45,10 +45,6 @@ public class IndicatorService {
         }
         Indicator indicator = new Indicator(type, params);
         double result = indicator.calculate(stockPrices);
-
-        log.debug(String.format("[IndicatorService] getIndicator(ticker: %s, date: %s, type: %s, params: %s) -> indicator:%s",
-                ticker, date, type, params, result)
-        );
         return indicator.calculate(stockPrices);
     }
 
@@ -59,9 +55,6 @@ public class IndicatorService {
         for (int i = 1; i <= bars.size(); i++) {
             result.put(bars.get(i - 1).getDate(), indicator.calculate(bars.subList(0, i)));
         }
-        log.debug(String.format("[IndicatorService] getIndicators(ticker: %s, startDate: %s, endDate: %s, type: %s, params: %s) -> indicator:%s",
-                ticker, startDate, endDate, type, params, result)
-        );
         return result;
     }*/
 
@@ -114,9 +107,6 @@ public class IndicatorService {
         } else if (indicator.getType().equals("MFI")) {
             result = calculateMFIs(ticker, startDate, endDate, indicator.getParams());
         }
-        log.debug(String.format("[IndicatorService] getIndicators(ticker: %s, startDate: %s, endDate: %s, indicator: %s) -> indicator:%s",
-                ticker, startDate, endDate, indicator, result)
-        );
         return result;
     }
 

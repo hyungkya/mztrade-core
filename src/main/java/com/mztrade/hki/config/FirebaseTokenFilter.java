@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Iterator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -16,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class FirebaseTokenFilter extends OncePerRequestFilter {
     private final FirebaseAuth firebaseAuth;
 
+    @Autowired
     public FirebaseTokenFilter(FirebaseAuth firebaseAuth) {
         this.firebaseAuth = firebaseAuth;
     }
@@ -23,10 +25,8 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
     @Override
     public void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain)
             throws IOException, ServletException {
-        System.out.println(request.getRequestURI());
         for (Iterator<String> it = request.getHeaderNames().asIterator(); it.hasNext(); ) {
             String header = it.next();
-            System.out.println(header);
         }
         chain.doFilter(request, response);
         /*if (request.getRequestURI().startsWith("/user/duplicate-check")) {

@@ -11,16 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
 public class GameController {
     private GameService gameService;
-
 
     @Autowired GameController(GameService gameService) {
         this.gameService = gameService;
@@ -30,7 +26,6 @@ public class GameController {
     public ResponseEntity<Integer> createGame(
             @RequestParam Integer aid
     ) {
-        log.info(String.format("[POST] /game/aid=%s", aid));
         List<GameHistoryResponse> gameHistoryResponses = gameService.getUnFinishedGameHistory(aid);
         if (gameHistoryResponses.isEmpty()) {
             int gid = gameService.createGame(aid);
@@ -45,31 +40,29 @@ public class GameController {
             @RequestParam Integer uid
     ) {
         List<AccountResponse> accountResponses = gameService.getAccounts(uid);
-        log.info(String.format("[GET] /game/account/uid=%s", uid));
         return accountResponses;
+    }
+    @GetMapping("/game/{gid}")
+    public List<GameHistoryResponse> getGameHistory(
+            @PathVariable Integer gid
+    ) {
+        List<GameHistoryResponse> gameHistoryResponses;
+        gameHistoryResponses = gameService.getGameHistoryByGameId(gid);
+        return gameHistoryResponses;
     }
 
     @GetMapping("/game")
     public List<GameHistoryResponse> getGameHistories(
-            @RequestParam(required = false) Integer aid,
-            @RequestParam(required = false) Integer gid
+            @RequestParam Integer aid
     ) {
-        assert aid == null ^ gid == null;
         List<GameHistoryResponse> gameHistoryResponses;
-        if (aid != null) {
-            gameHistoryResponses = gameService.getGameHistoryByAccountId(aid);
-            log.info(String.format("[GET] /game?aid=%s", aid));
-        } else {
-            gameHistoryResponses = gameService.getGameHistoryByGameId(gid);
-            log.info(String.format("[GET] /game?gid=%s", gid));
-        }
+        gameHistoryResponses = gameService.getGameHistoryByAccountId(aid);
         return gameHistoryResponses;
     }
 
     @GetMapping("/game/ranking")
     public List<GameRanking> getGameRanking() {
         List<GameRanking> gameRanking = gameService.getGameRanking();
-        log.info("[GET] /game/ranking");
         return gameRanking;
     }
 
@@ -78,66 +71,59 @@ public class GameController {
             @RequestParam Integer aid
     ) {
         List<GameHistoryResponse> gameHistoryResponses = gameService.getUnFinishedGameHistory(aid);
-        log.info(String.format("[GET] /game/un-finished?aid=%s", aid));
         return gameHistoryResponses;
     }
 
-    @PostMapping("/game/order/buy")
+    @PostMapping("/game/{gid}/order/buy")
     public ResponseEntity<Boolean> processBuyOrder(
-            @RequestParam Integer gid,
+            @PathVariable Integer gid,
             @RequestParam Integer aid,
             @RequestParam String ticker,
             @RequestParam LocalDateTime date,
             @RequestParam Integer qty
     ) {
-        log.info(String.format("[POST] /game/order/buy?aid=%s&ticker=%s&date=%s&qty=%s", aid, ticker, date, qty));
         return new ResponseEntity<>(gameService.buy(gid, aid, ticker, date, qty), HttpStatus.OK);
     }
-    @PostMapping("/game/order/sell")
+    @PostMapping("/game/{gid}/order/sell")
     public ResponseEntity<Boolean> processSellOrder(
-            @RequestParam Integer gid,
+            @PathVariable Integer gid,
             @RequestParam Integer aid,
             @RequestParam String ticker,
             @RequestParam LocalDateTime date,
             @RequestParam Integer qty
     ) {
-        log.info(String.format("[POST] /game/order/sell?aid=%s&ticker=%s&date=%s&qty=%s", aid, ticker, date, qty));
         return new ResponseEntity<>(gameService.sell(gid, aid, ticker, date, qty), HttpStatus.OK);
     }
 
-    @GetMapping("/game/order")
+    @GetMapping("/game/{gid}/order")
     public ResponseEntity<List<OrderResponse>> getGameOrderHistories(
-            @RequestParam Integer gid
+            @PathVariable Integer gid
     ) {
-        log.info(String.format("[GET] /game/order?gid=%d", gid));
         return new ResponseEntity<>(gameService.getGameOrderHistories(gid), HttpStatus.OK);
     }
 
-    @PostMapping("/game/turns")
+    @PostMapping("/game/{gid}/turns")
     public ResponseEntity<Integer> increaseGameTurns(
-            @RequestParam Integer gid
+            @PathVariable Integer gid
     ) {
         Integer currentTurn = gameService.increaseTurns(gid);
-        log.info(String.format("[POST] /game/turns?gid=%d", gid));
         return new ResponseEntity<>(currentTurn, HttpStatus.OK);
     }
 
-    @PostMapping("/game/max-turn")
+    @PostMapping("/game/{gid}/max-turn")
     public ResponseEntity<Boolean> updateGameMaxTurn(
-            @RequestParam Integer gid,
-            @RequestParam Integer extraTurn
+            @PathVariable Integer gid,
+            @RequestParam Integer amount
     ) {
-        gameService.updateMaxTurn(gid, extraTurn);
-        log.info(String.format("[POST] /game/max-turn?gid=%d&extraTurn=%d", gid, extraTurn));
+        gameService.updateMaxTurn(gid, amount);
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 
-    @PostMapping("/game/finish")
+    @PostMapping("/game/{gid}/finish")
     public ResponseEntity<Boolean> finishGame(
-            @RequestParam Integer gid
+            @PathVariable Integer gid
     ) {
         gameService.finishGame(gid);
-        log.info(String.format("[POST] /game/finish?gid=%d", gid));
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 }
