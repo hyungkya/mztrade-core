@@ -1,7 +1,10 @@
 package com.mztrade.hki;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.mztrade.hki.controller.StockController;
-import com.mztrade.hki.controller.UserController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -9,8 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @SpringBootTest
@@ -104,5 +105,76 @@ public class StockTests {
                 .andExpect(jsonPath(expectByOpen, 57000).exists())
                 .andExpect(jsonPath(expectByDate, "2022-12-29T09:00:00").exists())
                 .andExpect(jsonPath(expectByOpen, 60500).exists());
+    }
+
+    @Test
+    public void getStockInfo() throws Exception {
+        //단순 주식 상세 정보 요청
+        String ticker = "000270";
+        String expectByListedDate = "$.[?(@.listed_date == '%s')]";
+        String expectByListedMarket = "$.[?(@.listed_market == '%s')]";
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(String.format("/stock/%s/info", ticker))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(expectByListedDate, "1973-07-21").exists())
+                .andExpect(jsonPath(expectByListedMarket, "코스피").exists());
+    }
+
+    @Test
+    public void getStockIndicator() throws Exception {
+        //특정날의 주가에 대한 보조지표 요청
+        String ticker = "000270";
+        String startDate = "20150105";
+        String endDate = "20150331";
+        String type = "RSI";
+        String param = "14";
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(String.format("/stock/%s/indicator", ticker))
+                                .queryParam("startDate", startDate)
+                                .queryParam("type", type)
+                                .queryParam("param", param)
+                )
+                .andExpect(status().isOk())
+                .andExpect(content().string("76.07655502392345"));
+    }
+
+    @Test
+    public void getStockIndicatorRange() throws Exception {
+        //특정 기간의 주가에 대한 보조지표 요청
+        String ticker = "000270";
+        String startDate = "20150105";
+        String endDate = "20150331";
+        String type = "RSI";
+        String param = "14";
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(String.format("/stock/%s/indicator", ticker))
+                                .queryParam("startDate", startDate)
+                                .queryParam("endDate", endDate)
+                                .queryParam("type", type)
+                                .queryParam("param", param)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[?(@.2015-02-23T09:00 == '%s')]", 33.65384615384615).exists());
+    }
+
+    @Test
+    public void getStockFinancialInfo() throws Exception {
+        //주식 재무 상세 정보 요청
+        String ticker = "000270";
+        String expectByCapital = "$.[?(@.capital == '%s')]";
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(String.format("/stock/%s/financial-info", ticker))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath(expectByCapital, 21393).exists());
     }
 }
