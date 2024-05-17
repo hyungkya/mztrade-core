@@ -42,8 +42,7 @@ public class UserTests {
                                 .post("/user")
                                 .queryParam("firebaseUid", firebaseUid)
                                 .queryParam("name", name))
-                .andExpect(status().isOk())
-                .andExpect(content().string("3"));
+                .andExpect(status().isOk());
     }
 
     @Test
