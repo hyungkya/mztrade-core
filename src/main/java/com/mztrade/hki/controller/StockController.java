@@ -4,7 +4,7 @@ import com.mztrade.hki.Util;
 import com.mztrade.hki.dto.StockFinancialInfoResponse;
 import com.mztrade.hki.dto.StockInfoResponse;
 import com.mztrade.hki.dto.StockPriceResponse;
-import com.mztrade.hki.entity.backtest.Indicator;
+import com.mztrade.hki.entity.backtest.PreviousIndicator;
 import com.mztrade.hki.service.IndicatorService;
 import com.mztrade.hki.service.StockPriceService;
 import com.mztrade.hki.service.TagService;
@@ -86,7 +86,7 @@ public class StockController {
             return new ResponseEntity<>(
                     indicatorService.getIndicators(ticker, Util.stringToLocalDateTime(startDate),
                             Util.stringToLocalDateTime(endDate),
-                            Indicator.builder().type(type).params(param).build()), HttpStatus.OK);
+                            type, param), HttpStatus.OK);
         } else {
             return new ResponseEntity<>(
                     indicatorService.getIndicator(ticker, Util.stringToLocalDateTime(startDate), type,
