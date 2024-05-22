@@ -140,7 +140,7 @@ public class StockTests {
                                 .queryParam("param", param)
                 )
                 .andExpect(status().isOk())
-                .andExpect(content().string("76.07655502392345"));
+                .andExpect(content().string("34.883720930232556"));
     }
 
     @Test

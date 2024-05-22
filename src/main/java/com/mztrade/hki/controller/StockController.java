@@ -4,7 +4,6 @@ import com.mztrade.hki.Util;
 import com.mztrade.hki.dto.StockFinancialInfoResponse;
 import com.mztrade.hki.dto.StockInfoResponse;
 import com.mztrade.hki.dto.StockPriceResponse;
-import com.mztrade.hki.entity.backtest.PreviousIndicator;
 import com.mztrade.hki.service.IndicatorService;
 import com.mztrade.hki.service.StockPriceService;
 import com.mztrade.hki.service.TagService;
