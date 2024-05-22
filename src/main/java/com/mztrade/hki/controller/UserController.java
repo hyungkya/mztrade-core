@@ -27,7 +27,7 @@ public class UserController {
     @PostMapping("/user")
     public ResponseEntity<Integer> saveUser(
             @RequestParam String firebaseUid,
-            @RequestParam String name
+            @RequestParam(defaultValue = "") String name
     ) {
         return new ResponseEntity<>(
                 userService.saveUser(

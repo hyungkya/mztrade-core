@@ -41,7 +41,17 @@ public class Condition {
         if (targets == null) targets = new HashMap<>();
 
         if (baseType.equals("indicator")) {
-            bases.put(ticker, indicatorService.getIndicators(ticker, startDate, endDate, this.parseBaseIndicator()));
+            List<String> s = Stream.of(this.getBaseParam().trim().split(",")).collect(Collectors.toList());
+            String type = s.get(0);
+            List<Float> params = s.subList(1, s.size()).stream().map(p -> Float.parseFloat(p.trim())).collect(Collectors.toList());
+
+            targets.put(ticker, indicatorService.getIndicators(
+                    ticker,
+                    startDate,
+                    endDate,
+                    type,
+                    params
+            ));
         } else if (baseType.equals("price")) {
             Map<LocalDateTime, Double> temp = new HashMap<>();
             for (StockPrice stockPrice : stockPriceService.getPrices(ticker, startDate, endDate)) {
@@ -64,7 +74,17 @@ public class Condition {
             bases.put(ticker, temp);
         }
         if (targetType.equals("indicator")) {
-            targets.put(ticker, indicatorService.getIndicators(ticker, startDate, endDate, this.parseTargetIndicator()));
+            List<String> s = Stream.of(this.getTargetParam().trim().split(",")).collect(Collectors.toList());
+            String type = s.get(0);
+            List<Float> params = s.subList(1, s.size()).stream().map(p -> Float.parseFloat(p.trim())).collect(Collectors.toList());
+
+            targets.put(ticker, indicatorService.getIndicators(
+                    ticker,
+                    startDate,
+                    endDate,
+                    type,
+                    params
+            ));
         } else if (targetType.equals("price")) {
             Map<LocalDateTime, Double> temp = new HashMap<>();
             for (StockPrice stockPrice : stockPriceService.getPrices(ticker, startDate, endDate)) {
@@ -129,17 +149,4 @@ public class Condition {
         }
         return true;
     }
-
-    public Indicator parseBaseIndicator() {
-        List<String> s = Stream.of(this.getBaseParam().trim().split(",")).collect(Collectors.toList());
-        String type = s.get(0);
-        List<Float> params = s.subList(1, s.size()).stream().map(p -> Float.parseFloat(p.trim())).collect(Collectors.toList());
-        return new Indicator(type, params);
-    };
-    public Indicator parseTargetIndicator() {
-        List<String> s = Stream.of(this.getTargetParam().trim().split(",")).collect(Collectors.toList());
-        String type = s.get(0);
-        List<Float> params = s.subList(1, s.size()).stream().map(p -> Float.parseFloat(p.trim())).collect(Collectors.toList());
-        return new Indicator(type, params);
-    };
 }
