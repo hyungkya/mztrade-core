@@ -1,21 +1,10 @@
 package com.mztrade.hki.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.Comparator;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
@@ -23,9 +12,9 @@ import lombok.ToString;
 @ToString @EqualsAndHashCode
 
 @IdClass(StockPriceId.class)
-@Table(name = "stock_price")
+@Table(name = "minute_stock_price")
 @Entity
-public class StockPrice {
+public class MinutelyStockPrice extends Bar {
     @Id
     @ManyToOne
     @JoinColumn(name = "ticker")
@@ -44,9 +33,9 @@ public class StockPrice {
     @Column
     private Long volume;
 
-    public static Comparator<StockPrice> COMPARE_BY_DATE = new Comparator<StockPrice>() {
+    public static Comparator<MinutelyStockPrice> COMPARE_BY_DATE = new Comparator<MinutelyStockPrice>() {
         @Override
-        public int compare(StockPrice o1, StockPrice o2) {
+        public int compare(MinutelyStockPrice o1, MinutelyStockPrice o2) {
             return o1.getDate().compareTo(o2.getDate());
         }
     };

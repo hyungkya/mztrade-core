@@ -1,6 +1,7 @@
 package com.mztrade.hki.entity.indicator;
 
-import com.mztrade.hki.entity.StockPrice;
+import com.mztrade.hki.entity.Bar;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Indicator {
     protected Algorithm algorithm;
-    protected List<StockPrice> stockPrices;
+    protected List<? extends Bar> bars;
 
     public Indicator setAlgorithm(String type, List<Float> params) {
         switch (type) {
@@ -80,13 +81,13 @@ public class Indicator {
         return this;
     }
 
-    public Indicator setStockPrices(List<StockPrice> stockPrices) {
-        this.stockPrices = stockPrices;
+    public Indicator setBars(List<? extends Bar> bars) {
+        this.bars = bars;
         return this;
     }
 
     public Map<LocalDateTime, Double> calculate() {
-        return algorithm.calculate(stockPrices);
+        return algorithm.calculate(bars);
     }
 
     public int requiredSize() {

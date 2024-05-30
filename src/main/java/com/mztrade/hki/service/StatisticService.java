@@ -31,26 +31,6 @@ public class StatisticService {
         this.stockPriceService = stockPriceService;
     }
 
-    public Map<String, Double> getTickerBenchmarkProfit(int aid) {
-        Map<String, Double> benchmarkProfits = new HashMap<>();
-
-        BacktestParameter backtestParameter = backtestService.getBacktestParameter(aid);
-        for (String tradedTicker : backtestParameter.getTickers()) {
-            benchmarkProfits.put(tradedTicker, getTickerBenchmarkProfit(tradedTicker,
-                    backtestParameter.parseStartDate(),
-                    backtestParameter.parseEndDate()));
-        }
-        return benchmarkProfits;
-    }
-
-    public double getTickerBenchmarkProfit(String ticker, LocalDateTime startDate, LocalDateTime endDate) {
-
-        double BenchmarkProfit = ((double)stockPriceService.getAvailablePriceBefore(ticker, endDate).orElseThrow().getClose() /
-                stockPriceService.getAvailablePriceAfter(ticker, startDate).orElseThrow().getClose()) - 1;
-
-        return BenchmarkProfit;
-    }
-
     public Map<String, Double> getTickerProfit(int aid) {
         Map<String, Double> profit = new HashMap<>();
         List<String> tradedTickers = backtestService.getTradedTickers(aid);
@@ -69,27 +49,6 @@ public class StatisticService {
 
         double profit = totalProfitLoss / backtestService.getBacktestParameter(aid).getInitialBalance();
         return profit;
-    }
-
-    public Double getTickerAlphaProfit(int aid, String ticker) {
-        BacktestParameter backtestParameter = backtestService.getBacktestParameter(aid);
-        double absoluteProfitLoss = getTickerProfit(aid, ticker);
-        double benchmarkProfitLoss = getTickerBenchmarkProfit(
-                ticker,
-                backtestParameter.parseStartDate(),
-                backtestParameter.parseEndDate());
-
-        double profit = absoluteProfitLoss - benchmarkProfitLoss;
-        return profit;
-    }
-
-    public Map<String, Double> getTickerAlphaProfit(int aid) {
-        Map<String, Double> alphaProfits = new HashMap<>();
-        BacktestParameter backtestParameter = backtestService.getBacktestParameter(aid);
-        for (String tradedTicker : backtestParameter.getTickers()) {
-            alphaProfits.put(tradedTicker, getTickerAlphaProfit(aid, tradedTicker));
-        }
-        return alphaProfits;
     }
 
     public Integer getTickerTradeCount(int aid, String ticker, int option) {
@@ -135,7 +94,7 @@ public class StatisticService {
         int tradeCount = orderService.getOrderHistory(aid,ticker).size();
         BacktestParameter br = backtestService.getBacktestParameter(aid);
 
-        totalCount += stockPriceService.getPrices(ticker
+        totalCount += stockPriceService.getDailyPrices(ticker
                 ,LocalDateTime.parse(Util.formatDate(br.getStartDate()))
                 ,LocalDateTime.parse(Util.formatDate(br.getEndDate()))
         ).size();
@@ -176,7 +135,7 @@ public class StatisticService {
 
         BacktestParameter br = backtestService.getBacktestParameter(aid);
         for(String ticker : br.getTickers()) {
-            totalCount += stockPriceService.getPrices(ticker
+            totalCount += stockPriceService.getDailyPrices(ticker
                     ,LocalDateTime.parse(Util.formatDate(br.getStartDate()))
                     ,LocalDateTime.parse(Util.formatDate(br.getEndDate()))
                     ).size();

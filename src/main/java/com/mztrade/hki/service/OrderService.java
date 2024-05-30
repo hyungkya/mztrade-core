@@ -7,7 +7,6 @@ import com.mztrade.hki.entity.Order;
 import com.mztrade.hki.entity.OrderType;
 import com.mztrade.hki.entity.Position;
 import com.mztrade.hki.entity.StockInfo;
-import com.mztrade.hki.entity.StockPrice;
 import com.mztrade.hki.repository.AccountRepository;
 import com.mztrade.hki.repository.OrderHistoryRepository;
 import com.mztrade.hki.repository.PositionRepository;
@@ -26,61 +25,21 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class OrderService {
     private final AccountService accountService;
-    private final StockPriceService stockPriceService;
     private final PositionRepository positionRepository;
     private final OrderHistoryRepository orderHistoryRepository;
     private final AccountRepository accountRepository;
     private final StockInfoRepository stockInfoRepository;
 
     @Autowired
-    public OrderService(AccountService accountService, StockPriceService stockPriceService, PositionRepository positionRepository, OrderHistoryRepository orderHistoryRepository, AccountRepository accountRepository, StockInfoRepository stockInfoRepository) {
+    public OrderService(AccountService accountService, PositionRepository positionRepository, OrderHistoryRepository orderHistoryRepository, AccountRepository accountRepository, StockInfoRepository stockInfoRepository) {
         this.accountService = accountService;
-        this.stockPriceService = stockPriceService;
         this.positionRepository = positionRepository;
         this.orderHistoryRepository = orderHistoryRepository;
         this.accountRepository = accountRepository;
         this.stockInfoRepository = stockInfoRepository;
     }
 
-    public Integer buy(Integer aid, String ticker, Integer qty) {
-        Integer oid = null;
-        StockPrice currentPrice = stockPriceService.getCurrentPrice(ticker);
-        StockInfo stockInfo = stockInfoRepository.getByTicker(ticker);
-        Account account = accountRepository.getReferenceById(aid);
-        Order order = Order.builder()
-                .stockInfo(stockInfo)
-                .account(account)
-                .price(currentPrice.getClose())
-                .filledTime(currentPrice.getDate())
-                .qty(qty)
-                .otid(OrderType.BUY.id())
-                .build();
-
-        if (accountService.withdraw(aid, (long) order.getQty() * order.getPrice())) {
-            Optional<Position> position = positionRepository.findByAccountAidAndStockInfoTicker(aid, ticker);
-            if (position.isPresent()) {
-                Position p = position.get();
-                BigDecimal newAvgEntryPrice = p.getAvgEntryPrice().multiply(BigDecimal.valueOf(p.getQty()))
-                        .add(BigDecimal.valueOf((long) order.getQty() * order.getPrice()))
-                        .divide(BigDecimal.valueOf(order.getQty() + p.getQty()), 2, RoundingMode.HALF_UP);
-                p.setQty(p.getQty() + order.getQty());
-                p.setAvgEntryPrice(newAvgEntryPrice);
-                positionRepository.save(p);
-            } else {
-                Position p = new Position().toBuilder()
-                        .account(accountRepository.getById(aid))
-                        .qty(order.getQty())
-                        .stockInfo(order.getStockInfo())
-                        .avgEntryPrice(BigDecimal.valueOf(order.getPrice())).build();
-                positionRepository.save(p);
-            }
-
-            oid = orderHistoryRepository.save(order).getOid();
-        }
-        return oid;
-    }
-
-    public Integer buy(Integer aid, String ticker, LocalDateTime date, Integer qty) {
+    public Integer buy(Integer aid, String ticker, LocalDateTime date, Integer price, Integer qty) {
         Integer oid = null;
         if (qty <= 0) {
             throw new IllegalArgumentException("Buying quantity should be greater than 0.");
@@ -92,7 +51,7 @@ public class OrderService {
                 .stockInfo(stockInfo)
                 .filledTime(date)
                 .account(account)
-                .price(stockPriceService.getPrice(ticker, date).getClose())
+                .price(price)
                 .qty(qty)
                 .otid(OrderType.BUY.id())
                 .build();
@@ -121,44 +80,7 @@ public class OrderService {
         return oid;
     }
 
-    public Integer sell(Integer aid, String ticker, Integer qty) {
-        Integer oid = null;
-
-        //check if position quantity is enough to sell
-        StockPrice currentPrice = stockPriceService.getCurrentPrice(ticker);
-        StockInfo stockInfo = stockInfoRepository.getByTicker(ticker);
-        Account account = accountRepository.getReferenceById(aid);
-        Optional<Position> optionalPosition = positionRepository.findByAccountAidAndStockInfoTicker(aid, ticker);
-        if (optionalPosition.isPresent()) {
-            Position position = optionalPosition.get();
-            if (position.getQty() >= qty) {
-                Order order = Order.builder()
-                        .stockInfo(stockInfo)
-                        .filledTime(currentPrice.getDate())
-                        .account(account)
-                        .price(currentPrice.getClose())
-                        .qty(qty)
-                        .avgEntryPrice(position.getAvgEntryPrice())
-                        .otid(OrderType.SELL.id())
-                        .build();
-                int remainingQty = position.getQty() - qty;
-                if (remainingQty == 0) {
-                    positionRepository.deleteByAccountAidAndStockInfoTicker(aid, ticker);
-                } else {
-                    position.setQty(remainingQty);
-                    positionRepository.save(position);
-                }
-                Long profit = BigInteger.valueOf(currentPrice.getClose())
-                        .multiply(BigInteger.valueOf(qty))
-                        .longValue();
-                accountService.deposit(aid, profit);
-                oid = orderHistoryRepository.save(order).getOid();
-            }
-        }
-        return oid;
-    }
-
-    public Integer sell(Integer aid, String ticker, LocalDateTime date, Integer qty) {
+    public Integer sell(Integer aid, String ticker, LocalDateTime date, Integer price, Integer qty) {
         Integer oid = null;
 
         //check if position quantity is enough to sell
@@ -172,7 +94,7 @@ public class OrderService {
                         .stockInfo(stockInfo)
                         .filledTime(date)
                         .account(account)
-                        .price(stockPriceService.getPrice(ticker, date).getClose())
+                        .price(price)
                         .qty(qty)
                         .avgEntryPrice(position.getAvgEntryPrice())
                         .otid(OrderType.SELL.id())
@@ -184,7 +106,7 @@ public class OrderService {
                     position.setQty(remainingQty);
                     positionRepository.save(position);
                 }
-                Long profit = BigInteger.valueOf(stockPriceService.getPrice(ticker, date).getClose())
+                Long profit = BigInteger.valueOf(price)
                         .multiply(BigInteger.valueOf(qty))
                         .longValue();
                 accountService.deposit(aid, profit);

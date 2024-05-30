@@ -82,6 +82,7 @@ public class GameController {
             @RequestParam LocalDateTime date,
             @RequestParam Integer qty
     ) {
+
         return new ResponseEntity<>(gameService.buy(gid, aid, ticker, date, qty), HttpStatus.OK);
     }
     @PostMapping("/game/{gid}/order/sell")

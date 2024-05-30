@@ -4,6 +4,7 @@ import com.mztrade.hki.Util;
 import com.mztrade.hki.dto.StockFinancialInfoResponse;
 import com.mztrade.hki.dto.StockInfoResponse;
 import com.mztrade.hki.dto.StockPriceResponse;
+import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.service.IndicatorService;
 import com.mztrade.hki.service.StockPriceService;
 import com.mztrade.hki.service.TagService;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 @RestController
 @Slf4j
@@ -54,8 +57,15 @@ public class StockController {
     }
 
     @GetMapping("/stock/{ticker}/price")
-    public ResponseEntity<List<StockPriceResponse>> getPricesByTicker(@PathVariable String ticker) {
-        return new ResponseEntity<>(stockPriceService.getPrices(ticker), HttpStatus.OK);
+    public ResponseEntity<List<StockPriceResponse>> getPricesByTicker(
+            @PathVariable String ticker,
+            @RequestParam(defaultValue = "day") String option
+    ) {
+        if (option.equals("minute")) {
+            return new ResponseEntity<>(stockPriceService.getMinutelyPrices(ticker), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(stockPriceService.getDailyPrices(ticker), HttpStatus.OK);
+        }
     }
 
     @GetMapping("/stock/{ticker}/info")
@@ -78,18 +88,43 @@ public class StockController {
             @PathVariable String ticker,
             @RequestParam String startDate,
             @RequestParam(defaultValue = "") String endDate,
+            @RequestParam(defaultValue = "day") String option,
             @RequestParam String type,
             @RequestParam List<Float> param
     ) {
+        LocalDateTime start = Util.stringToLocalDateTime(startDate);
         if (!endDate.isEmpty()) {
+            List<? extends Bar> stockPrices;
+            if (option.equals("minute")) {
+                stockPrices = stockPriceService.getMinutelyPrices(ticker, start, Util.stringToLocalDateTime(endDate));
+            } else {
+                stockPrices = stockPriceService.getDailyPrices(ticker, start, Util.stringToLocalDateTime(endDate));
+            }
             return new ResponseEntity<>(
-                    indicatorService.getIndicators(ticker, Util.stringToLocalDateTime(startDate),
-                            Util.stringToLocalDateTime(endDate),
-                            type, param), HttpStatus.OK);
+                    indicatorService.getIndicators(stockPrices, type, param), HttpStatus.OK);
         } else {
+            List<? extends Bar> stockPrices;
+            if (option.equals("minute")) {
+                LocalDateTime requiredDate = start;
+                for (int i = 0; i < indicatorService.requiredBars(type, param) * 2; i++) {
+                    if (requiredDate.getHour() == 9 && requiredDate.getMinute() == 0) {
+                        requiredDate = requiredDate.minusDays(1).withHour(15).withMinute(30);
+                    } else {
+                        requiredDate = requiredDate.minusMinutes(1);
+                    }
+                }
+                stockPrices = stockPriceService.getMinutelyPrices(ticker, requiredDate, start);
+            } else {
+                stockPrices = stockPriceService.getDailyPrices(
+                        ticker, start.minusDays(indicatorService.requiredBars(type, param) * 2), start);
+            }
             return new ResponseEntity<>(
-                    indicatorService.getIndicator(ticker, Util.stringToLocalDateTime(startDate), type,
-                            param), HttpStatus.OK);
+                    indicatorService.getIndicator(
+                            stockPrices,
+                            Util.stringToLocalDateTime(startDate),
+                            type,
+                            param),
+                    HttpStatus.OK);
         }
     }
 }

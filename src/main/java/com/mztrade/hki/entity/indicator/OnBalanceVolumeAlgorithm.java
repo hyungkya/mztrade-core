@@ -1,6 +1,7 @@
 package com.mztrade.hki.entity.indicator;
 
-import com.mztrade.hki.entity.StockPrice;
+import com.mztrade.hki.entity.Bar;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -10,26 +11,26 @@ public class OnBalanceVolumeAlgorithm implements Algorithm {
 
     public OnBalanceVolumeAlgorithm(List<Float> params) {}
 
-    public Map<LocalDateTime, Double> calculate(List<StockPrice> stockPrices) {
+    public Map<LocalDateTime, Double> calculate(List<? extends Bar> bars) {
         Map<LocalDateTime, Double> result = new HashMap<>();
 
         double OBV = 0;
 
-        for (int i = 0; i < stockPrices.size(); i++) {
+        for (int i = 0; i < bars.size(); i++) {
             if (i == 0) {
-                OBV = stockPrices.get(i).getVolume();
-                result.put(stockPrices.get(i).getDate(), OBV);
+                OBV = bars.get(i).getVolume();
+                result.put(bars.get(i).getDate(), OBV);
             } else {
-                if (stockPrices.get(i).getClose() > stockPrices.get(i - 1).getClose()) {
-                    OBV += stockPrices.get(i).getVolume();
-                } else if (stockPrices.get(i).getClose() < stockPrices.get(i - 1).getClose()) {
-                    OBV -= stockPrices.get(i).getVolume();
+                if (bars.get(i).getClose() > bars.get(i - 1).getClose()) {
+                    OBV += bars.get(i).getVolume();
+                } else if (bars.get(i).getClose() < bars.get(i - 1).getClose()) {
+                    OBV -= bars.get(i).getVolume();
                 }
-                result.put(stockPrices.get(i).getDate(), OBV);
+                result.put(bars.get(i).getDate(), OBV);
             }
         }
 
-        assert result.size() == stockPrices.size();
+        assert result.size() == bars.size();
         return result;
     }
 

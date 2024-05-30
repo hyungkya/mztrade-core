@@ -1,11 +1,9 @@
 package com.mztrade.hki.entity.backtest;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.mztrade.hki.entity.StockPrice;
+import com.mztrade.hki.entity.Bar;
 import com.mztrade.hki.service.IndicatorService;
-import com.mztrade.hki.service.StockPriceService;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +34,7 @@ public class Condition {
     @JsonIgnore
     private Map<String, List<Boolean>> recentMatches;
 
-    public void load(StockPriceService stockPriceService, IndicatorService indicatorService, String ticker, LocalDateTime startDate, LocalDateTime endDate) {
+    public void setup(List<? extends Bar> bars, IndicatorService indicatorService, String ticker) {
         if (bases == null) bases = new HashMap<>();
         if (targets == null) targets = new HashMap<>();
 
@@ -45,31 +43,29 @@ public class Condition {
             String type = s.get(0);
             List<Float> params = s.subList(1, s.size()).stream().map(p -> Float.parseFloat(p.trim())).collect(Collectors.toList());
 
-            targets.put(ticker, indicatorService.getIndicators(
-                    ticker,
-                    startDate,
-                    endDate,
+            bases.put(ticker, indicatorService.getIndicators(
+                    bars,
                     type,
                     params
             ));
         } else if (baseType.equals("price")) {
             Map<LocalDateTime, Double> temp = new HashMap<>();
-            for (StockPrice stockPrice : stockPriceService.getPrices(ticker, startDate, endDate)) {
+            for (Bar bar : bars) {
                 if (baseParam.equals("close")) {
-                    temp.put(stockPrice.getDate(), stockPrice.getClose().doubleValue());
+                    temp.put(bar.getDate(), bar.getClose().doubleValue());
                 } else if (baseParam.equals("open")) {
-                    temp.put(stockPrice.getDate(), stockPrice.getOpen().doubleValue());
+                    temp.put(bar.getDate(), bar.getOpen().doubleValue());
                 } else if (baseParam.equals("high")) {
-                    temp.put(stockPrice.getDate(), stockPrice.getHigh().doubleValue());
+                    temp.put(bar.getDate(), bar.getHigh().doubleValue());
                 } else if (baseParam.equals("low")) {
-                    temp.put(stockPrice.getDate(), stockPrice.getLow().doubleValue());
+                    temp.put(bar.getDate(), bar.getLow().doubleValue());
                 }
             }
             bases.put(ticker, temp);
         } else {
             Map<LocalDateTime, Double> temp = new HashMap<>();
-            for (LocalDateTime currentDate = startDate; currentDate.isBefore(endDate); currentDate = currentDate.plus(1, ChronoUnit.DAYS)) {
-                temp.put(currentDate, Double.parseDouble(baseParam));
+            for (Bar bar : bars) {
+                temp.put(bar.getDate(), Double.parseDouble(baseParam));
             }
             bases.put(ticker, temp);
         }
@@ -79,30 +75,28 @@ public class Condition {
             List<Float> params = s.subList(1, s.size()).stream().map(p -> Float.parseFloat(p.trim())).collect(Collectors.toList());
 
             targets.put(ticker, indicatorService.getIndicators(
-                    ticker,
-                    startDate,
-                    endDate,
+                    bars,
                     type,
                     params
             ));
         } else if (targetType.equals("price")) {
             Map<LocalDateTime, Double> temp = new HashMap<>();
-            for (StockPrice stockPrice : stockPriceService.getPrices(ticker, startDate, endDate)) {
+            for (Bar bar : bars) {
                 if (targetParam.equals("close")) {
-                    temp.put(stockPrice.getDate(), stockPrice.getClose().doubleValue());
+                    temp.put(bar.getDate(), bar.getClose().doubleValue());
                 } else if (targetParam.equals("open")) {
-                    temp.put(stockPrice.getDate(), stockPrice.getOpen().doubleValue());
+                    temp.put(bar.getDate(), bar.getOpen().doubleValue());
                 } else if (targetParam.equals("high")) {
-                    temp.put(stockPrice.getDate(), stockPrice.getHigh().doubleValue());
+                    temp.put(bar.getDate(), bar.getHigh().doubleValue());
                 } else if (targetParam.equals("low")) {
-                    temp.put(stockPrice.getDate(), stockPrice.getLow().doubleValue());
+                    temp.put(bar.getDate(), bar.getLow().doubleValue());
                 }
             }
             targets.put(ticker, temp);
         } else {
             Map<LocalDateTime, Double> temp = new HashMap<>();
-            for (LocalDateTime currentDate = startDate; currentDate.isBefore(endDate); currentDate = currentDate.plus(1, ChronoUnit.DAYS)) {
-                temp.put(currentDate, Double.parseDouble(targetParam));
+            for (Bar bar : bars) {
+                temp.put(bar.getDate(), Double.parseDouble(targetParam));
             }
             targets.put(ticker, temp);
         }

@@ -1,6 +1,7 @@
 package com.mztrade.hki.entity.indicator;
 
-import com.mztrade.hki.entity.StockPrice;
+import com.mztrade.hki.entity.Bar;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -13,24 +14,24 @@ public class ExponentialMovingAverageAlgorithm implements Algorithm {
         this.period = params.getFirst().intValue();
     }
 
-    public Map<LocalDateTime, Double> calculate(List<StockPrice> stockPrices) {
+    public Map<LocalDateTime, Double> calculate(List<? extends Bar> bars) {
         Map<LocalDateTime, Double> result = new HashMap<>();
 
         double previousEMA = Double.NaN;
         double smoothingConstant = 1 - (2.0 / (period + 1));
-        for (int i = 0; i < stockPrices.size(); i++) {
+        for (int i = 0; i < bars.size(); i++) {
             if (i < period) {
-                result.put(stockPrices.get(i).getDate(), Double.NaN);
+                result.put(bars.get(i).getDate(), Double.NaN);
             } else if (i == period) {
-                previousEMA = stockPrices.subList(i - period, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble();
-                result.put(stockPrices.get(i).getDate(), previousEMA);
+                previousEMA = bars.subList(i - period, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble();
+                result.put(bars.get(i).getDate(), previousEMA);
             } else {
-                previousEMA = (smoothingConstant * (stockPrices.get(i).getClose() - previousEMA)) + previousEMA;
-                result.put(stockPrices.get(i).getDate(), previousEMA);
+                previousEMA = (smoothingConstant * (bars.get(i).getClose() - previousEMA)) + previousEMA;
+                result.put(bars.get(i).getDate(), previousEMA);
             }
         }
 
-        assert result.size() == stockPrices.size();
+        assert result.size() == bars.size();
         return result;
     }
 

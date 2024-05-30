@@ -1,6 +1,7 @@
 package com.mztrade.hki.entity.indicator;
 
-import com.mztrade.hki.entity.StockPrice;
+import com.mztrade.hki.entity.Bar;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,22 +18,22 @@ public class StochasticSlowAlgorithm implements Algorithm {
         this.t = params.get(2).intValue();
     }
 
-    public Map<LocalDateTime, Double> calculate(List<StockPrice> stockPrices) {
+    public Map<LocalDateTime, Double> calculate(List<? extends Bar> bars) {
         Map<LocalDateTime, Double> result = new HashMap<>();
 
         List<Double> percentKs = new ArrayList<>();
-        for (int i = 0; i < stockPrices.size(); i++) {
+        for (int i = 0; i < bars.size(); i++) {
             if (i < n) {
                 percentKs.add(Double.NaN);
             } else {
-                int highestPrice = stockPrices.subList(i + 1 - n, i + 1).stream().reduce((acc, c) -> acc.getHigh() > c.getHigh() ? acc : c).orElseThrow().getHigh();
-                int lowestPrice = stockPrices.subList(i + 1 - n, i + 1).stream().reduce((acc, c) -> acc.getLow() < c.getLow() ? acc : c).orElseThrow().getLow();
-                double percentK = ((double) (stockPrices.get(i).getClose() - lowestPrice) / (highestPrice - lowestPrice)) * 100;
+                int highestPrice = bars.subList(i + 1 - n, i + 1).stream().reduce((acc, c) -> acc.getHigh() > c.getHigh() ? acc : c).orElseThrow().getHigh();
+                int lowestPrice = bars.subList(i + 1 - n, i + 1).stream().reduce((acc, c) -> acc.getLow() < c.getLow() ? acc : c).orElseThrow().getLow();
+                double percentK = ((double) (bars.get(i).getClose() - lowestPrice) / (highestPrice - lowestPrice)) * 100;
                 percentKs.add(percentK);
             }
         }
         List<Double> percentDs = new ArrayList<>();
-        for (int i = 0; i < stockPrices.size(); i++) {
+        for (int i = 0; i < bars.size(); i++) {
             if (i < n + m) {
                 percentDs.add(Double.NaN);
             } else {
@@ -40,14 +41,14 @@ public class StochasticSlowAlgorithm implements Algorithm {
             }
         }
 
-        for (int i = 0; i < stockPrices.size(); i++) {
+        for (int i = 0; i < bars.size(); i++) {
             if (i < n + m + t) {
-                result.put(stockPrices.get(i).getDate(), Double.NaN);
+                result.put(bars.get(i).getDate(), Double.NaN);
             } else {
-                result.put(stockPrices.get(i).getDate(), percentDs.subList(i + 1 - t, i + 1).stream().mapToDouble(e -> e).average().orElse(Double.NaN));
+                result.put(bars.get(i).getDate(), percentDs.subList(i + 1 - t, i + 1).stream().mapToDouble(e -> e).average().orElse(Double.NaN));
             }
         }
-        assert stockPrices.size() == result.size();
+        assert bars.size() == result.size();
         return result;
     }
 

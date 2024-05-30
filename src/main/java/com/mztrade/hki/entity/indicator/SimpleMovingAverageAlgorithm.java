@@ -1,6 +1,7 @@
 package com.mztrade.hki.entity.indicator;
 
-import com.mztrade.hki.entity.StockPrice;
+import com.mztrade.hki.entity.Bar;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -13,18 +14,18 @@ public class SimpleMovingAverageAlgorithm implements Algorithm {
         this.period = params.getFirst().intValue();
     }
 
-    public Map<LocalDateTime, Double> calculate(List<StockPrice> stockPrices) {
+    public Map<LocalDateTime, Double> calculate(List<? extends Bar> bars) {
         Map<LocalDateTime, Double> result = new HashMap<>();
 
-        for (int i = 0; i < stockPrices.size(); i++) {
+        for (int i = 0; i < bars.size(); i++) {
             if (i < period) {
-                result.put(stockPrices.get(i).getDate(), Double.NaN);
+                result.put(bars.get(i).getDate(), Double.NaN);
             } else {
-                result.put(stockPrices.get(i).getDate(), stockPrices.subList(i - period, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble());
+                result.put(bars.get(i).getDate(), bars.subList(i - period, i).stream().mapToInt(b -> b.getClose()).average().getAsDouble());
             }
         }
 
-        assert result.size() == stockPrices.size();
+        assert result.size() == bars.size();
         return result;
     }
 

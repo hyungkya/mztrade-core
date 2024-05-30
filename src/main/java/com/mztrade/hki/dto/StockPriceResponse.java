@@ -1,7 +1,9 @@
 package com.mztrade.hki.dto;
 
-import com.mztrade.hki.entity.StockPrice;
+import com.mztrade.hki.entity.DailyStockPrice;
 import java.time.LocalDateTime;
+
+import com.mztrade.hki.entity.MinutelyStockPrice;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,15 +17,27 @@ public class StockPriceResponse {
     private Integer low;
     private Integer close;
     private Long volume;
-    static public StockPriceResponse from(StockPrice stockPrice) {
+    static public StockPriceResponse from(DailyStockPrice dailyStockPrice) {
         return StockPriceResponse.builder()
-                .ticker(stockPrice.getStockInfo().getTicker())
-                .date(stockPrice.getDate())
-                .open(stockPrice.getOpen())
-                .high(stockPrice.getHigh())
-                .low(stockPrice.getLow())
-                .close(stockPrice.getClose())
-                .volume(stockPrice.getVolume())
+                .ticker(dailyStockPrice.getStockInfo().getTicker())
+                .date(dailyStockPrice.getDate())
+                .open(dailyStockPrice.getOpen())
+                .high(dailyStockPrice.getHigh())
+                .low(dailyStockPrice.getLow())
+                .close(dailyStockPrice.getClose())
+                .volume(dailyStockPrice.getVolume())
+                .build();
+    }
+
+    static public StockPriceResponse from(MinutelyStockPrice minutelyStockPrice) {
+        return StockPriceResponse.builder()
+                .ticker(minutelyStockPrice.getStockInfo().getTicker())
+                .date(minutelyStockPrice.getDate())
+                .open(minutelyStockPrice.getOpen())
+                .high(minutelyStockPrice.getHigh())
+                .low(minutelyStockPrice.getLow())
+                .close(minutelyStockPrice.getClose())
+                .volume(minutelyStockPrice.getVolume())
                 .build();
     }
 }

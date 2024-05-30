@@ -4,22 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mztrade.hki.dto.BacktestResultResponse;
 import com.mztrade.hki.dto.BacktestParameter;
-import com.mztrade.hki.entity.Position;
-import com.mztrade.hki.entity.StockPrice;
-import com.mztrade.hki.entity.TagCategory;
+import com.mztrade.hki.entity.*;
 import com.mztrade.hki.entity.backtest.BacktestResult;
 import com.mztrade.hki.entity.backtest.Condition;
-import com.mztrade.hki.repository.BacktestResultRepository;
-import com.mztrade.hki.repository.PositionRepository;
-import com.mztrade.hki.repository.TagRepositoryImpl;
+import com.mztrade.hki.repository.*;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +26,9 @@ public class BacktestService {
     private final ObjectMapper objectMapper;
     private final IndicatorService indicatorService;
     private final TagService tagService;
+    private final AccountHistoryRepository accountHistoryRepository;
+    private final OrderHistoryRepository orderHistoryRepository;
+    private final AccountRepository accountRepository;
     private AccountService accountService;
     private StockPriceService stockPriceService;
     private OrderService orderService;
@@ -42,7 +38,15 @@ public class BacktestService {
     public BacktestService(AccountService accountService,
                            StockPriceService stockPriceService,
                            OrderService orderService,
-                           TagRepositoryImpl tagRepositoryImpl, BacktestResultRepository backtestResultRepository, PositionRepository positionRepository, ObjectMapper objectMapper, IndicatorService indicatorService, TagService tagService) {
+                           TagRepositoryImpl tagRepositoryImpl,
+                           BacktestResultRepository backtestResultRepository,
+                           PositionRepository positionRepository,
+                           ObjectMapper objectMapper,
+                           IndicatorService indicatorService,
+                           TagService tagService,
+                           AccountRepository accountRepository,
+                           AccountHistoryRepository accountHistoryRepository,
+                           OrderHistoryRepository orderHistoryRepository) {
         this.accountService = accountService;
         this.stockPriceService = stockPriceService;
         this.orderService = orderService;
@@ -52,162 +56,86 @@ public class BacktestService {
         this.objectMapper = objectMapper;
         this.indicatorService = indicatorService;
         this.tagService = tagService;
+        this.accountHistoryRepository = accountHistoryRepository;
+        this.orderHistoryRepository = orderHistoryRepository;
+        this.accountRepository = accountRepository;
     }
 
     public int execute(BacktestParameter backtestParameter) {
-        Map<LocalDateTime, Long> accountHistoryBalance = new HashMap<>();
-        LocalDateTime startDate = backtestParameter.parseStartDate();
-        LocalDateTime endDate = backtestParameter.parseEndDate();
+        Map<String, List<? extends Bar>> tickerBars = new HashMap<>();
+        Map<String, Integer> tickerAids = new HashMap<>();
+        // 전체 ticker 가격 불러오기
+        if (backtestParameter.getTimeScale() == null) {
+            for (String ticker : backtestParameter.getTickers()) {
+                tickerBars.put(ticker,
+                        stockPriceService.getDailyPrices(
+                                ticker,
+                                backtestParameter.parseStartDate(),
+                                backtestParameter.parseEndDate())
+                );
+            }
+        } else {
+            for (String ticker : backtestParameter.getTickers()) {
+                tickerBars.put(ticker,
+                        stockPriceService.getMinutelyPrices(
+                                ticker,
+                                backtestParameter.parseStartDate(),
+                                backtestParameter.parseEndDate())
+                );
+            }
+        }
+
+        for (String ticker : backtestParameter.getTickers()) {
+            tickerAids.put(ticker, unitExecute(
+                    ticker,
+                    tickerBars.get(ticker),
+                    backtestParameter));
+        }
 
         // 백테스팅을 진행할 계좌 생성
         int aid = accountService.createAccount(backtestParameter.getUid());
-        accountService.deposit(aid, backtestParameter.getInitialBalance());
-
-        // 포트폴리오 설정 (단일 종목 최대 주문 가능 금액 등)
-        long maxSingleTickerTradingBalance = backtestParameter.getInitialBalance() / backtestParameter.getTickers().size();
-        Map<String, Integer> dcaStatus = new HashMap<>();
+        Long lastBalance = 0L;
         for (String ticker : backtestParameter.getTickers()) {
-            dcaStatus.put(ticker, 0);
+            lastBalance += accountService.getBalance(tickerAids.get(ticker));
         }
-        Map<String, Integer> trailingStopStatus = new HashMap<>();
+        accountService.deposit(aid, lastBalance);
 
-        // 가격 정보 로드
-        Map<String, Map<LocalDateTime, StockPrice>> bars = new HashMap<>();
-        for (String ticker : backtestParameter.getTickers()) {
-            Map<LocalDateTime, StockPrice> prices = new HashMap<>();
-            List<StockPrice> stockPrices = stockPriceService.getPrices(ticker, startDate, endDate);
-            for (StockPrice stockPrice : stockPrices) {
-                prices.put(stockPrice.getDate(), stockPrice);
-            }
-            bars.put(ticker, prices);
-        }
-
-        // 조건 비교에 필요한 정보 로드
-        // {"ticker": {"SMA1": {"2020-01-01": "34500", "2020-01-02": "34600"}, "RSI": {...}}}
-        for (String ticker : backtestParameter.getTickers()) {
-            for (Condition condition : backtestParameter.getBuyConditions()) {
-                condition.load(stockPriceService, indicatorService, ticker, startDate, endDate);
-            }
-            for (Condition condition : backtestParameter.getSellConditions()) {
-                condition.load(stockPriceService, indicatorService, ticker, startDate, endDate);
-            }
-        }
-
-        for (LocalDateTime currentDate = startDate; currentDate.isBefore(endDate); currentDate = currentDate.plus(1, ChronoUnit.DAYS)) {
+        Map<LocalDateTime, Long> accountHistoryBalance = new HashMap<>();
+        for (Bar bar : tickerBars.get(getLongestBars(tickerBars))) {
+            Long sumOfBalance = 0L;
             for (String ticker : backtestParameter.getTickers()) {
-                if (!bars.get(ticker).containsKey(currentDate)) {
-                    continue;
-                }
-                // 신규 매수만 조건을 체크해서 진행
-                if (orderService.getPosition(aid, ticker).isEmpty()) {
-                    int count = 0;
-                    for (Condition condition : backtestParameter.getBuyConditions()) {
-                        if (condition.check(ticker, currentDate)) {
-                            count++;
-                        }
-                    }
-                    if (count >= backtestParameter.getBuyConditionLimit() && dcaStatus.get(ticker) < backtestParameter.getDca().size()) {
-                        // 종목 구매 금액 계산 (종목별 최대 거래 금액 * 분할 매수 1차 구매 비율)
-                        double targetBuyAmount = backtestParameter.getDca().get(dcaStatus.get(ticker)) * maxSingleTickerTradingBalance;
-                        // 현재가 불러오기
-                        int currentPrice = bars.get(ticker).get(currentDate).getClose();
-                        // 구매 가능 수량 계산
-                        int targetQty = (int) Math.floor(targetBuyAmount / currentPrice);
-                        // 구매 가능 수량이 0 이상이라면 매수 진행 후 분할 매수 차수 업데이트
-                        if (targetQty > 0) {
-                            orderService.buy(aid, ticker, currentDate, targetQty);
-                            dcaStatus.replace(ticker, dcaStatus.get(ticker) + 1);
-                        }
-                    }
-                } // 보유중인 종목에 대해서는 손절가 초과 시 분할 매수 진행
-                else if (orderService.getPosition(aid, ticker).isPresent()) {
-                    Position p = orderService.getPosition(aid, ticker).get();
-                    int currentPrice = bars.get(ticker).get(currentDate).getClose();
-                    // 현재 가격이 손절가 이하라면 분할 매수 남은 횟수 체크
-                    if (backtestParameter.getStopLoss() != null
-                            && p.getAvgEntryPrice().doubleValue() * backtestParameter.getStopLoss() > currentPrice) {
-                        // 남은 횟수가 있다면 분할 매수, 없다면 손절
-                        if (dcaStatus.get(ticker) < backtestParameter.getDca().size()) {
-                            double targetBuyAmount = backtestParameter.getDca().get(dcaStatus.get(ticker)) * maxSingleTickerTradingBalance;
-                            int targetQty = (int) Math.floor(targetBuyAmount / currentPrice);
-                            if (targetQty > 0) {
-                                orderService.buy(aid, ticker, currentDate, targetQty);
-                                dcaStatus.replace(ticker, dcaStatus.get(ticker) + 1);
-                            }
-                        } else {
-                            //손절
-                            orderService.sell(aid, ticker, currentDate, p.getQty());
-                            //분할매수 리셋
-                            dcaStatus.replace(ticker, 0);
-                            trailingStopStatus.remove(ticker);
-                        }
-                    }
-                }
-                Optional<Position> position = orderService.getPosition(aid, ticker);
-                if (position.isPresent()) {
-                    int currentPrice = bars.get(ticker).get(currentDate).getClose();
-                    int count = 0;
-                    for (Condition condition : backtestParameter.getSellConditions()) {
-                        if (condition.check(ticker, currentDate)) {
-                            count++;
-                        }
-                    }
-                    if (count >= backtestParameter.getSellConditionLimit()) {
-                        orderService.sell(aid, ticker, currentDate, position.get().getQty());
-                        dcaStatus.replace(ticker, 0);
-                        // 매도 후 트레일링 스탑 감시 해제 (있다면)
-                        trailingStopStatus.remove(ticker);
-                        break;
-                    }
-                    // 매도 조건에서 팔리지 않았을 경우
-                    else {
-                        // 익절가 달성 여부 체크
-                        if (backtestParameter.getStopProfit() != null &&
-                                position.get().getAvgEntryPrice().doubleValue() * backtestParameter.getStopProfit() < currentPrice) {
-                            // 트레일링 스탑 사용 중이라면 감시 시작
-                            if (backtestParameter.getTrailingStop() != null) {
-                                if (!trailingStopStatus.containsKey(ticker)) {
-                                    trailingStopStatus.put(ticker, currentPrice);
-                                }
-                            }
-                            // 아니라면 전량 매도
-                            else {
-                                orderService.sell(aid, ticker, currentDate, position.get().getQty());
-                                dcaStatus.replace(ticker, 0);
-                                // 매도 후 트레일링 스탑 감시 해제 (있다면)
-                                trailingStopStatus.remove(ticker);
-                            }
-                        }
-                        // 트레일링 스탑 감시 중이라면
-                        if (backtestParameter.getTrailingStop() != null &&
-                                trailingStopStatus.containsKey(ticker)) {
-                            // 현재가가 최고가 보다 높다면 최고가 갱신
-                            if (trailingStopStatus.get(ticker) < currentPrice) {
-                                trailingStopStatus.replace(ticker, currentPrice);
-                            }
-                            // 현재가가 트레일링 스탑 제한보다 낮아졌다면 전량 매도
-                            else if (trailingStopStatus.get(ticker) * (1 - backtestParameter.getTrailingStop()) > currentPrice){
-                                orderService.sell(aid, ticker, currentDate, position.get().getQty());
-                                dcaStatus.replace(ticker, 0);
-                                // 매도 후 트레일링 스탑 감시 해제
-                                trailingStopStatus.remove(ticker);
-                            }
-                        }
-                    }
+                Optional<AccountHistory> accountHistory =
+                        accountHistoryRepository.findByAidAndDate(tickerAids.get(ticker), bar.getDate());
+                if (accountHistory.isPresent()) {
+                    sumOfBalance += accountHistory.get().getBalance();
+                } else {
+                    sumOfBalance += backtestParameter.getInitialBalance() / backtestParameter.getTickers().size();
                 }
             }
-
-            //계좌잔액기록
-            long balance = accountService.getBalance(aid);
-
-            for(Position p : positionRepository.findByAccountAid(aid)) {
-                StockPrice stockPrice = stockPriceService.getAvailablePriceBefore(p.getStockInfo().getTicker(),currentDate).orElseThrow();
-                balance += (long) stockPrice.getClose() * p.getQty();
-            };
-            accountHistoryBalance.put(currentDate, balance);
-            //accountService.createAccountHistory(aid,currentDate,balance);
+            accountHistoryBalance.put(bar.getDate(), sumOfBalance);
         }
         accountService.createAccountHistories(aid, accountHistoryBalance);
+
+        // AID 조작
+        for (String ticker : backtestParameter.getTickers()) {
+            List<Order> orders = orderHistoryRepository.findByAccountAid(tickerAids.get(ticker));
+            for (Order order : orders) {
+                order.setAccount(accountRepository.getReferenceById(aid));
+            }
+        }
+        // Position 옮기기
+        for (String ticker : backtestParameter.getTickers()) {
+            List<Position> positions = positionRepository.findByAccountAid(tickerAids.get(ticker));
+            for (Position position : positions) {
+                Position newPosition = Position.builder()
+                        .account(accountRepository.getReferenceById(aid))
+                        .qty(position.getQty())
+                        .avgEntryPrice(position.getAvgEntryPrice())
+                        .stockInfo(position.getStockInfo())
+                        .build();
+                positionRepository.save(newPosition);
+            }
+        }
 
         for (Condition condition : backtestParameter.getBuyConditions()) {
             if (condition.getBaseType().equals("indicator")) {
@@ -234,166 +162,154 @@ public class BacktestService {
                 tagService.createBacktestResultTagLink(tid, aid);
             }
         }
+
         return aid;
     }
 
-    /*public int execute(
-            int uid,
-            long initialBalance,
-            List<List<Condition>> buyConditions,
-            List<List<Condition>> sellConditions,
-            List<Float> dca,
-            Double stopLoss,
-            Double stopProfit,
-            Double trailingStop,
-            int maxTradingCount,
-            List<String> targetTickers,
-            LocalDateTime startDate,
-            LocalDateTime endDate) {
-        // Account Settings
-        int aid = accountService.createAccount(uid);
-        accountService.deposit(aid, initialBalance);
-
-        // Portfolio Settings
-        long maxSingleTickerTradingBalance = initialBalance / maxTradingCount;
-        Map<String, Integer> dcaStatus = new HashMap<>();
-        for (String ticker : targetTickers) {
-            dcaStatus.put(ticker, 0);
+    public String getLongestBars(Map<String, List<? extends Bar>> tickerBars) {
+        int max = 0;
+        String maxId = "";
+        for (String ticker : tickerBars.keySet()) {
+            if (tickerBars.get(ticker).size() > max) {
+                max = tickerBars.get(ticker).size();
+                maxId = ticker;
+            }
         }
+        return maxId;
+    }
+
+    public int unitExecute(String ticker, List<? extends Bar> bars, BacktestParameter backtestParameter) {
+        bars.sort(Bar.COMPARE_BY_DATE);
+        Map<LocalDateTime, Long> accountHistoryBalance = new HashMap<>();
+
+        // 백테스팅을 진행할 계좌 생성
+        int aid = accountService.createAccount(backtestParameter.getUid());
+        long maxSingleTickerTradingBalance = backtestParameter.getInitialBalance() / backtestParameter.getTickers().size();
+        accountService.deposit(aid, maxSingleTickerTradingBalance);
+
+        // 포트폴리오 설정 (단일 종목 최대 주문 가능 금액 등)
+        Integer dcaStatus = 0;
         Map<String, Integer> trailingStopStatus = new HashMap<>();
 
-        // Get Bars
-        Map<String, List<StockPrice>> collectedBars = new HashMap<>();
-        boolean buyFlag = false;
-        boolean sellFlag = false;
+        // 조건 비교에 필요한 정보 로드
+        // {"ticker": {"SMA1": {"2020-01-01": "34500", "2020-01-02": "34600"}, "RSI": {...}}}
 
-        for (; startDate.isBefore(endDate); startDate = startDate.plus(1, ChronoUnit.DAYS)) {
-            for (String ticker : targetTickers) {
-                // Stacking retrievable bar
-                try {
-                    StockPrice stockPrice = stockPriceService.getPrice(ticker, startDate);
-                    if (!collectedBars.containsKey(ticker)) {
-                        collectedBars.put(ticker, new ArrayList<>());
+        for (Condition condition : backtestParameter.getBuyConditions()) {
+            condition.setup(bars, indicatorService, ticker);
+        }
+        for (Condition condition : backtestParameter.getSellConditions()) {
+            condition.setup(bars, indicatorService, ticker);
+        }
+
+        for (Bar bar : bars) {
+            // 신규 매수만 조건을 체크해서 진행
+            if (orderService.getPosition(aid, ticker).isEmpty()) {
+                int count = 0;
+                for (Condition condition : backtestParameter.getBuyConditions()) {
+                    if (condition.check(ticker, bar.getDate())) {
+                        count++;
                     }
-                    collectedBars.get(ticker).add(stockPrice);
-                } catch (EmptyResultDataAccessException e) {
-                    log.trace("[BacktestService] " + e);
-                    continue;
                 }
-                // 보유중이지 않은 종목이면서 동시 매매 종목 자리가 남아있을 때만 매수 조건 체크
-                if (orderService.getPosition(aid, ticker).isEmpty() && orderService.getPositions(aid).size() < maxTradingCount) {
-                    // 그룹별은 OR 적용이고 그룹 내 조건들은 AND로 만족이 되어야함
-                    for (List<Condition> buyConditionGroup : buyConditions) {
-                        buyFlag = true;
-                        for (Condition buyCondition : buyConditionGroup) {
-                            if (!buyCondition.check(collectedBars.get(ticker))) {
-                                buyFlag = false;
+                if (count >= backtestParameter.getBuyConditionLimit() && dcaStatus < backtestParameter.getDca().size()) {
+                    // 종목 구매 금액 계산 (최대 거래 금액 * 분할 매수 1차 구매 비율)
+                    double targetBuyAmount = backtestParameter.getDca().get(dcaStatus) * maxSingleTickerTradingBalance;
+                    // 현재가 불러오기
+                    int currentPrice = bar.getClose();
+                    // 구매 가능 수량 계산
+                    int targetQty = (int) Math.floor(targetBuyAmount / currentPrice);
+                    // 구매 가능 수량이 0 이상이라면 매수 진행 후 분할 매수 차수 업데이트
+                    if (targetQty > 0) {
+                        orderService.buy(aid, ticker, bar.getDate(), currentPrice, targetQty);
+                        dcaStatus += 1;
+                    }
+                }
+            } // 보유중인 종목에 대해서는 손절가 초과 시 분할 매수 진행
+            else if (orderService.getPosition(aid, ticker).isPresent()) {
+                Position p = orderService.getPosition(aid, ticker).get();
+                int currentPrice = bar.getClose();
+                // 현재 가격이 손절가 이하라면 분할 매수 남은 횟수 체크
+                if (backtestParameter.getStopLoss() != null
+                        && p.getAvgEntryPrice().doubleValue() * backtestParameter.getStopLoss() > currentPrice) {
+                    // 남은 횟수가 있다면 분할 매수, 없다면 손절
+                    if (dcaStatus < backtestParameter.getDca().size()) {
+                        double targetBuyAmount = backtestParameter.getDca().get(dcaStatus) * maxSingleTickerTradingBalance;
+                        int targetQty = (int) Math.floor(targetBuyAmount / currentPrice);
+                        if (targetQty > 0) {
+                            orderService.buy(aid, ticker, bar.getDate(), currentPrice, targetQty);
+                            dcaStatus += 1;
+                        }
+                    } else {
+                        //손절
+                        orderService.sell(aid, ticker, bar.getDate(), currentPrice, p.getQty());
+                        //분할매수 리셋
+                        dcaStatus = 0;
+                        trailingStopStatus.remove(ticker);
+                    }
+                }
+            }
+            Optional<Position> position = orderService.getPosition(aid, ticker);
+            if (position.isPresent()) {
+                int currentPrice = bar.getClose();
+                int count = 0;
+                for (Condition condition : backtestParameter.getSellConditions()) {
+                    if (condition.check(ticker, bar.getDate())) {
+                        count++;
+                    }
+                }
+                if (count >= backtestParameter.getSellConditionLimit()) {
+                    orderService.sell(aid, ticker, bar.getDate(), currentPrice, position.get().getQty());
+                    dcaStatus = 0;
+                    // 매도 후 트레일링 스탑 감시 해제 (있다면)
+                    trailingStopStatus.remove(ticker);
+                }
+                // 매도 조건에서 팔리지 않았을 경우
+                else {
+                    // 익절가 달성 여부 체크
+                    if (backtestParameter.getStopProfit() != null &&
+                            position.get().getAvgEntryPrice().doubleValue() * backtestParameter.getStopProfit() < currentPrice) {
+                        // 트레일링 스탑 사용 중이라면 감시 시작
+                        if (backtestParameter.getTrailingStop() != null) {
+                            if (!trailingStopStatus.containsKey(ticker)) {
+                                trailingStopStatus.put(ticker, currentPrice);
                             }
                         }
-                        if (buyFlag && dcaStatus.get(ticker) < dca.size()) {
-                            // 종목 구매 금액 계산 (종목별 최대 거래 금액 * 분할 매수 1차 구매 비율)
-                            double targetBuyAmount = dca.get(dcaStatus.get(ticker)) * maxSingleTickerTradingBalance;
-                            // 현재가 불러오기
-                            int currentPrice = collectedBars.get(ticker).getLast().getClose();
-                            // 구매 가능 수량 계산
-                            int targetQty = (int) Math.floor(targetBuyAmount / currentPrice);
-                            // 구매 가능 수량이 0 이상이라면 매수 진행 후 분할 매수 차수 업데이트
-                            if (targetQty > 0) {
-                                orderService.buy(aid, ticker, startDate, targetQty);
-                                dcaStatus.replace(ticker, dcaStatus.get(ticker) + 1);
-                            }
+                        // 아니라면 전량 매도
+                        else {
+                            orderService.sell(aid, ticker, bar.getDate(), currentPrice, position.get().getQty());
+                            dcaStatus = 0;
+                            // 매도 후 트레일링 스탑 감시 해제 (있다면)
+                            trailingStopStatus.remove(ticker);
                         }
                     }
-                } // 보유중인 종목에 대해서는 손절가 초과 시 분할 매수 진행
-                else if (orderService.getPosition(aid, ticker).isPresent()) {
-                    Position p = orderService.getPosition(aid, ticker).get();
-                    int currentPrice = collectedBars.get(ticker).getLast().getClose();
-                    // 현재 가격이 손절가 이하라면 분할 매수 남은 횟수 체크
-                    if (stopLoss != null && p.getAvgEntryPrice().doubleValue() * stopLoss > currentPrice) {
-                        // 남은 횟수가 있다면 분할 매수, 없다면 손절
-                        if (dcaStatus.get(ticker) < dca.size()) {
-                            double targetBuyAmount = dca.get(dcaStatus.get(ticker)) * maxSingleTickerTradingBalance;
-                            int targetQty = (int) Math.floor(targetBuyAmount / currentPrice);
-                            if (targetQty > 0) {
-                                orderService.buy(aid, ticker, startDate, targetQty);
-                                dcaStatus.replace(ticker, dcaStatus.get(ticker) + 1);
-                            }
-                        } else {
-                            //손절
-                            orderService.sell(aid, ticker, startDate, p.getQty());
-                            //분할매수 리셋
-                            dcaStatus.replace(ticker, 0);
+                    // 트레일링 스탑 감시 중이라면
+                    if (backtestParameter.getTrailingStop() != null &&
+                            trailingStopStatus.containsKey(ticker)) {
+                        // 현재가가 최고가 보다 높다면 최고가 갱신
+                        if (trailingStopStatus.get(ticker) < currentPrice) {
+                            trailingStopStatus.replace(ticker, currentPrice);
+                        }
+                        // 현재가가 트레일링 스탑 제한보다 낮아졌다면 전량 매도
+                        else if (trailingStopStatus.get(ticker) * (1 - backtestParameter.getTrailingStop()) > currentPrice){
+                            orderService.sell(aid, ticker, bar.getDate(), currentPrice, position.get().getQty());
+                            dcaStatus = 0;
+                            // 매도 후 트레일링 스탑 감시 해제
                             trailingStopStatus.remove(ticker);
                         }
                     }
                 }
-                Optional<Position> position = orderService.getPosition(aid, ticker);
-                if (position.isPresent()) {
-                    int currentPrice = collectedBars.get(position.get().getStockInfo().getTicker()).getLast().getClose();
-                    for (List<Condition> sellConditionGroup : sellConditions) {
-                        sellFlag = true;
-                        for (Condition sellCondition : sellConditionGroup) {
-                            if (!sellCondition.check(collectedBars.get(position.get().getStockInfo().getTicker()))) {
-                                sellFlag = false;
-                            }
-                        }
-                        if (sellFlag) {
-                            orderService.sell(aid, position.get().getStockInfo().getTicker(), startDate, position.get().getQty());
-                            dcaStatus.replace(position.get().getStockInfo().getTicker(), 0);
-                            // 매도 후 트레일링 스탑 감시 해제 (있다면)
-                            trailingStopStatus.remove(position.get().getStockInfo().getTicker());
-                            break;
-                        }
-                    }
-                    // 매도 조건에서 팔리지 않았을 경우
-                    if (!sellFlag) {
-                        // 익절가 달성 여부 체크
-                        if (stopProfit != null && position.get().getAvgEntryPrice().doubleValue() * stopProfit < currentPrice) {
-                            // 트레일링 스탑 사용 중이라면 감시 시작
-                            if (trailingStop != null) {
-                                if (!trailingStopStatus.containsKey(position.get().getStockInfo().getTicker())) {
-                                    trailingStopStatus.put(position.get().getStockInfo().getTicker(), currentPrice);
-                                }
-                            }
-                            // 아니라면 전량 매도
-                            else {
-                                orderService.sell(aid, position.get().getStockInfo().getTicker(), startDate, position.get().getQty());
-                                dcaStatus.replace(position.get().getStockInfo().getTicker(), 0);
-                                // 매도 후 트레일링 스탑 감시 해제 (있다면)
-                                trailingStopStatus.remove(position.get().getStockInfo().getTicker());
-                            }
-                        }
-                        // 트레일링 스탑 감시 중이라면
-                        if (trailingStop != null && trailingStopStatus.containsKey(position.get().getStockInfo().getTicker())) {
-                            // 현재가가 최고가 보다 높다면 최고가 갱신
-                            if (trailingStopStatus.get(position.get().getStockInfo().getTicker()) < currentPrice) {
-                                trailingStopStatus.replace(position.get().getStockInfo().getTicker(), currentPrice);
-                            }
-                            // 현재가가 트레일링 스탑 제한보다 낮아졌다면 전량 매도
-                            else if (trailingStopStatus.get(position.get().getStockInfo().getTicker()) * (1 - trailingStop) > currentPrice){
-                                orderService.sell(aid, position.get().getStockInfo().getTicker(), startDate, position.get().getQty());
-                                dcaStatus.replace(position.get().getStockInfo().getTicker(), 0);
-                                // 매도 후 트레일링 스탑 감시 해제
-                                trailingStopStatus.remove(position.get().getStockInfo().getTicker());
-                            }
-                        }
-                    }
-                }
             }
-
             //계좌잔액기록
             long balance = accountService.getBalance(aid);
 
-            for(Position p : positionRepository.findByAccountAid(aid)){
-                StockPrice stockPrice = stockPriceService.getAvailablePriceBefore(p.getStockInfo().getTicker(),startDate).orElseThrow();
-                balance += (long) stockPrice.getClose() * p.getQty();
+            for(Position p : positionRepository.findByAccountAid(aid)) {
+                balance += (long) bar.getClose() * p.getQty();
             };
-
-            accountService.createAccountHistory(aid,startDate,balance);
+            accountHistoryBalance.put(bar.getDate(), balance);
         }
+        accountService.createAccountHistories(aid, accountHistoryBalance);
         return aid;
     }
-*/
+
     public boolean create(BacktestResult backtestResult) {
         backtestResultRepository.save(backtestResult);
         return true;
@@ -451,14 +367,9 @@ public class BacktestService {
         return backtestHistories;
     }
 
-    public Double calculateFinalProfitLossRatio(long initialBalance, int aid, LocalDateTime backtestEndDate) {
-        long finalBalance = accountService.getBalance(aid);
-        List<Position> positions = positionRepository.findByAccountAid(aid);
-        for (Position position : positions) {
-            Integer finalClosePrice = stockPriceService.getAvailablePriceBefore(position.getStockInfo().getTicker(), backtestEndDate, 10).orElseThrow().getClose();
-            finalBalance += (long) position.getQty() * finalClosePrice;
-        }
-        double plratio = (finalBalance / (double) initialBalance) - 1;
+    public Double calculateFinalProfitLossRatio(int aid) {
+        List<AccountHistory> accountHistories = accountHistoryRepository.findByAid(aid);
+        double plratio = ((double) accountHistories.getLast().getBalance() / accountHistories.getFirst().getBalance()) - 1;
         return plratio;
     }
 }

@@ -1,6 +1,7 @@
 package com.mztrade.hki.entity.indicator;
 
-import com.mztrade.hki.entity.StockPrice;
+import com.mztrade.hki.entity.Bar;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,15 +14,15 @@ public class MoneyFlowIndexAlgorithm implements Algorithm {
         this.period = params.getFirst().intValue();
     }
 
-    public Map<LocalDateTime, Double> calculate(List<StockPrice> stockPrices) {
+    public Map<LocalDateTime, Double> calculate(List<? extends Bar> bars) {
         Map<LocalDateTime, Double> result = new HashMap<>();
 
         List<Double> pRMF = new ArrayList<>();
         List<Double> nRMF = new ArrayList<>();
-        for (int i = 1; i < stockPrices.size(); i++) {
-            int previousTp = (stockPrices.get(i - 1).getHigh() + stockPrices.get(i - 1).getLow() + stockPrices.get(i - 1).getClose()) / 3;
-            int tp = (stockPrices.get(i).getHigh() + stockPrices.get(i).getLow() + stockPrices.get(i).getClose()) / 3;
-            double rmf = tp * stockPrices.get(i).getVolume();
+        for (int i = 1; i < bars.size(); i++) {
+            int previousTp = (bars.get(i - 1).getHigh() + bars.get(i - 1).getLow() + bars.get(i - 1).getClose()) / 3;
+            int tp = (bars.get(i).getHigh() + bars.get(i).getLow() + bars.get(i).getClose()) / 3;
+            double rmf = tp * bars.get(i).getVolume();
             if (previousTp < tp) {
                 pRMF.add(rmf);
                 nRMF.add(0.0);
@@ -30,15 +31,15 @@ public class MoneyFlowIndexAlgorithm implements Algorithm {
                 nRMF.add(rmf);
             }
         }
-        for (int i = 0; i < stockPrices.size(); i++) {
+        for (int i = 0; i < bars.size(); i++) {
             if (i < period) {
-                result.put(stockPrices.get(i).getDate(), Double.NaN);
+                result.put(bars.get(i).getDate(), Double.NaN);
             } else {
                 double MFR = pRMF.subList(i - period, i).stream().mapToDouble(d -> d).sum() / nRMF.subList(i - period, i).stream().mapToDouble(d -> d).sum();
-                result.put(stockPrices.get(i).getDate(), 100 - (100 / (1 + MFR)));
+                result.put(bars.get(i).getDate(), 100 - (100 / (1 + MFR)));
             }
         }
-        assert result.size() == stockPrices.size();
+        assert result.size() == bars.size();
         return result;
     }
 

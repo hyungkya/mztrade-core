@@ -7,14 +7,14 @@ import com.mztrade.hki.dto.OrderResponse;
 import com.mztrade.hki.entity.GameHistory;
 import com.mztrade.hki.entity.GameOrderHistory;
 import com.mztrade.hki.entity.StockInfo;
-import com.mztrade.hki.entity.StockPrice;
+import com.mztrade.hki.entity.DailyStockPrice;
 import com.mztrade.hki.repository.AccountRepository;
 import com.mztrade.hki.repository.GameOrderRepository;
 import com.mztrade.hki.repository.GameRepository;
 import com.mztrade.hki.repository.GameRepositoryImpl;
 import com.mztrade.hki.repository.OrderHistoryRepository;
 import com.mztrade.hki.repository.StockInfoRepository;
-import com.mztrade.hki.repository.StockPriceRepository;
+import com.mztrade.hki.repository.DailyStockPriceRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
@@ -29,7 +29,7 @@ public class GameService {
     private final AccountService accountService;
     private final StockPriceService stockPriceService;
     private final OrderService orderService;
-    private final StockPriceRepository stockPriceRepository;
+    private final DailyStockPriceRepository dailyStockPriceRepository;
     private final StockInfoRepository stockInfoRepository;
     private final OrderHistoryRepository orderHistoryRepository;
     private final GameOrderRepository gameOrderRepository;
@@ -42,12 +42,12 @@ public class GameService {
             AccountService accountService,
             OrderService orderService,
             StockPriceService stockPriceService,
-            StockPriceRepository stockPriceRepository, StockInfoRepository stockInfoRepository, OrderHistoryRepository orderHistoryRepository, GameOrderRepository gameOrderRepository, AccountRepository accountRepository, GameRepositoryImpl gameRepositoryImpl) {
+            DailyStockPriceRepository dailyStockPriceRepository, StockInfoRepository stockInfoRepository, OrderHistoryRepository orderHistoryRepository, GameOrderRepository gameOrderRepository, AccountRepository accountRepository, GameRepositoryImpl gameRepositoryImpl) {
         this.gameRepository = gameRepository;
         this.accountService = accountService;
         this.orderService = orderService;
         this.stockPriceService = stockPriceService;
-        this.stockPriceRepository = stockPriceRepository;
+        this.dailyStockPriceRepository = dailyStockPriceRepository;
         this.stockInfoRepository = stockInfoRepository;
         this.orderHistoryRepository = orderHistoryRepository;
         this.gameOrderRepository = gameOrderRepository;
@@ -62,10 +62,10 @@ public class GameService {
 
         String ticker = stockInfoList.get(random.nextInt(stockInfoList.size())).getTicker();
 
-        List<StockPrice> stockPrices = stockPriceRepository.findByStockInfoTicker(ticker);
-        stockPrices = stockPrices.stream().skip(200).limit(stockPrices.size() - 400).toList();
+        List<DailyStockPrice> dailyStockPrices = dailyStockPriceRepository.findByStockInfoTicker(ticker);
+        dailyStockPrices = dailyStockPrices.stream().skip(200).limit(dailyStockPrices.size() - 400).toList();
 
-        LocalDateTime startDate = stockPrices.get(random.nextInt(stockPrices.size())).getDate();
+        LocalDateTime startDate = dailyStockPrices.get(random.nextInt(dailyStockPrices.size())).getDate();
 
         long balance = accountService.getBalance(aid);
 
@@ -113,7 +113,8 @@ public class GameService {
 
     public Boolean sell(Integer gid, Integer aid, String ticker, LocalDateTime date, Integer qty) {
         Boolean isProcessed = false;
-        Integer oid = orderService.sell(aid, ticker, date, qty);
+        Integer price = stockPriceService.getDailyPrice(ticker, date).getClose();
+        Integer oid = orderService.sell(aid, ticker, date, price, qty);
         if (oid != null) {
             GameOrderHistory gameOrderHistory = gameOrderRepository.save(
                     GameOrderHistory.builder()
@@ -129,7 +130,8 @@ public class GameService {
 
     public Boolean buy(Integer gid, Integer aid, String ticker, LocalDateTime date, Integer qty) {
         Boolean isProcessed = false;
-        Integer oid = orderService.buy(aid, ticker, date, qty);
+        Integer price = stockPriceService.getDailyPrice(ticker, date).getClose();
+        Integer oid = orderService.buy(aid, ticker, date, price, qty);
         if (oid != null) {
             GameOrderHistory gameOrderHistory = gameOrderRepository.save(
                     GameOrderHistory.builder()

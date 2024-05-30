@@ -54,11 +54,14 @@ public class BacktestController {
         int aid = backtestService.execute(backtestParameter);
         Account account = accountRepository.getReferenceById(aid);
         User user = userRepository.getReferenceById(backtestParameter.getUid());
-        backtestService.create(BacktestResult.builder().account(account).user(user)
-                .param(objectMapper.writeValueAsString(backtestParameter)).plratio(
-                        backtestService.calculateFinalProfitLossRatio(
-                                backtestParameter.getInitialBalance(), aid,
-                                backtestParameter.parseEndDate())).build());
+        backtestService.create(
+                BacktestResult.builder()
+                        .account(account)
+                        .user(user)
+                        .param(objectMapper.writeValueAsString(backtestParameter))
+                        .plratio(
+                                backtestService.calculateFinalProfitLossRatio(aid)
+                        ).build());
 
         return new ResponseEntity<>(true, HttpStatus.OK);
     }

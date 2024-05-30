@@ -130,6 +130,19 @@ CREATE TABLE hkidb.stock_price (
                                    FOREIGN KEY (ticker) REFERENCES hkidb.stock_info (ticker)
 );
 
+CREATE TABLE hkidb.minute_stock_price (
+                                   ticker      VARCHAR(16) NOT NULL,
+                                   date        TIMESTAMP   NOT NULL,
+                                   open        INT         NOT NULL,
+                                   high        INT         NOT NULL,
+                                   low         INT         NOT NULL,
+                                   close       INT         NOT NULL,
+                                   volume      BIGINT      NOT NULL,
+
+                                   PRIMARY KEY (ticker, date),
+                                   FOREIGN KEY (ticker) REFERENCES hkidb.stock_info (ticker)
+);
+
 CREATE TABLE hkidb.backtest_result(
                                         uid INT NOT NULL,
                                         aid INT NOT NULL,

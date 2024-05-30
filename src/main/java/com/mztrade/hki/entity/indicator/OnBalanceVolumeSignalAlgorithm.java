@@ -1,6 +1,7 @@
 package com.mztrade.hki.entity.indicator;
 
-import com.mztrade.hki.entity.StockPrice;
+import com.mztrade.hki.entity.Bar;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,34 +16,34 @@ public class OnBalanceVolumeSignalAlgorithm implements Algorithm {
 
     }
 
-    public Map<LocalDateTime, Double> calculate(List<StockPrice> stockPrices) {
+    public Map<LocalDateTime, Double> calculate(List<? extends Bar> bars) {
         Map<LocalDateTime, Double> result = new HashMap<>();
 
         double OBV = 0;
         List<Double> OBVs = new ArrayList<>();
-        for (int i = 0; i < stockPrices.size(); i++) {
+        for (int i = 0; i < bars.size(); i++) {
             if (i == 0) {
-                OBV = stockPrices.get(i).getVolume();
+                OBV = bars.get(i).getVolume();
                 OBVs.add(OBV);
             } else {
-                if (stockPrices.get(i).getClose() > stockPrices.get(i - 1).getClose()) {
-                    OBV += stockPrices.get(i).getVolume();
-                } else if (stockPrices.get(i).getClose() < stockPrices.get(i - 1).getClose()) {
-                    OBV -= stockPrices.get(i).getVolume();
+                if (bars.get(i).getClose() > bars.get(i - 1).getClose()) {
+                    OBV += bars.get(i).getVolume();
+                } else if (bars.get(i).getClose() < bars.get(i - 1).getClose()) {
+                    OBV -= bars.get(i).getVolume();
                 }
                 OBVs.add(OBV);
             }
         }
 
-        for (int i = 0; i < stockPrices.size(); i++) {
+        for (int i = 0; i < bars.size(); i++) {
             if (i < period) {
-                result.put(stockPrices.get(i).getDate(), Double.NaN);
+                result.put(bars.get(i).getDate(), Double.NaN);
             } else {
-                result.put(stockPrices.get(i).getDate(), OBVs.subList(i - period, i).stream().mapToDouble(d -> d).average().orElse(Double.NaN));
+                result.put(bars.get(i).getDate(), OBVs.subList(i - period, i).stream().mapToDouble(d -> d).average().orElse(Double.NaN));
             }
         }
 
-        assert result.size() == stockPrices.size();
+        assert result.size() == bars.size();
         return result;
     }
 

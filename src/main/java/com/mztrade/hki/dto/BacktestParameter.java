@@ -14,6 +14,7 @@ public class BacktestParameter {
     private Integer uid;
     private String title;
     private List<String> tickers;
+    private String timeScale;
     private String startDate;
     private String endDate;
     private Long initialBalance;

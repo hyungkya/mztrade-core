@@ -1,6 +1,7 @@
 package com.mztrade.hki.entity.indicator;
 
-import com.mztrade.hki.entity.StockPrice;
+import com.mztrade.hki.entity.Bar;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -12,25 +13,25 @@ public class PivotPointResist1Algorithm implements Algorithm {
         this.period = params.getFirst().intValue();
     }
 
-    public Map<LocalDateTime, Double> calculate(List<StockPrice> stockPrices) {
+    public Map<LocalDateTime, Double> calculate(List<? extends Bar> bars) {
         Map<LocalDateTime, Double> result = new HashMap<>();
 
         int currentDuration = 0;
         double r1 = Double.NaN;
-        for (int i = 0; i < stockPrices.size(); i += period) {
+        for (int i = 0; i < bars.size(); i += period) {
             int high = 0;
             int low = 0;
-            int close = stockPrices.subList(i, i + period <= stockPrices.size() ? i + period : stockPrices.size()).getLast().getClose();
-            for (int j = i; j < i + period && j < stockPrices.size(); j++) {
-                high = stockPrices.get(j).getHigh() > high ? stockPrices.get(j).getHigh() : high;
-                low = low == 0 || stockPrices.get(j).getLow() < low ? stockPrices.get(j).getLow() : low;
-                result.put(stockPrices.get(j).getDate(), r1);
+            int close = bars.subList(i, i + period <= bars.size() ? i + period : bars.size()).getLast().getClose();
+            for (int j = i; j < i + period && j < bars.size(); j++) {
+                high = bars.get(j).getHigh() > high ? bars.get(j).getHigh() : high;
+                low = low == 0 || bars.get(j).getLow() < low ? bars.get(j).getLow() : low;
+                result.put(bars.get(j).getDate(), r1);
             }
             double pp = (high + low + close) / 3;
             r1 = pp * 2 - low;
         }
 
-        assert result.size() == stockPrices.size();
+        assert result.size() == bars.size();
         return result;
     }
 
